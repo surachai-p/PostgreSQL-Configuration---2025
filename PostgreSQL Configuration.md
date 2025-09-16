@@ -1194,9 +1194,10 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM run_benchmark_suite();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="324" height="94" alt="image" src="https://github.com/user-attachments/assets/73e97989-2092-4a05-8bde-a85d3f7c5971" />
+
+<img width="706" height="181" alt="image" src="https://github.com/user-attachments/assets/ead3d4f5-e375-4b04-a784-11d1bff9047f" />
+
 
 -- ดูผลการทดสอบ
 SELECT 
@@ -1209,11 +1210,9 @@ SELECT
     test_timestamp
 FROM benchmark_results
 ORDER BY test_timestamp DESC;
-```
+
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="1019" height="325" alt="image" src="https://github.com/user-attachments/assets/5bd2384e-6dde-4f4e-8404-17551522e519" />
 
 ### Step 12: การจัดการ Configuration แบบ Advanced
 
@@ -1476,11 +1475,10 @@ $$ LANGUAGE plpgsql;
 
 -- ใช้งาน auto-tuning
 SELECT auto_tune_memory();
-```
+
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="357" height="88" alt="image" src="https://github.com/user-attachments/assets/24976d4f-479b-47e0-acb5-ed01a43a5ca2" />
+
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
 SELECT 
@@ -1493,9 +1491,8 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY hit_ratio;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="553" height="192" alt="image" src="https://github.com/user-attachments/assets/f2a747b4-8e54-4066-988b-39f69096d689" />
+
 
 ### การคำนวณ Memory Requirements
 
