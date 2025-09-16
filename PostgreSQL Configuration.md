@@ -787,6 +787,7 @@ SELECT * FROM memory_monitor;
 ```
 รูปผลการทดลอง
 ```
+<img width="1477" height="752" alt="image" src="https://github.com/user-attachments/assets/36fccb2b-f455-45cf-baff-891977ddc4aa" />
 
 ### Step 10: การจำลอง Load Testing
 
@@ -836,6 +837,7 @@ CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 ```
 รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
 ```
+<img width="947" height="742" alt="image" src="https://github.com/user-attachments/assets/072fb34e-39e8-4bc5-85da-bafbc65b0686" />
 
 #### 10.2 การทดสอบ Query Performance
 ```sql
@@ -1012,13 +1014,36 @@ SELECT * FROM simulate_oltp_workload(25);
 ### ผลการทดลอง
 ```
 รูปผลการทดลอง
+<img width="1029" height="287" alt="image" src="https://github.com/user-attachments/assets/762d133f-c066-4182-b547-235493190218" />
+
 ```
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
-2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
+<img width="1058" height="359" alt="image" src="https://github.com/user-attachments/assets/d4df1e46-0f64-47b3-b264-105007cf5ebb" />
+
+2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร
+ = 1. SELECT
+avg_time_ms: 0.049 ms → เร็วมาก
+min/max: 0.018 - 0.758 ms
+เป็นการอ่านข้อมูลโดยใช้ JOIN และ WHERE
+ประสิทธิภาพดีเยี่ยม แสดงว่า index และ join strategy ถูกใช้ได้ดี
+2. INSERT
+avg_time_ms: 0.281 ms → เร็ว
+min/max: 0.010 - 8.681 ms
+มีความเร็วสูง แต่มีบางครั้งที่ใช้เวลาสูงสุดถึง 8.6 ms อาจเกิดจากการรอ I/O หรือ WAL
+3. UPDATE
+avg_time_ms: 93.687 ms → ช้ากว่ามาก
+min/max: 80.075 - 142.573 ms
+การ update ข้อมูลใน PostgreSQL จริง ๆ แล้วคล้ายกับการลบแล้วแทรกใหม่ (MVCC) ทำให้เกิด overhead
+หากมี index หรือ trigger เพิ่ม อาจส่งผลให้ช้าขึ้น
+4. DELETE (soft)
+avg_time_ms: 110.975 ms → ช้าที่สุด
+min/max: 97.800 - 146.863 ms
+เป็น "soft delete" โดยน่าจะใช้การตั้งค่า deleted_at หรือ flag เพื่อไม่ลบจริง
+ช้ากว่า UPDATE แสดงว่ามี logic เพิ่มใน query เช่นตรวจสอบเงื่อนไขก่อน update
 ```
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
@@ -1026,6 +1051,8 @@ SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
 ```
 รูปผลการทดลอง
+<img width="1097" height="310" alt="image" src="https://github.com/user-attachments/assets/5113aea8-3bfb-41e0-9fee-00015f21af4b" />
+
 ```
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
@@ -1219,8 +1246,10 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM run_benchmark_suite();
 ```
 ### ผลการทดลอง
-```
+``
 รูปผลการทดลอง
+<img width="1040" height="234" alt="image" src="https://github.com/user-attachments/assets/7beb5d8e-0512-4f71-9a12-e1830a58f19c" />
+
 ```
 
 -- ดูผลการทดสอบ
@@ -1239,13 +1268,14 @@ ORDER BY test_timestamp DESC;
 ```
 รูปผลการทดลอง
 ```
+<img width="1467" height="285" alt="image" src="https://github.com/user-attachments/assets/b16f25ad-0c24-4351-862b-9894c9b58e28" />
 
 ### Step 12: การจัดการ Configuration แบบ Advanced
 
 #### 12.1 การสร้าง Configuration Profiles
 ```sql
 -- สร้างตาราง config templates
-CREATE TABLE IF NOT EXISTS config_templates (
+tems'),CREATE TABLE IF NOT EXISTS config_templates (
     template_id SERIAL PRIMARY KEY,
     template_name VARCHAR(50) UNIQUE,
     parameter_name VARCHAR(100),
@@ -1257,7 +1287,7 @@ CREATE TABLE IF NOT EXISTS config_templates (
 -- เพิ่ม configuration profiles สำหรับ workload ต่างๆ
 INSERT INTO config_templates (template_name, parameter_name, parameter_value, description) VALUES
 -- Small OLTP Profile (สำหรับระบบเล็ก < 2GB RAM)
-('small_oltp', 'shared_buffers', '256MB', 'Buffer cache for small systems'),
+('small_oltp', 'shared_buffers', '256MB', 'Buffer cache for small sys
 ('small_oltp', 'work_mem', '4MB', 'Conservative work memory'),
 ('small_oltp', 'maintenance_work_mem', '128MB', 'Maintenance operations memory'),
 ('small_oltp', 'effective_cache_size', '1GB', 'OS cache size estimation'),
@@ -1505,6 +1535,8 @@ SELECT auto_tune_memory();
 ### ผลการทดลอง
 ```
 รูปผลการทดลอง
+<img width="895" height="602" alt="image" src="https://github.com/user-attachments/assets/f8c69432-c114-48d8-912e-477376f8791a" />
+
 ```
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
@@ -1521,6 +1553,7 @@ ORDER BY hit_ratio;
 ```
 รูปผลการทดลอง
 ```
+<img width="1262" height="424" alt="image" src="https://github.com/user-attachments/assets/a649e036-4e74-49a4-a999-1fe7da91846d" />
 
 ### การคำนวณ Memory Requirements
 
@@ -1552,9 +1585,30 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 ## คำถามท้ายการทดลอง
 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
+=ใน PostgreSQL หน่วยความจำที่จัดอยู่ในประเภท Shared Memory คือหน่วยความจำที่ใช้ร่วมกันระหว่าง backend processes โดยหน่วยความจำสำคัญที่อยู่ในกลุ่มนี้ ได้แก่ shared_buffers, wal_buffers และ temp_buffers ซึ่ง shared_buffers เป็นส่วนสำคัญที่สุด ใช้เก็บข้อมูลที่ถูกดึงจากดิสก์เข้ามาไว้ในหน่วยความจำเพื่อให้การเข้าถึงครั้งถัดไปเร็วขึ้น โดยหลักในการตั้งค่าคือให้ shared_buffers อยู่ที่ประมาณ 25% ถึง 40% ของหน่วยความจำทั้งหมดของเครื่อง ส่วน wal_buffers แนะนำให้ใช้ค่า -1 เพื่อให้ PostgreSQL คำนวณให้อัตโนมัติ และ temp_buffers ใช้เฉพาะเมื่อมี temporary tables ที่ต้องใช้ใน query เท่านั้น
 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+=work_mem คือหน่วยความจำที่ใช้ต่อหนึ่ง operation ต่อหนึ่ง query เช่น การ sort, hash join หรือ aggregate หาก query มีหลาย operation ก็จะใช้ work_mem หลายเท่า เช่น มี 3 joins ก็ใช้ 3 × work_mem ถ้าไม่พอ PostgreSQL จะใช้ temporary file บน disk แทน ทำให้ช้าลง
+ส่วน maintenance_work_mem เป็นหน่วยความจำที่ใช้ในงานเบื้องหลัง เช่น การสร้าง index, VACUUM, ANALYZE โดยปกติสามารถตั้งค่านี้ได้สูงกว่าค่า work_mem เพื่อให้กระบวนการทำงานรวดเร็วขึ้น
+หลักการตั้งค่าคือ work_mem ควรหารจาก RAM ที่เหลือหลังจากหัก shared_buffers แล้ว แบ่งตามจำนวน connection และจำนวน operation ต่อ query ส่วน maintenance_work_mem แนะนำให้ตั้งไว้ตั้งแต่ 64MB ถึง 1GB ขึ้นอยู่กับขนาดข้อมูลและความถี่ในการรัน vacuum หรือสร้าง index
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+=หากเครื่องมี RAM 16GB และกำหนด connection = 200 ควรกำหนด shared_buffers ประมาณ 4GB (25% ของ RAM) ซึ่งจะเหลือ RAM อีก 12GB สำหรับ process ต่างๆ หากกำหนดว่าแต่ละ query ใช้งานเฉลี่ย 2 operation พร้อมกัน ก็ควรกำหนด work_mem ประมาณ 12MB ต่อ operation ดังนั้น 200 connections × 2 operation × 12MB = 4.8GB ซึ่งยังอยู่ในขอบเขตของ RAM
+สำหรับ maintenance_work_mem ควรกำหนดไว้ที่ 512MB ถึง 1GB เพื่อให้กระบวนการ vacuum หรือ index creation ทำงานได้มีประสิทธิภาพ โดยไม่กระทบต่อระบบโดยรวม
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
+=ไฟล์ postgresql.conf คือไฟล์หลักที่ใช้ในการกำหนดค่าการทำงานของ PostgreSQL และสามารถแก้ไขโดยตรงได้ ขณะที่ postgresql.auto.conf คือไฟล์ที่ PostgreSQL สร้างขึ้นเองเมื่อมีการใช้คำสั่ง ALTER SYSTEM SET เพื่อแก้ไขค่า configuration แบบ runtime โดยค่าใน postgresql.auto.conf จะถูกอ่านและ override ค่าใน postgresql.conf เมื่อเริ่มต้นระบบใหม่ ดังนั้นหากต้องการตั้งค่าระบบแบบถาวรโดยไม่ใช้คำสั่ง ALTER SYSTEM ควรแก้ใน postgresql.conf แต่ถ้าใช้คำสั่ง ALTER SYSTEM จะถูกเขียนลงใน postgresql.auto.conf แทน
 5. Buffer hit ratio คืออะไร
+=Buffer Hit Ratio คือสัดส่วนของการอ่านข้อมูลจากหน่วยความจำ (buffer cache) เมื่อเทียบกับการอ่านจากดิสก์ โดยค่าที่สูงแสดงถึงประสิทธิภาพที่ดี เพราะ PostgreSQL สามารถดึงข้อมูลจาก memory ได้โดยไม่ต้องเข้าถึง disk ซึ่งเร็วกว่ามาก
+สามารถคำนวณได้จากสูตร heap_blks_hit / (heap_blks_hit + heap_blks_read) ซึ่งค่าที่ดีควรอยู่ในช่วง 95% ขึ้นไป โดยการเพิ่ม shared_buffers และการใช้งาน index อย่างเหมาะสมจะช่วยเพิ่มค่า buffer hit ratio ได้
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+=
+wal_buffers = 4mb
+work_mem = 20MB
+effective_cache_size = 4Gb
+maintenance_work_mem = 512MB
+
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+=
+1.Sequential Scan คือการอ่านข้อมูลทุกแถวในตาราง เรียงจากต้นจนจบ เหมาะกับตารางเล็ก ๆ หรือ query ที่ไม่สามารถใช้ index ได้ ข้อดีคือไม่ต้องมี index แต่ข้อเสียคือช้าสำหรับตารางขนาดใหญ่
+
+2.Index Scan คือการใช้ index เพื่อค้นหาเฉพาะแถวที่ต้องการ โดย PostgreSQL จะค้น index ก่อนแล้วไปดึงข้อมูลจากตารางจริงอีกครั้ง เหมาะกับ query ที่มีเงื่อนไขชัดเจน เช่น WHERE id = 10 ข้อดีคือเร็วเมื่อมี index ที่เหมาะสม แต่ข้อเสียคืออาจต้องเข้าถึงข้อมูลจริงหลายครั้ง (random I/O)
+
+3.Bitmap Index Scan คือการใช้ index หลายอันพร้อมกัน และสร้าง bitmap เพื่อระบุแถวที่ต้องอ่าน จากนั้นอ่านข้อมูลแบบต่อเนื่อง (sequential) เหมาะกับกรณีที่มีหลายเงื่อนไขและหลาย index เช่น WHERE status = 'active' AND category = 'A' ข้อดีคือประหยัด I/O และสามารถใช้ index หลายตัวพร้อมกันได้ ข้อเสียคือใช้หน่วยความจำมากกว่าปกติ
