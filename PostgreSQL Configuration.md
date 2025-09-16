@@ -425,9 +425,39 @@ LIMIT 1000;
 ```
 ### ผลการทดลอง
 ```
-1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
-2. รูปผลการรัน
+1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร
+EXPLAIN → ใช้บอก แผนการทำงานของ Query (query execution plan) ว่าฐานข้อมูลจะทำงานอย่างไร เช่นใช้ Index หรือ Scan ตารางตรง ๆ
+ANALYZE → บังคับให้รัน Query จริง แล้วแสดงเวลาที่ใช้จริง (execution time) เทียบกับแผนที่คาดการณ์
+BUFFERS → แสดงข้อมูลเกี่ยวกับ I/O ว่ามีการอ่าน/เขียนข้อมูลจาก memory (shared buffers) หรือจาก disk เท่าไร
+
+<img width="1348" height="591" alt="image" src="https://github.com/user-attachments/assets/eb3eb244-5a97-4ad8-baba-8e8be985a044" />
+
 3. อธิบายผลลัพธ์ที่ได้
+Limit
+Query ขอเพียง 1000 แถวแรก → จบที่ Limit
+ใช้เวลา actual time=103.320..109.155 ms และคืนมา rows=1000
+
+Gather Merge
+ใช้ parallel query มี Worker 2 ตัว (Workers Planned: 2, Launched: 2)
+Workers จะประมวลผลบางส่วน แล้วนำผลมารวม (merge)
+ใช้เวลา ~103–109 ms
+
+Sort
+ต้องเรียงลำดับ (ORDER BY data)
+ใช้ Sort Method: top-N heapsort ซึ่งเลือกเฉพาะ Top 1000 rows แรก ไม่ต้อง sort ทั้งหมด → ประหยัดเวลา
+ใช้หน่วยความจำ: 242kB (worker0 = 167kB, worker1 = 179kB)
+ทำงาน 3 รอบ (loops=3)
+Parallel Seq Scan on large_table
+อ่านตารางใหญ่ทั้งหมด (225,547 rows) ด้วยการสแกนแบบขนาน (Parallel Sequential Scan)
+ใช้เวลา 0.015..14.789 ms ต่อ worker รวม rows = 166,667 ต่อรอบ
+
+Buffers
+shared hit=5133 และ shared hit=5059 → แสดงว่า query อ่านข้อมูลจาก memory (shared buffers) เป็นหลัก ไม่ได้อ่านจาก disk โดยตรง
+ทำให้ query ทำงานได้เร็วขึ้น
+Planning / Execution Time
+Planning time = 0.373 ms (วางแผน query เร็วมาก)
+Execution time = 109.830 ms
+รวมเวลาทั้งหมด ~115.864 ms
 ```
 ```sql
 -- ทดสอบ Hash operation
