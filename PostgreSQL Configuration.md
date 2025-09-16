@@ -1504,7 +1504,13 @@ SELECT auto_tune_memory();
 ```
 ### ผลการทดลอง
 ```
-รูปผลการทดลอง
+
+
+
+<img width="479" height="366" alt="image" src="https://github.com/user-attachments/assets/9ffe35b5-3e91-49f3-b238-f922433e43a5" />
+
+
+
 ```
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
@@ -1518,9 +1524,9 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY hit_ratio;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+<img width="733" height="331" alt="image" src="https://github.com/user-attachments/assets/8753e126-54bc-4727-b5cc-5e9553a70f24" />
+
 
 ### การคำนวณ Memory Requirements
 
@@ -1551,10 +1557,36 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 
 ## คำถามท้ายการทดลอง
+```
 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
+shared_buffers = ปกติ 25–40% ของ RAM
+work_mem memory = ต่อ operation; ต้องคูณจำนวน concurrent operations
+maintenance_work_mem = กำหนดสูงกว่า work_mem แต่ไม่ควรใช้หมด RAM พร้อมกัน
+
 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+work_mem = memory ต่อ query operation (sort, hash join, aggregation) ควรคำนวณโดย: work_mem × max_parallel_operations × active_connections < RAM ที่เหลือ
+maintenance work memory = memory สำหรับ VACUUM, CREATE INDEX, ALTER TABLE ใหญ่กว่าปกติ เพราะ operation เหล่านี้ใช้ครั้งเดียว ไม่ซ้ำพร้อมกันหลาย connection
+
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+work_mem = (16GB × 0.25) / 200 ≈ 20MB
+maintenance_work_mem = work_mem × 8 ≈ 160MB หรือ 16GB × 0.05 ≈ 800MB
+
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
+ค่าใน postgresql.auto.conf จะ override postgresql.conf เมื่อตอน server start หรือ reload
+
 5. Buffer hit ratio คืออะไร
+คือ สัดส่วนการอ่านข้อมูลจาก memory แทน disk ควร >95% → ยิ่งสูง → query ใช้ memory มาก ลด disk I/O
+
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+Parameter	            ปัจจุบัน	            แนะนำ
+shared_buffers	      128MB	      512MB (25% ของ RAM)
+work_mem	            20MB	          เหมาะสม
+maintenance_work_mem	256MB	          เหมาะสม
+effective_cache_size	1536MB	        เหมาะสม
+
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+Sequential Scan = 	อ่านทุกแถวใน table	/ table เล็กหรือไม่มี index	
+Index Scan	ใช้ index =  หาตำแหน่งแถว → เข้าถึง table / 	column มี index	
+Index Only Scan = 	อ่านจาก index โดยไม่ต้องเข้าถึง table	/ index ครอบคลุมข้อมูล query
+
+```
