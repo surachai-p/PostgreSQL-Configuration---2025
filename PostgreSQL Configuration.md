@@ -1,4 +1,4 @@
-# Lab 02: PostgreSQL Configuration and Memory Management
+<img width="1871" height="833" alt="image" src="https://github.com/user-attachments/assets/c5652266-0fbe-434c-b8eb-58775d2a78cc" /># Lab 02: PostgreSQL Configuration and Memory Management
 
 
 ## วัตถุประสงค์
@@ -479,10 +479,17 @@ DELETE FROM large_table WHERE id % 10 = 0;
 VACUUM (ANALYZE, VERBOSE) large_table;
 ```
 ### ผลการทดลอง
-```
 1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
+<img width="1871" height="833" alt="image" src="https://github.com/user-attachments/assets/22d43457-0653-4e28-8060-f989540282a1" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+- คำสั่ง VACUUM (ANALYZE, VERBOSE) ทำการลบ dead tuples ที่เกิดจาก DELETE 50000 ออกจากตาราง large_table
+- รายงานว่า:
+  - ลบแถวตาย 50,000 แถว → เหลือ 450,000 แถวจริง (live rows)
+  - index ต่าง ๆ (pkey, idx_large_table_number, ฯลฯ) ถูก vacuum ตรวจสอบด้วย → ไม่มี tuple ค้าง
+  - ใช้ parallel vacuum workers 2 ตัว ช่วยให้เร็วขึ้น
+- สุดท้ายมีการ ANALYZE → อัปเดตสถิติของตาราง เพื่อให้ Query Planner วางแผนได้แม่นยำ
+
 ### Step 6: การติดตาม Memory Usage
 
 #### 6.1 สร้างฟังก์ชันติดตาม Memory
