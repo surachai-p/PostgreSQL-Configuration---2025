@@ -216,8 +216,13 @@ SHOW data_directory;
 ### บันทึกผลการทดลอง
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+   ตอบ อยู่ที่ไฟล์ postgresql.conf ภายใน container
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+   ตอบ data directory ของ PostgreSQL
 ```
+1.<img width="419" height="215" alt="image" src="https://github.com/user-attachments/assets/3865b922-fa11-41b9-95af-f05d39d66f89" />
+2.<img width="344" height="221" alt="image" src="https://github.com/user-attachments/assets/684cc582-99aa-4b0d-9ed2-d192e7bb3df3" />
+
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
 FROM pg_settings 
