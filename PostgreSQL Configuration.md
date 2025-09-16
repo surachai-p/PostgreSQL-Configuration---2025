@@ -190,8 +190,12 @@ docker exec postgres-config df -h
 ### บันทึกผลการทดลอง
 ```
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+docker exec postgres-config free ใช้ตรวจสอบ การใช้หน่วยความจำ (RAM) ภายในคอนเทนเนอร์
+docker exec postgres-config df ใช้ตรวจสอบ การใช้พื้นที่ดิสก์ ภายในคอนเทนเนอร์
 2. option -h ในคำสั่งมีผลอย่างไร
+แสดงผลแบบ human-readableและหน่วยเป็น KB, MB, GB อ่านง่ายขึ้น
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
+แสดงตัวเลขจำนวน core ที่ใช้งานได้
 ```
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
@@ -206,11 +210,14 @@ SELECT version();
 SHOW config_file;
 SHOW hba_file;
 SHOW data_directory;
-
-### บันทึกผลการทดลอง
 ```
+### บันทึกผลการทดลอง
+![alt text](img/0image.png)
+
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+/var/lib/postgresql/data/postgresql.conf
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+/var/lib/postgresql/data
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -221,9 +228,10 @@ WHERE name IN (
 );
 ```
 ### บันทึกผลการทดลอง
-```
+
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
-```
+![alt text](img/1image.png)
+
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
@@ -235,10 +243,20 @@ FROM pg_settings
 WHERE name = 'shared_buffers';
 
 ### ผลการทดลอง
+postgres=# SELECT name, setting, unit, source, pending_restart
+FROM pg_settings 
+WHERE name = 'shared_buffers';
+      name      | setting | unit |       source       | pending_restart 
+----------------+---------+------+--------------------+-----------------
+ shared_buffers | 16384   | 8kB  | configuration file | f
+(1 row)
 ```
-1.รูปผลการรันคำสั่ง
+1. รูปผลการรันคำสั่ง
+![alt text](img/2image.png)
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+ค่า setting = 16384 หน่วย unit = 8kB
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+ค่า pending_restart = f (false) ไม่จำเป็นต้องrestartPostgreSQLเพื่อให้ค่าการตั้งค่านี้มีผลเพราะค่าที่ใช้อยู่ตรงกับค่าที่กำหนดไว้ในไฟล์ config แล้ว
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
