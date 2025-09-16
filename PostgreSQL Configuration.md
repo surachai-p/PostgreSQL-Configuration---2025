@@ -624,10 +624,12 @@ ORDER BY heap_blks_read DESC
 LIMIT 10;
 ```
 ### ผลการทดลอง
-```
-1. รูปผลการทดลอง
+
+<img width="1023" height="372" alt="image" src="https://github.com/user-attachments/assets/7c5a7ae4-04bb-43fc-afd5-9c4dab2080ac" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+คำสั่งนี้ตั้งใจจะหา “Top 10 ตารางที่มีการอ่านจาก disk มากที่สุด” แต่ผลออกมาเป็น 0 rows หมายถึง ไม่มีตารางใดถูกอ่านจาก disk แสดงว่าข้อมูลทั้งหมดถูกดึงจาก cache → ระบบทำงานได้เร็วและมี cache hit เต็ม 100%
+
 ### Step 7: การปรับแต่ง Autovacuum
 
 #### 7.1 ทำความเข้าใจ Autovacuum Parameters
