@@ -845,6 +845,8 @@ SELECT * FROM memory_monitor;
 ```
 รูปผลการทดลอง
 ```
+<img width="685" height="234" alt="image" src="https://github.com/user-attachments/assets/e2cc3d85-f40c-47e1-afda-3dd531cad40c" />
+
 
 ### Step 10: การจำลอง Load Testing
 
