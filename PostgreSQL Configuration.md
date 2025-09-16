@@ -190,8 +190,11 @@ docker exec postgres-config df -h
 ### บันทึกผลการทดลอง
 ```
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+= freeเพื่อดูการใช้งานหน่วยความจำ (RAM) | dfเพื่อตรวจสอบการใช้งาน disk
 2. option -h ในคำสั่งมีผลอย่างไร
+= ทำให้ค่าที่แสดงอ่านง่ายขึ้น เช่น แสดงเป็น MB / GB แทนที่จะเป็นหน่วย KB
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
+= 12
 ```
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
@@ -210,8 +213,9 @@ SHOW data_directory;
 ### บันทึกผลการทดลอง
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+= /var/lib/postgresql/data/postgresql.conf
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
-```
+= /var/lib/postgresql/data
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
 FROM pg_settings 
@@ -223,6 +227,8 @@ WHERE name IN (
 ### บันทึกผลการทดลอง
 ```
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
+<img width="1722" height="456" alt="image" src="https://github.com/user-attachments/assets/a8cd385a-4678-4c92-aa40-6ff357e8b289" />
+
 ```
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
@@ -238,7 +244,10 @@ WHERE name = 'shared_buffers';
 ```
 1.รูปผลการรันคำสั่ง
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+<img width="892" height="254" alt="image" src="https://github.com/user-attachments/assets/44b4d070-19a0-4bf5-a376-55bf343b784d" />
+
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+= ค่า f = false → แปลว่า ค่าที่ตั้งปัจจุบันของ parameter (shared_buffers) มีผลแล้วทันที
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
@@ -255,9 +264,12 @@ WHERE name = 'shared_buffers';
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
 
 ### ผลการทดลอง
-```
+
 รูปผลการเปลี่ยนแปลงค่า pending_restart
+<img width="886" height="681" alt="image" src="https://github.com/user-attachments/assets/1485ffd7-1c73-41f4-9c0b-68cf924789f4" />
+
 รูปหลังจาก restart postgres
+<img width="949" height="547" alt="image" src="https://github.com/user-attachments/assets/d1733d25-5781-40ac-8352-3bc60209c770" />
 
 ```
 
