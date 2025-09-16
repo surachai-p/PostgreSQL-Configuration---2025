@@ -544,6 +544,7 @@ FROM get_memory_usage();
 ```
 รูปผลการทดลอง
 ```
+<img width="878" height="386" alt="image" src="https://github.com/user-attachments/assets/3690f9b4-025b-4683-b056-1f6499f63a96" />
 
 #### 6.2 การติดตาม Buffer Hit Ratio
 ```sql
@@ -565,7 +566,14 @@ ORDER BY heap_blks_read + heap_blks_hit DESC;
 ```
 1. รูปผลการทดลอง
 2. อธิบายผลลัพธ์ที่ได้
+แสดงข้อมูลของดาต้าเบสปัจจุบัน
+จำนวน heap_blks_read คือการอ่านข้อมูลจากดิสก์จริงซึ่งช้ากว่า
+จำนวน heap_blks_hit คือการอ่านข้อมูลจากแคชในหน่วยความจำที่เร็วกว่ามาก
+อัตรา hit_ratio_percent บอกว่าในช่วงเวลาที่เก็บสถิติ query มีการดึงข้อมูลจาก cache กี่เปอร์เซ็นต์ ยิ่งสูงแปลว่าฐานข้อมูลทำงานได้เร็วขึ้นเพราะไม่ต้องเข้าถึงดิสก์บ่อย
+การจัดเรียง ORDER BY heap_blks_read + heap_blks_hit DESC คือเรียงลำดับตารางที่ถูกอ่านบ่อยที่สุดก่อน
 ```
+<img width="1099" height="439" alt="image" src="https://github.com/user-attachments/assets/e1f6c265-b591-49ea-85f5-5345a5e110de" />
+
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
 SELECT datname,
@@ -579,7 +587,13 @@ WHERE datname = current_database();
 ```
 1. รูปผลการทดลอง
 2. อธิบายผลลัพธ์ที่ได้
+แสดงข้อมูลรายละเอียดของการอ่านข้อมูลในแต่ละตารางของดาต้าเบสปัจจุบัน
+heap_blks_read คือจำนวนบล็อกที่ถูกอ่านจากดิสก์สำหรับตารางนั้น
+heap_blks_hit คือจำนวนบล็อกที่ถูกอ่านจากแคช (shared buffer) สำหรับตารางนั้น
+hit_ratio_percent เป็นเปอร์เซ็นต์การอ่านข้อมูลจากแคชในแต่ละตาราง
+การเรียงลำดับตามจำนวนการอ่านข้อมูลรวม (ดิสก์+แคช) เพื่อแสดงตารางที่ถูกใช้งานมากที่สุดก่อน
 ```
+<img width="963" height="300" alt="image" src="https://github.com/user-attachments/assets/ccaac25b-9dc8-4cc9-9254-12921b687d2b" />
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
 ```sql
@@ -600,7 +614,17 @@ LIMIT 10;
 ```
 1. รูปผลการทดลอง
 2. อธิบายผลลัพธ์ที่ได้
+แสดงผลสถิติของการเข้าถึงข้อมูลในตารางที่ถูกอ่านจากดิสก์ในฐานข้อมูลปัจจุบัน โดยเฉพาะแสดง 10 ตารางที่มีการอ่านข้อมูลจากดิสก์มากที่สุด พร้อมขนาดของตารางแต่ละตัว รายละเอียดดังนี้:
+schemaname: ชื่อ schema ที่ตารางนั้นอยู่
+tablename: ชื่อตาราง
+heap_blks_read: จำนวนบล็อกข้อมูลที่ถูกอ่านจากดิสก์ (disk reads) ในตารางนั้น
+heap_blks_hit: จำนวนบล็อกข้อมูลที่ถูกอ่านจาก cache ใน shared buffers
+total_access: ผลรวมการเข้าถึงข้อมูลทั้งจากดิสก์และ cache
+hit_ratio_percent: เปอร์เซ็นต์ของการอ่านจาก cache เทียบกับทั้งหมด (ค่าประสิทธิภาพ cache hit rate)
+table_size: ขนาดของตารางโดยรวม (ข้อมูล + indexes + TOAST) แสดงแบบอ่านง่าย (เช่น MB, GB)
 ```
+<img width="1037" height="409" alt="image" src="https://github.com/user-attachments/assets/5ff81e15-7736-4b62-bf41-7a5f9dc49b02" />
+
 ### Step 7: การปรับแต่ง Autovacuum
 
 #### 7.1 ทำความเข้าใจ Autovacuum Parameters
@@ -615,7 +639,19 @@ ORDER BY name;
 ```
 1. รูปผลการทดลอง
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
+autovacuum: ควบคุมว่าเปิดหรือปิด autovacuum (on = เปิดใช้งาน) เป็นค่าที่ต้องเปิดไว้เสมอเพื่อความเสถียรและประสิทธิภาพ
+autovacuum_analyze_scale_factor: อัตราส่วนของจำนวนแถวที่เปลี่ยนแปลง (insert/update/delete) เมื่อเทียบกับจำนวนแถวในตารางที่ทำให้เกิดการวิเคราะห์สถิติใหม่ (analyze) เช่น 0.1 หมายถึงเปลี่ยนแปลง 10% ของตารางจะ trigger analyze
+autovacuum_analyze_threshold: จำนวนขั้นต่ำของแถวที่เปลี่ยนแปลงก่อนเริ่ม analyze (เช่น 50 แถว)
+autovacuum_freeze_max_age: อายุของ transaction ID ที่จะทำให้ autovacuum ทำการ freeze tuples เพื่อป้องกัน transaction ID wraparound (ค่าปกติสูงมากเช่น 200000000)
+autovacuum_max_workers: จำนวน autovacuum worker ที่รันพร้อมกันสูงสุด (เช่น 3)
+autovacuum_naptime: เวลาที่จะพัก (sleep) ระหว่างแต่ละรอบของ autovacuum (เช่น 60 วินาที)
+autovacuum_vacuum_cost_delay: การหน่วงเวลา (delay) ในหน่วย millisecond ระหว่างขั้นตอน vacuum เพื่อลดผลกระทบต่อ performance ระบบ (เช่น 2 ms)
+autovacuum_vacuum_cost_limit: จำนวนคะแนนสูงสุดที่อนุญาตในแต่ละรอบ vacuum ก่อนจะต้องหยุดพัก (ค่า -1 หมายถึงใช้ค่าเริ่มต้น)
+autovacuum_vacuum_insert_scale_factor และ autovacuum_vacuum_insert_threshold: กำหนดเกณฑ์การ trigger autovacuum เมื่อตารางมีการแทรกข้อมูลใหม่ เป็นสัดส่วนกับจำนวนแถวทั้งหมดและจำนวนแถวขั้นต่ำ
+autovacuum_vacuum_scale_factor และ autovacuum_vacuum_threshold: กำหนดเกณฑ์การ trigger autovacuum เมื่อตารางมีการแก้ไขหรือลบข้อมูล เป็นสัดส่วนกับจำนวนแถวทั้งหมดและจำนวนแถวขั้นต่ำ
+autovacuum_work_mem: หน่วยความจำสูงสุดที่ autovacuum worker แต่ละตัวใช้ในการทำงาน (ค่า -1 หมายถึงใช้ค่าเริ่มต้นของระบบ)
 ```
+<img width="1311" height="503" alt="image" src="https://github.com/user-attachments/assets/956f8675-b5cc-48fb-95c4-197b26795362" />
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
 ```sql
@@ -645,6 +681,7 @@ SELECT pg_reload_conf();
 ```
 รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
 ```
+<img width="842" height="366" alt="image" src="https://github.com/user-attachments/assets/725e63c5-b13e-42cd-9848-89dcb61f2dd7" />
 
 ### Step 8: Performance Testing และ Benchmarking
 
@@ -720,8 +757,13 @@ ORDER BY test_timestamp DESC;
 ```
 1. รูปผลการทดลอง
 2. อธิบายผลลัพธ์ที่ได้
+แสดงผลข้อมูลการทดสอบประสิทธิภาพที่เก็บในตาราง performance_results โดยมีข้อมูลสำคัญ คือ
+test_name: ชื่อของการทดสอบ (เช่น ชื่อ workload หรือ test case)
+config_set: การตั้งค่าหรือชุดการตั้งค่าที่ใช้ทดสอบในแต่ละครั้ง
+execution_time_ms: เวลาที่ใช้รันทดสอบในหน่วยมิลลิวินาที
+avg_time: ค่าเฉลี่ยเวลาที่ใช้ทดสอบของแต่ละ test_name โดยคำนวณจากข้อมูลทดสอบทั้งหมดในกลุ่มนั้น (ใช้ฟังก์ชัน window AVG() OVER (PARTITION BY))
 ```
-
+<img width="809" height="295" alt="image" src="https://github.com/user-attachments/assets/7fb18a95-748c-4093-a3c2-516791bbaee5" />
 
 ### Step 9: การ Monitoring และ Alerting
 
@@ -757,6 +799,7 @@ SELECT * FROM memory_monitor;
 ```
 รูปผลการทดลอง
 ```
+<img width="914" height="437" alt="image" src="https://github.com/user-attachments/assets/cf5eeb43-11e1-4443-a34b-02f6df72e62b" />
 
 ### Step 10: การจำลอง Load Testing
 
@@ -806,6 +849,8 @@ CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 ```
 รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
 ```
+<img width="870" height="217" alt="image" src="https://github.com/user-attachments/assets/b4978456-e37c-4927-b47b-d1b0785537d5" />
+<img width="906" height="221" alt="image" src="https://github.com/user-attachments/assets/e2122e42-1f3c-40dc-9624-94b20811acc4" />
 
 #### 10.2 การทดสอบ Query Performance
 ```sql
@@ -981,20 +1026,30 @@ SELECT * FROM simulate_oltp_workload(25);
 ```
 ### ผลการทดลอง
 ```
+<img width="872" height="380" alt="image" src="https://github.com/user-attachments/assets/76329441-b20a-49ba-990b-c452833e4131" />
+
 รูปผลการทดลอง
 ```
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
 ```
+<img width="906" height="412" alt="image" src="https://github.com/user-attachments/assets/a7ed5b6b-5074-431b-99c7-b4c96b8d775b" />
+
 1. รูปผลการทดลอง
-2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
+2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร
+SELECT (JOIN + WHERE): ใช้เวลาโดยเฉลี่ยต่ำสุดในบรรดา operations เพราะเป็นการอ่านข้อมูลแบบคัดกรอง ส่วนที่ทำการ join และ where กับจำนวนแถวจำกัด (limit 10) ทำให้ประสิทธิภาพดี
+INSERT: ใช้เวลามากกว่า SELECT เพราะมีการเพิ่มข้อมูลใหม่ลงในตาราง orders และต้องอัพเดต index ด้วย
+UPDATE: ใช้เวลามากกว่ากลุ่มอื่น ๆ เล็กน้อย เพราะต้องอ่านข้อมูลขึ้นมาแก้ไขและเขียนกลับ รวมถึงต้องรักษาความถูกต้องของ index และ constraints
+DELETE (soft delete): ทำโดย update คอลัมน์ deleted_at แทนการลบจริง ทำให้ใช้เวลาใกล้เคียงกับ update
 ```
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
 SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
 ```
+<img width="916" height="413" alt="image" src="https://github.com/user-attachments/assets/8ca6109f-a67c-4cd8-a3bf-ed3e071010e9" />
+
 รูปผลการทดลอง
 ```
 
@@ -1192,6 +1247,7 @@ SELECT * FROM run_benchmark_suite();
 ```
 รูปผลการทดลอง
 ```
+<img width="828" height="241" alt="image" src="https://github.com/user-attachments/assets/12a4affd-c3b6-4626-a106-55c6ccb4fcfc" />
 
 -- ดูผลการทดสอบ
 SELECT 
@@ -1475,6 +1531,8 @@ SELECT auto_tune_memory();
 ### ผลการทดลอง
 ```
 รูปผลการทดลอง
+<img width="799" height="191" alt="image" src="https://github.com/user-attachments/assets/4299174e-eb45-4d11-ad55-80620c574530" />
+
 ```
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
@@ -1491,6 +1549,7 @@ ORDER BY hit_ratio;
 ```
 รูปผลการทดลอง
 ```
+<img width="963" height="420" alt="image" src="https://github.com/user-attachments/assets/a0502afd-8293-4f4c-a1b5-222430e15d35" />
 
 ### การคำนวณ Memory Requirements
 
@@ -1522,9 +1581,42 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 ## คำถามท้ายการทดลอง
 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
+shared_buffers คือหน่วยความจำหลักที่ PostgreSQL ใช้เป็น shared memory สำหรับ cache data blocks ที่อ่านจากดิสก์
+ระดับการตั้งค่าแนะนำคือ 15%-40% ของ RAM ทั้งหมด (เช่น RAM 16GB ตั้ง shared_buffers ประมาณ 4GB)
+ต้องรีสตาร์ทเซิร์ฟเวอร์หลังเปลี่ยนค่า
+ค่าอื่นที่เกี่ยวข้องกับ shared memory เช่น max_connections ต้องตั้งให้อยู่ในขอบเขตที่ OS รองรับ
+
 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+work_mem คือหน่วยความจำที่ PostgreSQL จัดสรรให้แต่ละ operation ภายใน query เช่น การ sort, hash join ก่อนใช้ disk temporary file ถ้าไม่พอ
+maintenance_work_mem คือหน่วยความจำที่ใช้กับงานบำรุงรักษาอย่าง vacuum, create index, alter table
+ค่าที่แนะนำคือ
+work_mem ควรตั้งให้อยู่ในระดับที่เหมาะสมกับจำนวน connection สูงสุด เพื่อไม่ให้เกิดการใช้หน่วยความจำเกินระบบ
+maintenance_work_mem มักตั้งสูงกว่า work_mem เพราะงานเหล่านี้ใช้เวลานานและต้องประสิทธิภาพสูง
+
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+สมมติแบ่ง RAM 25% ให้ shared_buffers = 4GB
+เหลือ 12GB สำหรับ work_mem และอื่น ๆ
+คำนวณ work_mem = (16GB × 0.25) / 200 = 0.02GB = 20MB (โดยประมาณ)
+maintenance_work_mem ควรตั้งสูงกว่า เช่น 256MB หรือมากกว่า ขึ้นกับ workload
+
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
+postgresql.conf คือไฟล์หลักสำหรับตั้งค่าฐานข้อมูล ที่ผู้ดูแลสามารถแก้ไขได้
+postgresql.auto.conf คือไฟล์ที่ระบบ PostgreSQL ใช้เก็บค่าที่ถูกตั้งผ่านคำสั่ง ALTER SYSTEM อัตโนมัติ ไม่ควรแก้โดยตรง
+เมื่อตั้งค่าผ่าน ALTER SYSTEM ค่าจะถูกบันทึกใน postgresql.auto.conf และจะถูกโหลดรวมกับ postgresql.conf
+ช่วยแยกการตั้งค่าที่เปลี่ยนผ่านคำสั่งกับไฟล์ตั้งค่าหลัก
+
 5. Buffer hit ratio คืออะไร
+เป็นอัตราการอ่านข้อมูลจาก shared buffer cache เทียบกับการอ่านข้อมูลทั้งหมดจากดิสก์และ cache รวม
+ค่า hit ratio สูง หมายถึงฐานข้อมูลใช้แคชได้ดี ลดการอ่านดิสก์บ่อย ช่วยเพิ่มประสิทธิภาพ
+คำนวณจากค่า pg_stat หรือ pg_statio
+
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+<img width="928" height="312" alt="image" src="https://github.com/user-attachments/assets/e10cb837-612d-4b79-866d-6b80c564872f" />
+
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+Sequential Scan (Seq Scan): อ่านข้อมูลทีละแถวจากดิสก์ หรือไฟล์ข้อมูลเต็มตาราง เหมาะกับตารางเล็กหรือต้องการอ่านข้อมูลทั้งหมด
+Index Scan: ใช้ index เพื่อค้นหาแถวที่ต้องการโดยตรง ลดจำนวนข้อมูลที่อ่าน เหมาะกับเงื่อนไขการคิวรีที่ตรงกับ index
+Index Only Scan: เช่น Index Scan แต่ข้อมูลทั้งหมดจะถูกเก็บใน index ไม่ต้องอ่านข้อมูลหลัก ช่วยเพิ่มความเร็ว
+Bitmap Index Scan: สร้าง bitmap แสดงตำแหน่งข้อมูลที่ต้องอ่าน จากนั้น อ่านข้อมูลเหมาะกับ query ที่คืนข้อมูลจำนวนมาก
+Tid Scan: อ่านข้อมูลโดยใช้ tuple id ตรง ๆ จาก index เหมาะกับบางกรณีพิเศษ
+Parallel Scan: การแบ่งงานสแกนข้อมูลตารางให้หลาย process ช่วยเพิ่มความเร็วในเครื่อง multi-core
