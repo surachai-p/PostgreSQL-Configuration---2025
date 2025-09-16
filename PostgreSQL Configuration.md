@@ -1468,11 +1468,11 @@ $$ LANGUAGE plpgsql;
 
 -- ใช้งาน auto-tuning
 SELECT auto_tune_memory();
-```
+
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+<img width="680" height="154" alt="image" src="https://github.com/user-attachments/assets/41fe3b17-4ac9-47df-8f18-7aeffec8e8d7" />
+
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
 SELECT 
@@ -1485,9 +1485,8 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY hit_ratio;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+<img width="817" height="344" alt="image" src="https://github.com/user-attachments/assets/43c50bca-b1d0-4e62-aba4-4e0caffb421f" />
 
 ### การคำนวณ Memory Requirements
 
@@ -1519,9 +1518,25 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 ## คำถามท้ายการทดลอง
 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
+ตอบ หน่วยความจำที่เป็น shared memory เช่น shared_buffers, wal_buffers, temp_buffers ใช้เก็บข้อมูลและ index blocks ที่หลาย process เข้าถึงร่วมกันเพื่อลดการอ่านจากดิสก์บ่อย ๆ; การตั้งค่าควรพิจารณาขนาด RAM ของเครื่อง, จำนวน connections, และลักษณะ workload เพื่อให้ประสิทธิภาพสูงสุดโดยไม่เกิด memory exhaustion
+
 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+ตอบ work_mem คือหน่วยความจำที่ PostgreSQL จัดสรรให้แต่ละ operation ของ query เช่น sort, hash join หรือ aggregation เพื่อทำงานในหน่วยความจำโดยไม่ต้องใช้ disk, ส่วน maintenance_work_mem คือหน่วยความจำที่ใช้สำหรับงาน maintenance เช่น VACUUM, CREATE INDEX, ALTER TABLE เพื่อให้ operation เหล่านี้ทำงานเร็วขึ้น. การกำหนดค่า work_mem ควรพิจารณาจำนวน parallel operations ต่อ session และ complexity ของ query หากตั้งสูงเกินไปอาจทำให้ memory exhaustion, ส่วน maintenance_work_mem สามารถตั้งสูงกว่าเพราะใช้เพียงครั้งละ operation เดียว แต่ต้องไม่เกิน RAM ของระบบ
+
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+ตอบ สำหรับ RAM 16 GB และ 200 connections ควรตั้ง work_mem ประมาณ 20–25 MB ต่อ operation เพื่อหลีกเลี่ยง memory exhaustion ส่วน maintenance_work_mem ควรตั้งสูงกว่า 512 MB–1 GB เพื่อให้ VACUUM หรือ CREATE INDEX ทำงานได้รวดเร็วโดยไม่กระทบ session อื่น
+
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
+ตอบ ไฟล์ postgresql.conf เป็นไฟล์หลักสำหรับตั้งค่า PostgreSQL ทุกค่าเริ่มต้นจะอ่านจากไฟล์นี้ ขณะที่ postgresql.auto.conf จะถูกสร้างและแก้ไขโดยคำสั่ง ALTER SYSTEM เพื่อบันทึกการเปลี่ยนแปลงค่า runtime; เมื่อ server เริ่มทำงาน PostgreSQL จะโหลดค่าจาก postgresql.conf ก่อนแล้ว override ด้วยค่าที่อยู่ใน postgresql.auto.conf ทำให้การตั้งค่าอัตโนมัติไม่ไปแก้ไฟล์หลัก
+
 5. Buffer hit ratio คืออะไร
+ตอบ คือสัดส่วนของครั้งที่ PostgreSQL สามารถอ่านข้อมูลจาก shared_buffers (หน่วยความจำ cache) โดยไม่ต้องไปอ่านจากดิสก์ ซึ่งคำนวณเป็นเปอร์เซ็นต์จากจำนวน buffer hits ÷ (buffer hits + buffer reads); ค่าที่สูงใกล้ 100% หมายถึงระบบใช้ cache ได้มีประสิทธิภาพ ลด I/O บนดิสก์ ทำให้ query ทำงานเร็วขึ้น
+
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+ตอบ เครื่องผมมี RAM 16 GB และ 200 connections แนะนำตั้ง shared_buffers 4 GB เพื่อเก็บ cache, work_mem ประมาณ 20 MB ต่อ query operation และ maintenance_work_mem 512 MB–1 GB เพื่อให้ VACUUM หรือ CREATE INDEX ทำงานรวดเร็วโดยไม่กระทบ session อื่น
+
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+ตอบ มีการสแกนหลัก ๆ 3 แบบ คือ
+  1.Sequential Scan (Seq Scan) อ่านทุกแถวในตารางทีละแถว ใช้ดีสำหรับตารางเล็กหรือ query ที่ดึงข้อมูลส่วนใหญ่ แต่ใช้เวลาเพิ่มขึ้นตามขนาดตาราง
+  2.Index Scan ใช้ดัชนีเพื่อค้นหาข้อมูลเฉพาะแถวที่ตรงเงื่อนไข ลด I/O ลงมาก เหมาะกับ query ที่กรองแถวเพียงบางส่วน แต่สร้างดัชนีเพิ่ม overhead ในการเขียน
+  3.Bitmap Index Scan / Bitmap Heap Scan สร้าง bitmap ของแถวที่ตรงเงื่อนไขจากดัชนีแล้วไปอ่านจาก heap รวมหลายแถวพร้อมกัน เหมาะกับ query ที่กรองข้อมูลปานกลางถึงมาก ให้ประสิทธิภาพดีกว่า index scan เดี่ยวเมื่อเลือกหลายแถว
