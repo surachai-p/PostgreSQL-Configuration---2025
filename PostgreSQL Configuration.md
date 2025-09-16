@@ -466,12 +466,12 @@ LIMIT 100;
 
 1. รูปผลการรัน
 <img width="1695" height="740" alt="image" src="https://github.com/user-attachments/assets/c473d718-230e-41bd-a720-82d8191f16e4" />
-3. อธิบายผลลัพธ์ที่ได้
+2. อธิบายผลลัพธ์ที่ได้
 =Query ใช้ Index Only Scan บนคอลัมน์ number → ทำงานเร็วมาก เพราะไม่ต้องอ่านตารางจริง
 ใช้ GroupAggregate เพื่อรวมกลุ่มและกรองเฉพาะกลุ่มที่มีมากกว่า 1 แถว
 Query ใช้เวลารวม ไม่ถึง 1 ms → ประสิทธิภาพดีมาก
 การมี Index (idx_large_table_number) ช่วยทำให้ PostgreSQL ทำงานเร็วขึ้นอย่างชัดเจน
-5. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
 = Index Only Scan มีการใช้ Index ครอบคลุม (Covering Index):
 คอลัมน์ที่ใช้ใน query (เช่น number) อยู่ใน index idx_large_table_number
 PostgreSQL ตรวจสอบ visibility map แล้วว่า index เพียงพอ
@@ -491,9 +491,14 @@ DELETE FROM large_table WHERE id % 10 = 0;
 VACUUM (ANALYZE, VERBOSE) large_table;
 ```
 ### ผลการทดลอง
-```
+``
 1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
+<img width="1683" height="714" alt="image" src="https://github.com/user-attachments/assets/2153c6df-69fc-4d9f-ac9e-5fb902348f76" />
 2. อธิบายผลลัพธ์ที่ได้
+= PostgreSQL ทำการ Vacuum และ Analyze ตาราง large_table โดยได้ทำการสแกนทั้งตารางจำนวน 10,117 หน้า (pages) และพบว่ามีข้อมูลที่ไม่จำเป็น (dead tuples) จำนวน 100,000 แถว ซึ่งถูกลบออกเรียบร้อยแล้ว หลังจาก Vacuum เสร็จแล้ว ตารางคงเหลือแถวข้อมูลที่ใช้งานอยู่ (live rows) จำนวน 900,000 แถว และไม่มีแถวที่ตาย (dead rows) เหลืออยู่เลย
+สำหรับดัชนี (Indexes) ทั้งหมด เช่น idx_large_table_number, idx_large_table_created_at, และ idx_large_table_data ไม่มีการลบข้อมูลใด ๆ เพิ่มเติม เพราะไม่มีรายการที่ถูกลบหรือสามารถนำกลับมาใช้ใหม่ได้ใน index เหล่านี้
+ระบบมีการอ่านข้อมูลด้วยความเร็วเฉลี่ยประมาณ 262 MB/s และเขียนข้อมูลที่ความเร็วเฉลี่ยประมาณ 378 MB/s โดยมีการใช้งาน buffer อย่างมีประสิทธิภาพ รวมถึงมีการบันทึกข้อมูลลงใน Write-Ahead Log (WAL) เพื่อความปลอดภัยของข้อมูล
+PostgreSQL ยังได้ทำการ Analyze ตารางโดยการสุ่มข้อมูล 30,000 แถวจากทั้งหมด เพื่อนำมาประเมินและอัปเดตสถิติของตาราง ซึ่งจะช่วยให้ระบบสามารถวางแผนการทำงานของคำสั่ง SQL ได้มีประสิทธิภาพมากขึ้น
 ```
 ### Step 6: การติดตาม Memory Usage
 
@@ -538,6 +543,7 @@ FROM get_memory_usage();
 ```
 รูปผลการทดลอง
 ```
+<img width="1162" height="731" alt="image" src="https://github.com/user-attachments/assets/41d42c5b-14d8-401c-a6bb-d4b235a89ed8" />
 
 #### 6.2 การติดตาม Buffer Hit Ratio
 ```sql
@@ -556,9 +562,13 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY heap_blks_read + heap_blks_hit DESC;
 ```
 ### ผลการทดลอง
-```
+``
 1. รูปผลการทดลอง
+<img width="1097" height="462" alt="image" src="https://github.com/user-attachments/assets/b542cbc8-1ab7-433e-9b4d-a6f0cf4e5875" />
+
 2. อธิบายผลลัพธ์ที่ได้
+= อัตราส่วน buffer hit ratio = 99.35% ถือว่าสูงมาก และ เกินค่ามาตรฐานที่แนะนำ (> 95%)
+แสดงว่า PostgreSQL สามารถอ่านข้อมูลจาก หน่วยความจำ (RAM) ได้เกือบทั้งหมด ซึ่งดีกว่าการอ่านจาก disk มาก เพราะเร็วและประหยัดทรัพยากร
 ```
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
@@ -570,9 +580,14 @@ FROM pg_stat_database
 WHERE datname = current_database();
 ```
 ### ผลการทดลอง
-```
+``
 1. รูปผลการทดลอง
+<img width="1112" height="297" alt="image" src="https://github.com/user-attachments/assets/54639428-efc3-4680-95ce-5d5ea86a1580" />
 2. อธิบายผลลัพธ์ที่ได้
+=blks_read: จำนวน block ที่ PostgreSQL ต้องไปอ่านจากดิสก์ (disk I/O)
+blks_hit: จำนวน block ที่ PostgreSQL หาเจอในหน่วยความจำ (shared buffer)
+hit_ratio_percent: อัตราส่วนของการอ่านจากหน่วยความจำเทียบกับทั้งหมด (RAM vs Disk)
+
 ```
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
@@ -591,9 +606,15 @@ ORDER BY heap_blks_read DESC
 LIMIT 10;
 ```
 ### ผลการทดลอง
-```
+``
 1. รูปผลการทดลอง
+<img width="1423" height="421" alt="image" src="https://github.com/user-attachments/assets/10ee8f39-865e-46fc-845d-5632a91db5fa" />
+
 2. อธิบายผลลัพธ์ที่ได้
+= ตาราง large_table มีการเข้าถึงข้อมูลรวมกว่า 1.24 ล้านครั้ง
+แต่มีเพียง 80,445 ครั้ง (ประมาณ 6.5%) ที่ PostgreSQL ต้องอ่านจากดิสก์
+ที่เหลือกว่า 99.35% อ่านได้จาก memory (RAM) ทำให้ query ทำงานเร็ว
+ตารางนี้มีขนาดไม่ใหญ่มาก (167 MB) และยังสามารถถูก cache ไว้ใน memory ได้อย่างดี
 ```
 ### Step 7: การปรับแต่ง Autovacuum
 
