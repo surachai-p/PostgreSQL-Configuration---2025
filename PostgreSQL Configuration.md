@@ -1293,6 +1293,8 @@ SELECT * FROM run_benchmark_suite();
 ```
 รูปผลการทดลอง
 ```
+<img width="832" height="222" alt="image" src="https://github.com/user-attachments/assets/cb5069ae-3dca-4aa9-8526-ab5fb5461194" />
+
 
 -- ดูผลการทดสอบ
 SELECT 
