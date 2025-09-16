@@ -269,7 +269,6 @@ WHERE name = 'shared_buffers';
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
 ```
-### 1.รูปผลการรันคำสั่ง
 <img width="687" height="190" alt="image" src="https://github.com/user-attachments/assets/2e772513-95eb-4f7f-a4a2-3f2c86d8f5dc" />
 
 ```
