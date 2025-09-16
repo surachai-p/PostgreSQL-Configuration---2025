@@ -193,6 +193,18 @@ docker exec postgres-config df -h
 2. option -h ในคำสั่งมีผลอย่างไร
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
 ```
+```
+คำตอบ
+1. free ใช้ตรวจสอบ การใช้ RAM ในระบบ Linux ว่าใช้ RAM ประมาณเท่าไร ส่วน df  ใช้ตรวจสอบการใช้ Disk space ของ filesystem ใน container
+2. -h จะทำให้อ่านง่าย เพราะจะแปลงค่าที่แสดงให้อยู่ในหน่วย KB, MB, GB แทนตัวเลขยาวๆ
+```
+<img width="903" height="101" alt="image" src="https://github.com/user-attachments/assets/0a8014ac-0ee3-421a-bc53-ec459606dace" />
+
+<img width="898" height="48" alt="image" src="https://github.com/user-attachments/assets/f1d465d5-ec99-4e3b-aac3-2cd45eee29e7" />
+
+<img width="915" height="248" alt="image" src="https://github.com/user-attachments/assets/b447be61-f851-4fbc-b407-d45264701428" />
+
+
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
 docker exec -it postgres-config psql -U postgres
@@ -206,11 +218,21 @@ SELECT version();
 SHOW config_file;
 SHOW hba_file;
 SHOW data_directory;
+```
 
 ### บันทึกผลการทดลอง
+
+<img width="1227" height="378" alt="image" src="https://github.com/user-attachments/assets/1efc16cf-9312-42ad-abdb-82556aafcd20" />
+
+<img width="1231" height="434" alt="image" src="https://github.com/user-attachments/assets/bc2700fb-39e6-41ed-abb3-176da0f92a7b" />
+
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+ตอบ /var/lib/postgresql/data/postgresql.conf
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+ตอบ /var/lib/postgresql/data
+```
+
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -224,6 +246,9 @@ WHERE name IN (
 ```
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
 ```
+<img width="1316" height="519" alt="image" src="https://github.com/user-attachments/assets/d4fbc905-c04a-4a51-a9f7-3e96155b5a55" />
+
+
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
@@ -237,8 +262,17 @@ WHERE name = 'shared_buffers';
 ### ผลการทดลอง
 ```
 1.รูปผลการรันคำสั่ง
+
+<img width="884" height="332" alt="image" src="https://github.com/user-attachments/assets/ae5155f5-0661-4d35-a4b7-8de57e5b7be7" />
+
+```
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+ตอบ 16384 × 8kB = 131072 kB = 128 MB
+
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+ตอบ มีค่า f = false ไม่มีการเปลี่ยนค่าใหม่ค้างอยู่
+
+```
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
@@ -251,15 +285,18 @@ FROM pg_settings
 WHERE name = 'shared_buffers';
 
 ```
+```
 -- ออกจาก postgres prompt (กด \q แล้ว enter) ทำการ Restart PostgreSQL ด้วยคำสั่ง แล้ว run docker อีกครั้ง หรือใช้วิธีการ stop และ run containner
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
-
+```
 ### ผลการทดลอง
 ```
 รูปผลการเปลี่ยนแปลงค่า pending_restart
 รูปหลังจาก restart postgres
-
 ```
+<img width="933" height="176" alt="image" src="https://github.com/user-attachments/assets/20748ee4-c971-488f-970c-2e419bfad37a" />
+
+<img width="845" height="136" alt="image" src="https://github.com/user-attachments/assets/5c37307b-624b-42e7-b1ea-4562f91f3e06" />
 
 #### 2.2 ปรับแต่ง Work Memory (ไม่ต้อง restart)
 ```sql
@@ -284,6 +321,12 @@ WHERE name = 'work_mem';
 รูปผลการเปลี่ยนแปลงค่า work_mem
 ```
 
+<img width="930" height="141" alt="image" src="https://github.com/user-attachments/assets/19b814af-2323-4ff0-b0a3-94092aa472f3" />
+
+<img width="877" height="324" alt="image" src="https://github.com/user-attachments/assets/5c5a75de-956b-4021-9d2a-94436df19244" />
+
+<img width="929" height="186" alt="image" src="https://github.com/user-attachments/assets/13819af4-ff38-45a3-98e2-1045f1b122d0" />
+
 #### 3.3 ปรับแต่ง Maintenance Work Memory
 ```sql
 -- ตรวจสอบค่าปัจจุบัน
@@ -300,6 +343,11 @@ SHOW maintenance_work_mem;
 ```
 รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
 ```
+
+<img width="930" height="144" alt="image" src="https://github.com/user-attachments/assets/64057040-38a1-4274-878c-27c5d8b59137" />
+
+<img width="882" height="487" alt="image" src="https://github.com/user-attachments/assets/df14aeaa-1ee3-44c9-b089-9650a932605b" />
+
 
 #### 3.4 ปรับแต่ง WAL Buffers
 ```sql
@@ -326,6 +374,11 @@ SHOW wal_buffers;
 รูปผลการเปลี่ยนแปลงค่า wal_buffers
 ```
 
+<img width="878" height="392" alt="image" src="https://github.com/user-attachments/assets/617ca1e9-b2d9-4a1b-9402-301ca467e693" />
+
+<img width="760" height="187" alt="image" src="https://github.com/user-attachments/assets/4d23d28c-2ca1-4692-9e6e-1ebe8ccdfe10" />
+
+
 #### 3.5 ปรับแต่ง Effective Cache Size
 ```sql
 -- ตรวจสอบค่าปัจจุบัน
@@ -342,6 +395,11 @@ SHOW effective_cache_size;
 ```
 รูปผลการเปลี่ยนแปลงค่า effective_cache_size
 ```
+
+<img width="929" height="134" alt="image" src="https://github.com/user-attachments/assets/683108a4-70f5-4170-9458-b7177c067093" />
+
+<img width="877" height="330" alt="image" src="https://github.com/user-attachments/assets/daf48abb-bdb5-4125-8cdb-788da8ffdbed" />
+
 
 ### Step 4: ตรวจสอบผล
 
@@ -372,6 +430,9 @@ ORDER BY name;
 รูปผลการลัพธ์การตั้งค่า
 ```
 
+<img width="1317" height="492" alt="image" src="https://github.com/user-attachments/assets/fbfcb0a6-c3e2-46f7-a6b9-e6141cc54615" />
+
+
 ### Step 5: การสร้างและทดสอบ Workload
 
 #### 5.1 สร้างฐานข้อมูลทดสอบ
@@ -396,6 +457,11 @@ CREATE INDEX idx_large_table_number ON large_table(number);
 CREATE INDEX idx_large_table_created_at ON large_table(created_at);
 ```
 
+<img width="1314" height="365" alt="image" src="https://github.com/user-attachments/assets/cb3601f3-fd1f-441f-9551-c9547e51e6e7" />
+
+<img width="1317" height="173" alt="image" src="https://github.com/user-attachments/assets/72881923-458b-4776-89a3-8e508874e7b2" />
+
+
 #### 5.2 การทดสอบ Work Memory
 ```sql
 -- แทรกข้อมูลจำนวนมาก (ทดสอบ work_mem)
@@ -417,6 +483,30 @@ LIMIT 1000;
 2. รูปผลการรัน
 3. อธิบายผลลัพธ์ที่ได้
 ```
+
+```
+คำตอบ 
+1. EXPLAIN ใช้ดู PostgreSQL เวลารัน query ว่าจะใช้วิธีไหน
+  ANALYZE = รันจริงและบอกเวลาที่ใช้จริง
+  BUFFERS = บอกว่าข้อมูลถูกอ่านจาก แคช หรือ ดิสก์
+
+3. อธิบายผลลัพธ์ที่ได้
+  PostgreSQL ใช้วิธี Sequential Scan = อ่านตารางทั้งก้อน เพื่อหาข้อมูล
+  ในรูปจะมี 2 อย่าง
+    1.ประมาณการ (estimate)
+    2.ค่าจริง (actual) 
+  Buffers
+    hit = ข้อมูลอยู่ในหน่วยความจำ → เร็ว
+    read = ต้องไปอ่านจากดิสก์ → ช้ากว่า
+  Planning Time = เวลาที่ใช้คิดแผน
+  Execution Time = เวลาที่ใช้รันจริง
+```
+
+<img width="1311" height="505" alt="image" src="https://github.com/user-attachments/assets/a1455667-1467-4fe6-a3bf-69cf9d5c1a4a" />
+
+<img width="1368" height="173" alt="image" src="https://github.com/user-attachments/assets/fcc13f0c-51d4-443b-b252-e79304ac8712" />
+
+
 ```sql
 -- ทดสอบ Hash operation
 EXPLAIN (ANALYZE, BUFFERS)
@@ -428,11 +518,20 @@ LIMIT 100;
 ```
 
 ### ผลการทดลอง
-```
+
 1. รูปผลการรัน
-2. อธิบายผลลัพธ์ที่ได้ 
-3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+
+<img width="1371" height="505" alt="image" src="https://github.com/user-attachments/assets/4cbbf452-ccd1-44cc-9efb-cd94cc12ce28" />
+
 ```
+2. อธิบายผลลัพธ์ที่ได้
+  GroupAggregate (จัดกลุ่มข้อมูลด้วย number และกรอง count(*) > 1) จากนั้นนำผลลัพธ์มา Limit 100 แถว โดยใช้ Index Only Scan ผ่าน idx_large_table_number บนตาราง large_table ทำให้ไม่ต้องอ่านข้อมูลทั้งตาราง ใช้เวลา รันจริงเพียง ~1.083 ms เพราะข้อมูลถูกดึงจาก หน่วยความจำ (cache) ไม่ต้องไปอ่านจากดิสก์
+3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+  เป็นการสแกนแบบ Index Only Scan เพราะตารางมี index อยู่แล้ว ดึงข้อมูลจาก index ได้เลย ไม่ต้องอ่านทั้งตาราง ซึ่งค่าที่ต้องใช้ (number) มีอยู่ใน index ครบ ทำให้ไม่ต้องไปเปิดอ่านข้อมูลจริงในตาราง
+ข้อมูลอยู่ใน cache จะรันได้เร็วขึ้น
+
+```
+
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
 -- ทดสอบ CREATE INDEX (จะใช้ maintenance_work_mem)
@@ -449,8 +548,46 @@ VACUUM (ANALYZE, VERBOSE) large_table;
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
-2. อธิบายผลลัพธ์ที่ได้
 ```
+```
+performance_test=# VACUUM (ANALYZE, VERBOSE) large_table;
+INFO:  vacuuming "performance_test.public.large_table"
+INFO:  launched 2 parallel vacuum workers for index vacuuming (planned: 2)
+INFO:  finished vacuuming "performance_test.public.large_table": index scans: 1
+pages: 0 removed, 5059 remain, 5059 scanned (100.00% of total)
+tuples: 50000 removed, 450000 remain, 0 are dead but not yet removable
+removable cutoff: 761, which was 0 XIDs old when operation ended
+frozen: 0 pages from table (0.00% of total) had 0 tuples frozen
+index scan needed: 5059 pages from table (100.00% of total) had 50000 dead item identifiers removed
+index "large_table_pkey": pages: 1374 in total, 0 newly deleted, 0 currently deleted, 0 reusable
+index "idx_large_table_number": pages: 1736 in total, 0 newly deleted, 0 currently deleted, 0 reusable
+index "idx_large_table_created_at": pages: 396 in total, 0 newly deleted, 0 currently deleted, 0 reusable
+index "idx_large_table_data": pages: 3477 in total, 0 newly deleted, 0 currently deleted, 0 reusable
+avg read rate: 0.000 MB/s, avg write rate: 678.739 MB/s
+system usage: CPU: user: 0.06 s, system: 0.00 s, elapsed: 0.07 s
+INFO:  vacuuming "performance_test.pg_toast.pg_toast_16391"
+INFO:  finished vacuuming "performance_test.pg_toast.pg_toast_16391": index scans: 0
+pages: 0 removed, 0 remain, 0 scanned (100.00% of total)
+tuples: 0 removed, 0 remain, 0 are dead but not yet removable
+removable cutoff: 761, which was 0 XIDs old when operation ended
+new relfrozenxid: 761, which is 9 XIDs ahead of previous value
+frozen: 0 pages from table (100.00% of total) had 0 tuples frozen
+index scan not needed: 0 pages from table (100.00% of total) had 0 dead item identifiers removed
+avg read rate: 12.362 MB/s, avg write rate: 12.362 MB/s
+buffer usage: 21 hits, 1 misses, 1 dirtied
+WAL usage: 1 records, 0 full page images, 188 bytes
+system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+INFO:  analyzing "public.large_table"
+INFO:  "large_table": scanned 5059 of 5059 pages, containing 450000 live rows and 0 dead rows; 30000 rows in sample, 450000 estimated total rows
+VACUUM
+Time: 237.253 ms
+```
+```
+2. อธิบายผลลัพธ์ที่ได้
+  การสั่ง VACUUM (ANALYZE, VERBOSE) บนตาราง large_table จะช่วยลบแถวที่ไม่ใช้แล้ว 50,000 แถว ทำให้เหลือเฉพาะ 450,000 แถวที่ใช้งานอยู่ index ได้รับการอัปเดต แต่ไม่มีการลบเพจใหม่
+ตารางจะถูก ANALYZE เพื่ออัปเดตสถิติให้ Query Plannerกระบวนการทั้งหมดใช้เวลาน้อย (~0.2 วินาที) และทำงานเสร็จสมบูรณ์
+```
+
 ### Step 6: การติดตาม Memory Usage
 
 #### 6.1 สร้างฟังก์ชันติดตาม Memory
@@ -495,6 +632,9 @@ FROM get_memory_usage();
 รูปผลการทดลอง
 ```
 
+<img width="1317" height="511" alt="image" src="https://github.com/user-attachments/assets/d0f18775-1d4b-4bdd-9557-a069e1a607e9" />
+
+
 #### 6.2 การติดตาม Buffer Hit Ratio
 ```sql
 -- ตรวจสอบ buffer hit ratio (ควรอยู่เหนือ 95%)
@@ -514,8 +654,19 @@ ORDER BY heap_blks_read + heap_blks_hit DESC;
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
-2. อธิบายผลลัพธ์ที่ได้
 ```
+
+<img width="1317" height="469" alt="image" src="https://github.com/user-attachments/assets/df3cbfbb-cb86-4cc0-ad7e-d150eb49b1a8" />
+
+```
+2. อธิบายผลลัพธ์ที่ได้
+    ตาราง large_table ใน schema public
+    ค่าที่ได้จาก pg_statio_user_tables
+      heap_blks_read = 0  ไม่มีการอ่านข้อมูลจากดิสก์
+      heap_blks_hit = 625898  มีการอ่านข้อมูล จากหน่วยความจำ (shared buffers / cache) ทั้งหมด 625,898 ครั้ง
+      hit_ratio_percent = 100.00%  ทุกครั้งที่มีการเข้าถึงข้อมูล ใช้ข้อมูลจาก cache ทั้งหมด ซึ่งใช้เวลาเพียง 2.273 ms
+```
+
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
 SELECT datname,
@@ -524,12 +675,22 @@ SELECT datname,
        ROUND((blks_hit::decimal / (blks_read + blks_hit)) * 100, 2) as hit_ratio_percent
 FROM pg_stat_database 
 WHERE datname = current_database();
+
 ```
 ### ผลการทดลอง
 ```
-1. รูปผลการทดลอง
 2. อธิบายผลลัพธ์ที่ได้
 ```
+
+<img width="1356" height="315" alt="image" src="https://github.com/user-attachments/assets/ace8b218-4494-4a84-ba26-2bc72a44066b" />
+
+```
+2. อธิบายผลลัพธ์ที่ได้
+    blks_read = 3481  มีการอ่านข้อมูลจาก ดิสก์จริง 3,481 ครั้ง
+    blks_hit = 4,061,768  มีการอ่านข้อมูลจาก หน่วยความจำ (cache) 4,061,768 ครั้ง
+    hit_ratio_percent = 99.91%  แสดงว่า แทบทั้งหมดของการเข้าถึงข้อมูลถูกดึงจาก cache มีเพียงส่วนน้อยมากที่ต้องอ่านจากดิสก์ จะใช้เวลาเพียง 3.293 ms
+```
+
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
 ```sql
