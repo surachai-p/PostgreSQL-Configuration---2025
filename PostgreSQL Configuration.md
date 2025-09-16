@@ -458,7 +458,6 @@ Planning / Execution Time
 Planning time = 0.373 ms (วางแผน query เร็วมาก)
 Execution time = 109.830 ms
 รวมเวลาทั้งหมด ~115.864 ms
-```
 ```sql
 -- ทดสอบ Hash operation
 EXPLAIN (ANALYZE, BUFFERS)
@@ -501,7 +500,6 @@ Execution Time
 คำสั่ง GROUP BY number และ HAVING ใช้ข้อมูลที่อยู่ใน index ได้โดยตรง → ไม่ต้องอ่านตารางเต็ม (heap)
 Query เลยดึงข้อมูลเฉพาะจาก index → เร็วกว่า Seq Scan หรือ Index Scan ปกติ
 
-```
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
 -- ทดสอบ CREATE INDEX (จะใช้ maintenance_work_mem)
@@ -516,10 +514,16 @@ DELETE FROM large_table WHERE id % 10 = 0;
 VACUUM (ANALYZE, VERBOSE) large_table;
 ```
 ### ผลการทดลอง
-```
-1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
+
+1. <img width="1311" height="727" alt="image" src="https://github.com/user-attachments/assets/c0f63c14-59e1-4789-827f-c435ab2de664" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+Vacuum ทำความสะอาด dead tuples (ลบ 50,000 แถวที่ไม่ใช้งานแล้ว)
+Index ถูกตรวจสอบและอัปเดตให้ sync กับตาราง
+ไม่มี dead rows เหลือหลังจาก vacuum → ตารางสะอาด
+Analyze ช่วยอัปเดตสถิติ ทำให้ query optimizer วางแผนได้แม่นยำขึ้น
+ใช้เวลาทั้งหมดน้อยกว่า 0.5 วินาที แสดงว่าตารางยังมีขนาดไม่ใหญ่มาก
+
 ### Step 6: การติดตาม Memory Usage
 
 #### 6.1 สร้างฟังก์ชันติดตาม Memory
