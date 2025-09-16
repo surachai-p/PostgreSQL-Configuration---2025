@@ -584,10 +584,13 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY heap_blks_read + heap_blks_hit DESC;
 ```
 ### ผลการทดลอง
-```
-1. รูปผลการทดลอง
+<img width="804" height="398" alt="image" src="https://github.com/user-attachments/assets/2ecbfd4c-fcd4-46cc-95f1-14680e3e0ff4" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+Query แสดงว่า table large_table มีการอ่านข้อมูลจาก cache 100%
+แสดงถึง performance ดีมาก เพราะการอ่านจาก memory เร็วกว่าการอ่านจาก disk อย่างมาก
+สะท้อนว่าการตั้งค่า shared_buffers และการใช้งาน cache มีประสิทธิภาพในระบบนี้
+
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
 SELECT datname,
