@@ -641,10 +641,18 @@ WHERE name LIKE '%autovacuum%'
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
-1. รูปผลการทดลอง
+
+<img width="1364" height="552" alt="image" src="https://github.com/user-attachments/assets/b236df46-b21b-4fe6-9fbe-871d0d3f9b48" />
+
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
-```
+name: ชื่อพารามิเตอร์ของ autovacuum เช่น autovacuum_naptime หรือ autovacuum_max_workers
+
+setting: ค่าปัจจุบันของพารามิเตอร์นั้นๆ ซึ่งเป็นค่าที่ระบบใช้อยู่
+
+unit: หน่วยของค่าในคอลัมน์ setting เช่น s (วินาที) หรือ ms (มิลลิวินาที) ซึ่งช่วยให้เข้าใจความหมายของตัวเลขได้ง่ายขึ้น
+
+short_desc: คำอธิบายสั้นๆ เกี่ยวกับหน้าที่ของพารามิเตอร์แต่ละตัว ช่วยให้เข้าใจว่าแต่ละค่ามีผลต่อการทำงานของ autovacuum อย่างไร
+
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
 ```sql
