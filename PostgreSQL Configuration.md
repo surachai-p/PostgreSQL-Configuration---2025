@@ -370,6 +370,10 @@ SHOW wal_buffers;
 ```
 รูปผลการเปลี่ยนแปลงค่า wal_buffers
 ```
+<img width="514" height="377" alt="image" src="https://github.com/user-attachments/assets/3059db1d-9755-4758-b6b2-e813d54184f6" />
+<img width="338" height="147" alt="image" src="https://github.com/user-attachments/assets/604329cf-33ab-426d-9b19-3ecd0f8178c4" />
+
+
 
 #### 3.5 ปรับแต่ง Effective Cache Size
 ```sql
