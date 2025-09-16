@@ -627,9 +627,15 @@ WHERE name LIKE '%autovacuum%'
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
+``
 1. รูปผลการทดลอง
+<img width="1728" height="736" alt="image" src="https://github.com/user-attachments/assets/dc293b4f-ab47-4474-8bee-18f134547258" />
+
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
+= ระบบถูกตั้งค่าให้ ทำงานอย่างปลอดภัย เพื่อป้องกัน wraparound (ค่าต่าง ๆ เช่น freeze_max_age และ multixact_freeze_max_age สูง)
+Autovacuum ถูกตั้งให้เกิดขึ้นเมื่อ มีการเปลี่ยนแปลงข้อมูล 20% ขึ้นไป (ทั้ง update/delete และ insert)
+มีการกำหนดจำนวน worker = 3 เพื่อไม่ให้ระบบ autovacuum หนักเกินไป
+การทำงานของ autovacuum 
 ```
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
@@ -660,6 +666,8 @@ SELECT pg_reload_conf();
 ```
 รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
 ```
+<img width="701" height="750" alt="image" src="https://github.com/user-attachments/assets/d1af5541-0146-45aa-b6c9-3d9067b9619d" />
+<img width="479" height="579" alt="image" src="https://github.com/user-attachments/assets/944f1861-2fef-4b39-9e83-2428e00a318a" />
 
 ### Step 8: Performance Testing และ Benchmarking
 
@@ -732,8 +740,10 @@ FROM performance_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
+``
 1. รูปผลการทดลอง
+ <img width="1031" height="739" alt="image" src="https://github.com/user-attachments/assets/a1da4843-81bc-447e-b44a-dd7cc6fbda06" />
+
 2. อธิบายผลลัพธ์ที่ได้
 ```
 
