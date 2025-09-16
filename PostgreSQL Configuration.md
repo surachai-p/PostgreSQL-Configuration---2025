@@ -595,10 +595,17 @@ ORDER BY heap_blks_read DESC
 LIMIT 10;
 ```
 ### ผลการทดลอง
-```
 1. รูปผลการทดลอง
+<img width="1262" height="74" alt="image" src="https://github.com/user-attachments/assets/f30d0c37-3ca4-4902-bad8-680f6db6d3b1" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+- ตารางผลลัพธ์ว่างเปล่า → แสดงว่าไม่มีตารางใด ๆ ในฐานข้อมูลที่ตรงตามเงื่อนไขของ query ที่รัน
+- สาเหตุอาจเกิดได้จาก:
+  - ไม่มีตารางใน schema ที่ถูกเลือก
+  - ตารางมีอยู่ แต่ยัง ไม่เคยถูก access เลย → ไม่มีสถิติ cache (heap_blks_read / heap_blks_hit) ให้แสดง
+  - ฟังก์ชันหรือ SQL ที่ใช้กรอง (WHERE เงื่อนไข) อาจจำกัดจนไม่ตรงกับข้อมูลจริง
+- สรุปสั้น ๆ: ผลลัพธ์ (0 rows) หมายถึง ยังไม่มีข้อมูลการเข้าถึงตาราง (หรือไม่มีตารางที่ตรงเงื่อนไข) จึงไม่มีตัวเลข hit ratio ให้แสดงครับ.
+
 ### Step 7: การปรับแต่ง Autovacuum
 
 #### 7.1 ทำความเข้าใจ Autovacuum Parameters
@@ -611,16 +618,20 @@ ORDER BY name;
 ```
 ### ผลการทดลอง
 1. รูปผลการทดลอง
-<img width="1262" height="74" alt="image" src="https://github.com/user-attachments/assets/f30d0c37-3ca4-4902-bad8-680f6db6d3b1" />
+<img width="1817" height="420" alt="image" src="https://github.com/user-attachments/assets/999bbfdd-42d3-486f-9829-fdab7edaff3e" />
 
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
-- schemaname → ชื่อ schema ที่ตารางสังกัด เช่น public
-- tablename → ชื่อตารางที่ตรวจสอบการเข้าถึงข้อมูล
-- heap_blks_read → จำนวนบล็อกข้อมูล (table blocks) ที่ต้องอ่านจาก ดิสก์ โดยตรง
-- heap_blks_hit → จำนวนบล็อกที่อ่านจาก หน่วยความจำ (shared buffer / cache)
-- total_access → ผลรวมของ heap_blks_read + heap_blks_hit = การเข้าถึงข้อมูลทั้งหมด
-- hit_ratio_percent → อัตราส่วน (%) ว่ามีการอ่านจากหน่วยความจำมากแค่ไหน
-- table_size → ขนาดของตาราง (อาจจะแสดงเป็น bytes/MB/GB) ใช้เพื่อประเมินว่าตารางใหญ่แค่ไหนเมื่อเทียบกับหน่วยความจำ
+- autovacuum → เปิด/ปิดการทำงานของ autovacuum (ตอนนี้ = on)
+- autovacuum_max_workers → จำนวน worker สูงสุดที่ทำงาน vacuum พร้อมกันได้ (ค่า = 3)
+- autovacuum_naptime → ระยะเวลาพักระหว่างรอบการ vacuum (ค่า = 45 วินาที)
+- autovacuum_vacuum_scale_factor → สัดส่วนแถวที่ถูกแก้ไข/ลบ ที่จะกระตุ้นให้ vacuum เริ่มทำงาน (ค่า = 0.15 = 15%)
+- autovacuum_vacuum_threshold → จำนวนขั้นต่ำของแถวที่ถูกแก้ไข/ลบ ที่จะกระตุ้น vacuum (ค่า = 50)
+- autovacuum_analyze_scale_factor → สัดส่วนแถวเปลี่ยนแปลงที่จะกระตุ้น analyze (ค่า = 0.05 = 5%)
+- autovacuum_analyze_threshold → จำนวนขั้นต่ำของแถวที่เปลี่ยนแปลงเพื่อกระตุ้น analyze (ค่า = 50)
+- autovacuum_freeze_max_age → ค่าจำกัดสูงสุดของ transaction ID ก่อนที่จะบังคับ freeze (ค่า = 200,000,000) เพื่อป้องกัน wraparound
+- autovacuum_multixact_freeze_max_age → คล้ายกัน แต่สำหรับ MultiXact (ค่า = 400,000,000)
+- autovacuum_work_mem → หน่วยความจำสูงสุดที่ autovacuum ใช้ต่อ process (ค่า = 524,288 kB ≈ 512 MB)
+- log_autovacuum_min_duration → ถ้า autovacuum ใช้เวลานานกว่าค่านี้ จะถูกเขียนลง log (ค่า = 600,000 ms = 10 นาที)
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
 ```sql
@@ -647,9 +658,7 @@ ALTER SYSTEM SET autovacuum_work_mem = '512MB';
 SELECT pg_reload_conf();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
-```
+<img width="207" height="99" alt="image" src="https://github.com/user-attachments/assets/db25057f-70ba-4471-9c88-c824e4f131d5" />
 
 ### Step 8: Performance Testing และ Benchmarking
 
