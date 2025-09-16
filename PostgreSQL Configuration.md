@@ -188,11 +188,23 @@ docker exec postgres-config nproc
 docker exec postgres-config df -h
 ```
 ### บันทึกผลการทดลอง
-```
+
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+- docker exec postgres-config free
+  docker exec ใช้รันคำสั่ง ภายใน container ที่กำลังทำงานอยู่ 
+  postgres-config ชื่อ container ที่เราต้องการเข้าไปรันคำสั่ง 
+  free คำสั่งของ Linux ใช้ดู สถานะของ memory (RAM) และ swap ภายใน container
+- docker exec postgres-config df
+  df  คำสั่ง Linux ใช้ตรวจสอบ disk usage (พื้นที่เก็บข้อมูล)
+
 2. option -h ในคำสั่งมีผลอย่างไร
+ย่อมาจาก "human-readable" จะแสดงเป็นหน่วย KB, MB, GB แทนที่จะเป็นจำนวน byte
+
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
-```
+
+<img width="431" height="51" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 13 54 02" src="https://github.com/user-attachments/assets/e47d752c-f5aa-4fc1-9352-8975bc08840e" />
+
+
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
 docker exec -it postgres-config psql -U postgres
@@ -206,11 +218,16 @@ SELECT version();
 SHOW config_file;
 SHOW hba_file;
 SHOW data_directory;
+```
 
 ### บันทึกผลการทดลอง
-```
+
+<img width="375" height="277" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 01 53" src="https://github.com/user-attachments/assets/6ddc8aa9-30ba-4951-86d6-2973549278c0" />
+
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+    /var/lib/postgresql/data/postgresql.conf
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+    /var/lib/postgresql/data
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -221,9 +238,9 @@ WHERE name IN (
 );
 ```
 ### บันทึกผลการทดลอง
-```
-บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
-```
+
+<img width="1147" height="216" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 03 18" src="https://github.com/user-attachments/assets/77574123-b804-4e61-a6c6-8207c299699e" />
+
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
@@ -235,11 +252,20 @@ FROM pg_settings
 WHERE name = 'shared_buffers';
 
 ### ผลการทดลอง
-```
+
+
 1.รูปผลการรันคำสั่ง
+
+<img width="540" height="144" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 04 53" src="https://github.com/user-attachments/assets/26656f33-038e-4890-a465-27454e902a46" />
+
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+   มีการกำหนดค่าไว้ 131072
+
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
-```
+   pending_restart คือ ตัวบ่งบอกว่า parameter ของ PostgreSQL ต้อง restart server ถึงจะมีผลหรือไม่
+      on → ต้อง restart server เพื่อให้ค่ามีผล
+      off → ไม่ต้อง restart server ค่าใหม่มีผลทันที
+
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
 ALTER SYSTEM SET shared_buffers = '512MB';
@@ -255,11 +281,11 @@ WHERE name = 'shared_buffers';
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
 
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า pending_restart
-รูปหลังจาก restart postgres
 
-```
+<img width="265" height="75" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 13 48" src="https://github.com/user-attachments/assets/9038fcf1-796b-49b9-be23-57db89758800" />
+
+<img width="527" height="343" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 12 16" src="https://github.com/user-attachments/assets/ed91445b-890b-4d41-b95c-168b28344a85" />
+
 
 #### 2.2 ปรับแต่ง Work Memory (ไม่ต้อง restart)
 ```sql
