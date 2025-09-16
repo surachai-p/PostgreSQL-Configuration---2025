@@ -550,10 +550,15 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY heap_blks_read + heap_blks_hit DESC;
 ```
 ### ผลการทดลอง
-```
 1. รูปผลการทดลอง
+<img width="949" height="96" alt="image" src="https://github.com/user-attachments/assets/69310da0-ae1e-418a-9ed6-596d5fef2ab7" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+- heap_blks_read = 0 → ไม่มีการอ่านบล็อกข้อมูลจากดิสก์เลย
+- heap_blks_hit = 620,839 → การเข้าถึงข้อมูลทั้งหมด (~620k ครั้ง) ถูกดึงมาจาก shared buffers (หน่วยความจำ)
+- hit_ratio_percent = 100.00% → อัตราการ hit อยู่ที่ 100% หมายถึง ทุกครั้งที่อ่านข้อมูลมาจากหน่วยความจำ ไม่ต้องไปอ่านจากดิสก์
+<br>สรุปสั้น ๆ: ตาราง large_table ถูก cache อยู่ในหน่วยความจำทั้งหมด ทำให้การเข้าถึงข้อมูลรวดเร็วที่สุด โดยไม่ต้องอ่านจากดิสก์
+
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
 SELECT datname,
