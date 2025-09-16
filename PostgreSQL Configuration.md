@@ -753,12 +753,12 @@ FROM performance_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
+
 <img width="779" height="438" alt="image" src="https://github.com/user-attachments/assets/22c2162f-5283-4bdc-9198-c2b7b59421a7" />
 
 2. อธิบายผลลัพธ์ที่ได้
 ไม่เจอตาราง
-```
+
 
 
 ### Step 9: การ Monitoring และ Alerting
@@ -792,9 +792,8 @@ FROM pg_settings WHERE name = 'maintenance_work_mem';
 SELECT * FROM memory_monitor;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="674" height="197" alt="image" src="https://github.com/user-attachments/assets/c0a4bfe6-c617-45c0-a182-a04787f187ce" />
+
 
 ### Step 10: การจำลอง Load Testing
 
