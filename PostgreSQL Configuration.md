@@ -742,9 +742,14 @@ ORDER BY test_timestamp DESC;
 ### ผลการทดลอง
 ``
 1. รูปผลการทดลอง
- <img width="1031" height="739" alt="image" src="https://github.com/user-attachments/assets/a1da4843-81bc-447e-b44a-dd7cc6fbda06" />
+<img width="1470" height="702" alt="image" src="https://github.com/user-attachments/assets/599fba80-159a-4103-93eb-61d1e3880c7a" />
+
 
 2. อธิบายผลลัพธ์ที่ได้
+= ระบบได้ทำการทดสอบ 2 แบบ คือ large_sort และ aggregation โดยใช้ configuration 'optimized'
+ผลคือ large_sort ทำงานได้รวดเร็วมาก ในขณะที่ aggregation ใช้เวลานานกว่า
+ตาราง performance_results เก็บข้อมูลเวลาที่ใช้ในแต่ละ test
+การใช้ WINDOW FUNCTION (เช่น AVG(...) OVER (...)) ทำให้สามารถวิเคราะห์ข้อมูลหลายรอบของ test เดียวกันได้สะดวก
 ```
 
 
