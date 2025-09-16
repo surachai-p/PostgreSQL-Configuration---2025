@@ -768,9 +768,8 @@ FROM pg_settings WHERE name = 'maintenance_work_mem';
 SELECT * FROM memory_monitor;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="895" height="137" alt="image" src="https://github.com/user-attachments/assets/21af9c3e-cd3d-47f0-b6dc-df1cdc4a5e0f" />
+
 
 ### Step 10: การจำลอง Load Testing
 
