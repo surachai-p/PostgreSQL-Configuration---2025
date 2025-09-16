@@ -806,6 +806,9 @@ ORDER BY test_timestamp DESC;
 2. อธิบายผลลัพธ์ที่ได้
 ```
 
+<img width="791" height="245" alt="image" src="https://github.com/user-attachments/assets/9dd7b925-4377-4ffb-928c-6bf281daa46f" />
+<img width="640" height="296" alt="image" src="https://github.com/user-attachments/assets/aa92640f-3532-46c0-82fa-9a8a57ff2d57" />
+
 
 ### Step 9: การ Monitoring และ Alerting
 
