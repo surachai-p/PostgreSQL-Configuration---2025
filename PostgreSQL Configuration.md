@@ -188,11 +188,16 @@ docker exec postgres-config nproc
 docker exec postgres-config df -h
 ```
 ### บันทึกผลการทดลอง
-```
-1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+
+<img width="905" height="394" alt="Screenshot 2025-09-16 141903" src="https://github.com/user-attachments/assets/a717d2c0-1601-4a53-a34c-fae43763d5bf" />
+
+'''
 2. option -h ในคำสั่งมีผลอย่างไร
-3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
-```
+ตอบ แสดงขนาดเป็นหน่วยที่อ่านง่าย KB/MB/GB/TB แทนตัวเลขเป็นบล็อกหรือไบต์ยาว ๆ 
+''' 
+
+<img width="614" height="42" alt="image" src="https://github.com/user-attachments/assets/9157484e-599b-4441-bd41-a22f0e876147" />
+
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
 docker exec -it postgres-config psql -U postgres
@@ -206,11 +211,17 @@ SELECT version();
 SHOW config_file;
 SHOW hba_file;
 SHOW data_directory;
+'''
+ บันทึกผลการทดลอง
+<img width="1137" height="179" alt="Screenshot 2025-09-16 143432" src="https://github.com/user-attachments/assets/dfd338bb-55c4-4ada-a381-2989d40302f3" />
 
-### บันทึกผลการทดลอง
-```
+<img width="515" height="452" alt="image" src="https://github.com/user-attachments/assets/205c49f7-b572-432d-9aca-453e9afe4837" />
+
+
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+postgresql.conf → /var/lib/postgresql/data/postgresql.conf
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+data_directory → /var/lib/postgresql/data
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -221,9 +232,8 @@ WHERE name IN (
 );
 ```
 ### บันทึกผลการทดลอง
-```
-บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
-```
+<img width="1197" height="444" alt="image" src="https://github.com/user-attachments/assets/7f4e6531-b188-448d-8291-f0620b83eda7" />
+
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
@@ -233,12 +243,21 @@ WHERE name IN (
 SELECT name, setting, unit, source, pending_restart
 FROM pg_settings 
 WHERE name = 'shared_buffers';
+'''
+ผลการทดลอง
+<img width="859" height="227" alt="image" src="https://github.com/user-attachments/assets/a3789aaa-a0c7-4db9-b746-cf1e242dfcb2" />
 
-### ผลการทดลอง
-```
 1.รูปผลการรันคำสั่ง
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+ค่า shared_buffers
+setting = 16384
+unit = 8kB
+คำนวณ = 16384 × 8kB = 131072 kB ≈ 128 MB
+ค่า shared_buffers ตอนนี้ = 128 MB
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+ค่า pending_restart
+จากผลลัพธ์ = f (false)
+ความหมาย: ไม่ต้อง restart PostgreSQL หลังแก้ไขค่า → ค่าปัจจุบันถูกนำไปใช้แล้วเรียบร้อย
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
@@ -255,11 +274,15 @@ WHERE name = 'shared_buffers';
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
 
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า pending_restart
-รูปหลังจาก restart postgres
 
-```
+รูปผลการเปลี่ยนแปลงค่า pending_restart
+<img width="784" height="398" alt="Screenshot 2025-09-16 145456" src="https://github.com/user-attachments/assets/d7fbd00c-dee9-45f5-bbb1-87366db4219a" />
+
+รูปหลังจาก restart postgres
+<img width="752" height="224" alt="image" src="https://github.com/user-attachments/assets/8aff5ffc-c9f3-40f2-aa8d-30d5a0399646" />
+
+
+
 
 #### 2.2 ปรับแต่ง Work Memory (ไม่ต้อง restart)
 ```sql
@@ -280,9 +303,8 @@ FROM pg_settings
 WHERE name = 'work_mem';
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า work_mem
-```
+<img width="609" height="326" alt="image" src="https://github.com/user-attachments/assets/61979df9-86cc-4a3b-96b3-48c85ce13dbe" />
+
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
 ```sql
@@ -297,9 +319,8 @@ SELECT pg_reload_conf();
 SHOW maintenance_work_mem;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
-```
+<img width="684" height="438" alt="image" src="https://github.com/user-attachments/assets/9bf78d07-5b33-44b3-9557-218fad32e799" />
+
 
 #### 3.4 ปรับแต่ง WAL Buffers
 ```sql
@@ -322,9 +343,8 @@ docker exec -it postgres-config psql -U postgres
 SHOW wal_buffers;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า wal_buffers
-```
+<img width="391" height="173" alt="image" src="https://github.com/user-attachments/assets/48e48951-491a-4b8b-9a12-75b7d2d5fa1d" />
+
 
 #### 3.5 ปรับแต่ง Effective Cache Size
 ```sql
@@ -339,9 +359,8 @@ SELECT pg_reload_conf();
 SHOW effective_cache_size;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า effective_cache_size
-```
+<img width="623" height="478" alt="image" src="https://github.com/user-attachments/assets/34f84041-a760-46e5-a567-41d31f51fb79" />
+
 
 ### Step 4: ตรวจสอบผล
 
@@ -368,9 +387,8 @@ WHERE name IN (
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
-รูปผลการลัพธ์การตั้งค่า
-```
+<img width="903" height="382" alt="image" src="https://github.com/user-attachments/assets/2220387a-d870-4551-9347-40e6ada27d99" />
+
 
 ### Step 5: การสร้างและทดสอบ Workload
 
@@ -413,10 +431,18 @@ LIMIT 1000;
 ```
 ### ผลการทดลอง
 ```
-1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
-2. รูปผลการรัน
-3. อธิบายผลลัพธ์ที่ได้
+1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร
+ใช้ดูว่า PostgreSQL จะ วางแผน (query plan) ทำงานอย่างไร
+ANALYZE → PostgreSQL จะ รัน query จริง (ไม่ใช่แค่แผนการ) แล้วเก็บ เวลาจริง (actual time), จำนวนแถวจริงที่อ่าน และการวน loop จริง
+ANALYZE เพื่อแสดงสถิติ การใช้ buffer / memory
 ```
+2. รูปผลการรัน
+   <img width="944" height="635" alt="Screenshot 2025-09-16 154531" src="https://github.com/user-attachments/assets/dc48aec2-db90-4bb4-bb5e-ce762ac7d78e" />
+
+4. อธิบายผลลัพธ์ที่ได้
+   Query ทำงานเร็วเพราะ PostgreSQL ใช้ parallel scan + top-N heapsort + cache ใน RAM ค่า execution time เพียง 314 ms สำหรับข้อมูลระดับ 400k แถว ถือว่ามีประสิทธิภาพดีมาก หากต้องการเร็วขึ้นอีก อาจเพิ่ม parallel workers หรือสร้าง index บนคอลัมน์ data เพื่อหลีกเลี่ยง full scan + sort ครับ
+
+
 ```sql
 -- ทดสอบ Hash operation
 EXPLAIN (ANALYZE, BUFFERS)
@@ -428,10 +454,17 @@ LIMIT 100;
 ```
 
 ### ผลการทดลอง
-```
+
 1. รูปผลการรัน
-2. อธิบายผลลัพธ์ที่ได้ 
+   <img width="941" height="525" alt="image" src="https://github.com/user-attachments/assets/56306784-a9d8-42b2-8f23-45304246b17c" />
+
+'''
+2. อธิบายผลลัพธ์ที่ได้
+Query ใช้ Index Only Scan ผ่าน idx_large_table_number เพราะต้องการเฉพาะคอลัมน์ที่ index มีอยู่แล้ว
 3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+การทำงาน: scan index → group aggregate → filter count > 1 → limit 100
+
+Execution time เพียง ~0.58 ms แสดงว่า index ช่วยให้ query เร็วมาก
 ```
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
@@ -447,9 +480,21 @@ DELETE FROM large_table WHERE id % 10 = 0;
 VACUUM (ANALYZE, VERBOSE) large_table;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
+<img width="894" height="742" alt="image" src="https://github.com/user-attachments/assets/2536232c-3f53-400e-99d9-ed49c1c5cbe9" />
+```
 2. อธิบายผลลัพธ์ที่ได้
+Vacuum ทำการเก็บกวาด dead tuples 50,000 แถวที่ถูกลบออกไป → เหลือ 450,000 แถวในตาราง
+
+ตารางมี 5059 pages, ไม่มีการลบ page ออก แต่มีการทำความสะอาด index ทุกตัว
+
+ใช้ buffer cache เป็นหลัก (0 misses) → ทำงานเร็ว
+
+เขียน WAL log ~22MB
+
+Vacuum ช่วยลด bloat, ทำให้ query plan และสถิติ (ANALYZE) แม่นยำขึ้น, index ทำงานมีประสิทธิภาพมากขึ้น
+
 ```
 ### Step 6: การติดตาม Memory Usage
 
@@ -491,9 +536,8 @@ SELECT
 FROM get_memory_usage();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="864" height="396" alt="image" src="https://github.com/user-attachments/assets/e18108e4-c17c-4afe-b79c-8d2defbfa2c0" />
+
 
 #### 6.2 การติดตาม Buffer Hit Ratio
 ```sql
