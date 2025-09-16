@@ -1061,8 +1061,9 @@ SELECT * FROM simulate_oltp_workload(500);
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
 
 #### 11.1 การทดสอบแบบ Before/After
-```sql
+
 -- สร้างตารางเก็บผลการทดสอบ (ถ้ายังไม่มี)
+```sql
 CREATE TABLE IF NOT EXISTS benchmark_results (
     test_id SERIAL PRIMARY KEY,
     config_name VARCHAR(50),
