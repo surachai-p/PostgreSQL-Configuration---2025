@@ -190,8 +190,13 @@ docker exec postgres-config df -h
 ### บันทึกผลการทดลอง
 ```
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+    docker exec postgres-config free คือ การเช็คหน่วยความจำ ของ container
+    docker exec postgres-config df คือการตรวจสอบพื้นที่ดิสก์
 2. option -h ในคำสั่งมีผลอย่างไร
+    แปลงให้คนอ่านง่ายขึ้น แปลงหน่วยการแสดงผล
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
+    แสดงจำนวน CPU cores ที่ container สามารถใช้งานได้
+    
 ```
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
@@ -209,8 +214,11 @@ SHOW data_directory;
 
 ### บันทึกผลการทดลอง
 ```
+![alt text](<Img/Screenshot 2568-09-16 at 09.26.48.png>)
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+    /var/lib/postgresql/data/postgresql.conf
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+    /var/lib/postgresql/data
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -224,6 +232,7 @@ WHERE name IN (
 ```
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
 ```
+![alt text](<Img/Screenshot 2568-09-16 at 09.28.40.png>)
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
@@ -237,8 +246,11 @@ WHERE name = 'shared_buffers';
 ### ผลการทดลอง
 ```
 1.รูปผลการรันคำสั่ง
+![alt text](<Img/Screenshot 2568-09-16 at 09.29.29.png>)
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+    128MB
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+    false ไม่ต้อง restart PostgreSQL เพื่อให้การตั้งค่าใหม่มีผล
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
@@ -255,11 +267,11 @@ WHERE name = 'shared_buffers';
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
 
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า pending_restart
-รูปหลังจาก restart postgres
 
-```
+รูปผลการเปลี่ยนแปลงค่า pending_restart
+![alt text](<Img/Screenshot 2568-09-16 at 09.34.24.png>)
+รูปหลังจาก restart postgres
+![alt text](<Img/Screenshot 2568-09-16 at 09.35.41.png>)
 
 #### 2.2 ปรับแต่ง Work Memory (ไม่ต้อง restart)
 ```sql
@@ -280,9 +292,9 @@ FROM pg_settings
 WHERE name = 'work_mem';
 ```
 ### ผลการทดลอง
-```
 รูปผลการเปลี่ยนแปลงค่า work_mem
-```
+![alt text](<Img/Screenshot 2568-09-16 at 09.37.11.png>)
+
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
 ```sql
@@ -297,9 +309,9 @@ SELECT pg_reload_conf();
 SHOW maintenance_work_mem;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
-```
+![alt text](<Img/Screenshot 2568-09-16 at 09.38.00.png>)
 
 #### 3.4 ปรับแต่ง WAL Buffers
 ```sql
@@ -322,9 +334,9 @@ docker exec -it postgres-config psql -U postgres
 SHOW wal_buffers;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการเปลี่ยนแปลงค่า wal_buffers
-```
+![alt text](<Img/Screenshot 2568-09-16 at 09.40.08.png>)
 
 #### 3.5 ปรับแต่ง Effective Cache Size
 ```sql
@@ -339,9 +351,10 @@ SELECT pg_reload_conf();
 SHOW effective_cache_size;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการเปลี่ยนแปลงค่า effective_cache_size
-```
+![alt text](<Img/Screenshot 2568-09-16 at 09.42.11.png>)
+
 
 ### Step 4: ตรวจสอบผล
 
@@ -368,9 +381,10 @@ WHERE name IN (
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการลัพธ์การตั้งค่า
-```
+![alt text](<Img/Screenshot 2568-09-16 at 09.43.38.png>)
+
 
 ### Step 5: การสร้างและทดสอบ Workload
 
@@ -412,11 +426,17 @@ ORDER BY data
 LIMIT 1000;
 ```
 ### ผลการทดลอง
-```
+
 1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
+    คำสั่งที่ใช้สำหรับการวิเคราะห์การ Query แสดง รัน query จริง และวัดเวลาการประมวลผล แสดงข้อมูลการใช้ buffer
 2. รูปผลการรัน
+![alt text](<Img/Screenshot 2568-09-16 at 09.44.57.png>)
 3. อธิบายผลลัพธ์ที่ได้
-```
+Buffer Hit Ratio = 5133 shared hits 
+Parallel Processing = 2 workers
+Memory Efficient only 242kb
+Fast Execution 3.3 sec.
+
 ```sql
 -- ทดสอบ Hash operation
 EXPLAIN (ANALYZE, BUFFERS)
@@ -428,11 +448,16 @@ LIMIT 100;
 ```
 
 ### ผลการทดลอง
-```
+
 1. รูปผลการรัน
+![alt text](<Img/Screenshot 2568-09-16 at 09.48.47.png>)
 2. อธิบายผลลัพธ์ที่ได้ 
+Total Buffer Reads: 6 blocks
+Execution Time: 0.902 ms
+Planning Time: 9.616 ms
+เร็ว ไม่ต้องเข้าถึงตารางจริง Buffer Hit Ratio สูง ใช้หน่วยความจำน้อย
 3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
-```
+Index Only Scan มี index บน column number
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
 -- ทดสอบ CREATE INDEX (จะใช้ maintenance_work_mem)
@@ -447,10 +472,15 @@ DELETE FROM large_table WHERE id % 10 = 0;
 VACUUM (ANALYZE, VERBOSE) large_table;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
+![alt text](<Img/Screenshot 2568-09-16 at 09.52.22.png>)
 2. อธิบายผลลัพธ์ที่ได้
-```
+ลบ dead tuples 50,000 tuples 
+Parallel processin ใช้ 2 workers
+อัปเดต statistics
+100% hit ratio
+
 ### Step 6: การติดตาม Memory Usage
 
 #### 6.1 สร้างฟังก์ชันติดตาม Memory
@@ -491,9 +521,9 @@ SELECT
 FROM get_memory_usage();
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง
-```
+![alt text](<Img/Screenshot 2568-09-16 at 09.54.25.png>)
 
 #### 6.2 การติดตาม Buffer Hit Ratio
 ```sql
@@ -512,10 +542,13 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY heap_blks_read + heap_blks_hit DESC;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+![alt text](<Img/Screenshot 2568-09-16 at 09.54.54.png>)
 2. อธิบายผลลัพธ์ที่ได้
-```
+Buffer Hit Ratio 100% 
+Shared Buffers เพียงพอ
+Configuration เหมาะสม
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
 SELECT datname,
@@ -526,10 +559,12 @@ FROM pg_stat_database
 WHERE datname = current_database();
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+![alt text](<Img/Screenshot 2568-09-16 at 10.03.11.png>)
 2. อธิบายผลลัพธ์ที่ได้
-```
+Buffer Hit Ratio 99.91% 
+Shared Buffers เพียงพอ
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
 ```sql
@@ -547,10 +582,11 @@ ORDER BY heap_blks_read DESC
 LIMIT 10;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+![alt text](<Img/Screenshot 2568-09-16 at 10.05.44.png>)
 2. อธิบายผลลัพธ์ที่ได้
-```
+ไม่มีตารางที่มี Disk I/O มาก (0)
 ### Step 7: การปรับแต่ง Autovacuum
 
 #### 7.1 ทำความเข้าใจ Autovacuum Parameters
@@ -562,10 +598,17 @@ WHERE name LIKE '%autovacuum%'
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+![alt text](<Img/Screenshot 2568-09-16 at 10.06.29.png>)
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
-```
+autovacuum = on
+autovacuum_max_workers = 3
+autovacuum_naptime = 60s
+autovacuum_vacuum_threshold = 50
+autovacuum_vacuum_scale_factor = 0.2
+autovacuum_analyze_threshold = 50
+autovacuum_analyze_scale_factor = 0.1
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
 ```sql
@@ -592,9 +635,9 @@ ALTER SYSTEM SET autovacuum_work_mem = '512MB';
 SELECT pg_reload_conf();
 ```
 ### ผลการทดลอง
-```
 รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
-```
+![alt text](<Img/Screenshot 2568-09-16 at 10.10.56.png>)
+
 
 ### Step 8: Performance Testing และ Benchmarking
 
@@ -667,11 +710,12 @@ FROM performance_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
-1. รูปผลการทดลอง
-2. อธิบายผลลัพธ์ที่ได้
-```
 
+1. รูปผลการทดลอง
+![alt text](<Img/Screenshot 2568-09-16 at 10.15.02.png>)
+2. อธิบายผลลัพธ์ที่ได้
+large_sort 8ms สำหรับ 10,000 แถว
+aggregation 199ms สำหรับ 450,000 แถว
 
 ### Step 9: การ Monitoring และ Alerting
 
@@ -753,9 +797,9 @@ CREATE INDEX idx_orders_product_id ON load_test_orders(product_id);
 CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
-```
+![alt text](<Img/Screenshot 2568-09-16 at 10.16.25.png>)
 
 #### 10.2 การทดสอบ Query Performance
 ```sql
@@ -932,13 +976,19 @@ SELECT * FROM simulate_oltp_workload(25);
 ### ผลการทดลอง
 ```
 รูปผลการทดลอง
+![alt text](<Img/Screenshot 2568-09-16 at 10.19.17.png>)
 ```
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
+![alt text](<Img/Screenshot 2568-09-16 at 10.19.30.png>)
 2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
+ELECT ใช้เวลา 0.056ms เร็วมาก เพราะ JOIN + WHERE + LIMIT 10 ข้อมูลอยู่ใน memory
+INSERT ใช้เวลา 0.044ms เร็วที่สุด เพราะแค่ INSERT ข้อมูลสุ่ม
+UPDATE ใช้เวลา 0.585ms ช้าที่สุด เพราะต้อง ORDER BY random() หาแถวที่จะอัปเดต
+DELETE ใช้เวลา 0.461ms ปานกลาง เพราะ soft delete อัปเดต deleted_at แทนการลบจริง
 ```
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
@@ -946,7 +996,8 @@ SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
 ```
 รูปผลการทดลอง
-```
+![alt text](<Img/Screenshot 2568-09-16 at 10.26.57.png>)
+
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
 
@@ -1139,10 +1190,10 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM run_benchmark_suite();
 ```
 ### ผลการทดลอง
-```
 รูปผลการทดลอง
-```
+![alt text](<Img/Screenshot 2568-09-16 at 10.28.40.png>)
 
+```
 -- ดูผลการทดสอบ
 SELECT 
     config_name,
@@ -1156,9 +1207,10 @@ FROM benchmark_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง
-```
+![alt text](<Img/Screenshot 2568-09-16 at 10.30.34.png>)
+
 
 ### Step 12: การจัดการ Configuration แบบ Advanced
 
@@ -1425,7 +1477,8 @@ SELECT auto_tune_memory();
 ### ผลการทดลอง
 ```
 รูปผลการทดลอง
-```
+![alt text](<Img/Screenshot 2568-09-16 at 10.33.54.png>)
+
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
 SELECT 
@@ -1438,9 +1491,9 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY hit_ratio;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง
-```
+![alt text](<Img/Screenshot 2568-09-16 at 10.34.26.png>)
 
 ### การคำนวณ Memory Requirements
 
@@ -1471,10 +1524,64 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 
 ## คำถามท้ายการทดลอง
-1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
-2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
-3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
-4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
-5. Buffer hit ratio คืออะไร
-6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
-7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+
+### 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
+
+**Shared Memory Components**
+- **Shared Buffers** แคชหน้าข้อมูล ตั้งค่า 25% ของ RAM (ไม่เกิน 8GB)
+- **WAL Buffer** เก็บ WAL ก่อนเขียนดิสก์ ตั้งค่า 16-64MB
+- **CLog Buffer** เก็บสถานะธุรกรรม ปรับตัวอัตโนมัติ
+- **Vacuum Buffer** ใช้ในกระบวนการ vacuum
+
+### 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+
+**Work Memory** หน่วยความจำต่อ connection สำหรับ sort, hash, merge
+- **สูตร** `(RAM × 0.25) / max_connections`
+- **OLTP** 4-16MB, **OLAP** 256MB-1GB
+
+**Maintenance Work Memory** หน่วยความจำสำหรับงานบำรุงรักษา (VACUUM, CREATE INDEX)
+- **สูตร** `work_mem × 8` หรือ `RAM × 0.05-0.10`
+- **ควรมากกว่า work_mem 4-8 เท่า**
+
+### 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+
+**การคำนวณ**
+- **work_mem** `(16GB × 0.25) / 200 = 20MB`
+- **maintenance_work_mem** `20MB × 8 = 160MB` หรือ `16GB × 0.05 = 800MB`
+
+### 4. ไฟล์ postgresql.conf และ postgresql.auto.conf มีความสัมพันธ์กันอย่างไร
+
+- **postgresql.conf** ไฟล์หลักกำหนดค่าของเซิร์ฟเวอร์
+- **postgresql.auto.conf** เก็บการตั้งค่าจาก ALTER SYSTEM commands
+- **ความสัมพันธ์** postgresql.auto.conf override ค่าใน postgresql.conf
+
+### 5. Buffer hit ratio คืออะไร
+
+**Buffer Hit Ratio** เปอร์เซ็นต์ของการเข้าถึงข้อมูลที่มาจาก shared buffers
+- **การคำนวณ** `(heap_blks_hit / (heap_blks_hit + heap_blks_read)) × 100`
+- **เป้าหมาย** ควรอยู่เหนือ 95%
+- **ความหมาย** ยิ่งสูงยิ่งดี = ข้อมูลอยู่ใน memory มาก
+
+### 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+
+**จากเครื่อง 2GB RAM**
+- **shared_buffers** 128MB (ปัจจุบัน) → แนะนำ 512MB (25% ของ 2GB)
+- **work_mem** 20MB (ปัจจุบัน) → เหมาะสม
+- **maintenance_work_mem** 256MB (ปัจจุบัน) → เหมาะสม
+- **effective_cache_size** 1536MB (ปัจจุบัน) → เหมาะสม
+
+### 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+
+**3 แบบหลัก**
+
+**Sequential Scan** สแกนตารางทั้งหมดทีละแถว
+- **ความเร็ว** ช้า
+- **ใช้เมื่อ** ไม่มี index หรือ index ไม่เหมาะสม
+
+**Index Scan** ใช้ index หาแถวที่ต้องการ แล้วเข้าถึงตารางจริง
+- **ความเร็ว** เร็ว
+- **ใช้เมื่อ** มี index แต่ต้องเข้าถึงตารางจริง
+
+**Index Only Scan** อ่านข้อมูลจาก index โดยไม่ต้องเข้าถึงตารางจริง
+- **ความเร็ว** เร็วที่สุด
+- **ใช้เมื่อ** ข้อมูลใน index เพียงพอสำหรับ query
