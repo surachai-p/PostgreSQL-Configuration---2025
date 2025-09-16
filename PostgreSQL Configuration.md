@@ -223,12 +223,19 @@ SELECT version();
 SHOW config_file;
 SHOW hba_file;
 SHOW data_directory;
-
-
 ```
 ### บันทึกผลการทดลอง
+
+<img width="361" height="228" alt="image" src="https://github.com/user-attachments/assets/d4377b2e-8e13-4592-8b28-e54b98e0225e" />
+
+```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+   /var/lib/postgresql/data/pg_hba.conf
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+  /var/lib/postgresql/data
+PostgreSQL แยก config file และ data directory ไว้ใน path เดียวกัน เพื่อความสะดวก
+ และpathนี้เป็นมาตรฐานของ official Docker image และรองรับการ mount volume ได้ง่าย
+```
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
