@@ -604,6 +604,15 @@ ORDER BY heap_blks_read + heap_blks_hit DESC;
 1. รูปผลการทดลอง
 2. อธิบายผลลัพธ์ที่ได้
 ```
+
+<img width="930" height="470" alt="image" src="https://github.com/user-attachments/assets/ae1fdc24-3d66-4568-8526-9beaa35a67d2" />
+
+```
+2. อธิบายผลลัพธ์ที่ได้
+ตาราง large_table มี hit_ratio_percent 100% ทุกการอ่านข้อมูลมาจาก memory (cache) ไม่ต้องอ่านจาก disk  ทำให้ query ทำงานเร็วขึ้น
+```
+
+
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
 SELECT datname,
