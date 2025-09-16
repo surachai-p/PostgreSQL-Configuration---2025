@@ -324,6 +324,8 @@ WHERE name = 'work_mem';
 ```
 รูปผลการเปลี่ยนแปลงค่า work_mem
 ```
+<img width="466" height="215" alt="image" src="https://github.com/user-attachments/assets/96076df7-1ea6-48ae-9694-08eb3166cac5" />
+
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
 ```sql
