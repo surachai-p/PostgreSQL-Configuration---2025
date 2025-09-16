@@ -363,6 +363,9 @@ SHOW effective_cache_size;
 ```
 รูปผลการเปลี่ยนแปลงค่า effective_cache_size
 ```
+<img width="467" height="199" alt="image" src="https://github.com/user-attachments/assets/ee76c2c8-eb31-43db-8721-99ae24c23d8f" />
+<img width="762" height="233" alt="image" src="https://github.com/user-attachments/assets/e1c3e723-603e-4813-8a42-267c79f89eb3" />
+<img width="736" height="367" alt="image" src="https://github.com/user-attachments/assets/1e99b533-76f1-4dd9-9394-b2563603d4cc" />
 
 ### Step 4: ตรวจสอบผล
 
@@ -392,6 +395,7 @@ ORDER BY name;
 ```
 รูปผลการลัพธ์การตั้งค่า
 ```
+<img width="1506" height="458" alt="image" src="https://github.com/user-attachments/assets/b7f9bfda-ac39-4c48-bbbe-4e71e7798296" />
 
 ### Step 5: การสร้างและทดสอบ Workload
 
@@ -433,10 +437,20 @@ ORDER BY data
 LIMIT 1000;
 ```
 ### ผลการทดลอง
-```
-1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
+
+1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร
+= EXPLAIN ใช้เพื่อดูแผนการทำงาน (query execution plan) ของ PostgreSQL
+ANALYZE ให้ PostgreSQL รัน query จริง แล้วบอกเวลาจริง (actual time) + จำนวนแถวจริง (rows) ที่ประมวลผล
+BUFFERS แสดงการใช้งาน buffer I/O (จำนวน page ที่อ่านจาก disk หรือจาก shared buffer cache)
 2. รูปผลการรัน
+<img width="864" height="527" alt="image" src="https://github.com/user-attachments/assets/4444b766-d559-4568-b7b9-5183d7be8047" />
+<img width="886" height="406" alt="image" src="https://github.com/user-attachments/assets/7bed6c8e-611a-4c35-95c2-f334a1281993" />
 3. อธิบายผลลัพธ์ที่ได้
+= PostgreSQL อ่านตาราง large_table แบบ parallel scan โดยใช้ workers 2 ตัว
+ทำการ sort โดยใช้ top-N heapsort (ประหยัดกว่า full sort)
+ดึงข้อมูล 1000 แถวแรกออกมา
+Execution ใช้เวลา ~189 ms
+ส่วนใหญ่ข้อมูลอ่านจาก cache (shared hit) มีอ่านจาก disk เพียงเล็กน้อย (read=224)
 ```
 ```sql
 -- ทดสอบ Hash operation
@@ -449,10 +463,19 @@ LIMIT 100;
 ```
 
 ### ผลการทดลอง
-```
+
 1. รูปผลการรัน
-2. อธิบายผลลัพธ์ที่ได้ 
-3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+<img width="1695" height="740" alt="image" src="https://github.com/user-attachments/assets/c473d718-230e-41bd-a720-82d8191f16e4" />
+3. อธิบายผลลัพธ์ที่ได้
+=Query ใช้ Index Only Scan บนคอลัมน์ number → ทำงานเร็วมาก เพราะไม่ต้องอ่านตารางจริง
+ใช้ GroupAggregate เพื่อรวมกลุ่มและกรองเฉพาะกลุ่มที่มีมากกว่า 1 แถว
+Query ใช้เวลารวม ไม่ถึง 1 ms → ประสิทธิภาพดีมาก
+การมี Index (idx_large_table_number) ช่วยทำให้ PostgreSQL ทำงานเร็วขึ้นอย่างชัดเจน
+5. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+= Index Only Scan มีการใช้ Index ครอบคลุม (Covering Index):
+คอลัมน์ที่ใช้ใน query (เช่น number) อยู่ใน index idx_large_table_number
+PostgreSQL ตรวจสอบ visibility map แล้วว่า index เพียงพอ
+PostgreSQL จะเลือกใช้ Index Only Scan ก็ต่อเมื่อสามารถแน่ใจได้ว่า row นั้น "visible" โดยไม่ต้องอ่าน heap
 ```
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
