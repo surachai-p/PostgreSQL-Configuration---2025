@@ -632,6 +632,11 @@ WHERE datname = current_database();
 
 ```
 2. อธิบายผลลัพธ์ที่ได้
+Query: ตรวจสอบ Buffer Cache Hit Ratio ของทั้ง Database
+ผลลัพธ์
+blks_read = 3481  จำนวน block ที่อ่านจาก disk จริงๆ
+blks_hit = 4055482  จำนวน block ที่เจอใน cache (shared buffer)
+hit_ratio_percent = 99.91% ถูกอ่านจาก memory cache
 ```
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
