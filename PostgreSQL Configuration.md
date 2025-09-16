@@ -421,6 +421,8 @@ ORDER BY name;
 ```
 รูปผลการลัพธ์การตั้งค่า
 ```
+<img width="1313" height="509" alt="image" src="https://github.com/user-attachments/assets/e92d84bc-587d-46ff-a2e1-99e5e5ee2fdb" />
+
 
 ### Step 5: การสร้างและทดสอบ Workload
 
