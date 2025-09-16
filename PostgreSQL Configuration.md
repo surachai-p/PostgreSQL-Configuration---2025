@@ -475,6 +475,11 @@ LIMIT 1000;
 1.EXPLAIN ใช้เพื่อตรวจสอบ execution plan ของ query
   ANALYZE  บอกให้ PostgreSQL รัน query จริง และเก็บเวลา
   BUFFERS  บอกให้ PostgreSQL แสดงการใช้งาน buffer/memory
+3.อธิบายผลลัพธ์ที่ได้
+  -Parallel query  ใช้ 2 workers แบ่งงาน scan table  เร็วขึ้น
+  -Top-N heapsort  ประหยัด memory เพราะ LIMIT 1000
+  -ใช้ buffer เป็นหลัก  shared hit สูง  query ใช้ cache มาก ลด I/O จาก disk
+  -เวลา total = 242 ms  ค่อนข้างเร็วสำหรับ table ขนาดใหญ่
 ```
 
 ```sql
