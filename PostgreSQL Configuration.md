@@ -610,10 +610,17 @@ WHERE name LIKE '%autovacuum%'
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
 1. รูปผลการทดลอง
+<img width="1262" height="74" alt="image" src="https://github.com/user-attachments/assets/f30d0c37-3ca4-4902-bad8-680f6db6d3b1" />
+
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
-```
+- schemaname → ชื่อ schema ที่ตารางสังกัด เช่น public
+- tablename → ชื่อตารางที่ตรวจสอบการเข้าถึงข้อมูล
+- heap_blks_read → จำนวนบล็อกข้อมูล (table blocks) ที่ต้องอ่านจาก ดิสก์ โดยตรง
+- heap_blks_hit → จำนวนบล็อกที่อ่านจาก หน่วยความจำ (shared buffer / cache)
+- total_access → ผลรวมของ heap_blks_read + heap_blks_hit = การเข้าถึงข้อมูลทั้งหมด
+- hit_ratio_percent → อัตราส่วน (%) ว่ามีการอ่านจากหน่วยความจำมากแค่ไหน
+- table_size → ขนาดของตาราง (อาจจะแสดงเป็น bytes/MB/GB) ใช้เพื่อประเมินว่าตารางใหญ่แค่ไหนเมื่อเทียบกับหน่วยความจำ
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
 ```sql
