@@ -1014,24 +1014,32 @@ $$ LANGUAGE plpgsql;
 -- รัน load test ทดสอบเบาๆ
 SELECT * FROM simulate_oltp_workload(25);
 
-```
-### ผลการทดลอง
-```
+<img width="765" height="225" alt="image" src="https://github.com/user-attachments/assets/4f914a87-ea0d-43f0-aeb2-91cb65c9c372" />
+
 รูปผลการทดลอง
-```
+
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
-### ผลการทดลอง
-```
 1. รูปผลการทดลอง
-2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
+<img width="782" height="253" alt="image" src="https://github.com/user-attachments/assets/2e4998e3-c79b-4585-9441-d3596a65e0d5" />
+
+2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร
+SELECT
+คำสั่ง SELECT ใช้สำหรับเรียกดูข้อมูลจากตารางในฐานข้อมูล เป็นคำสั่งพื้นฐานที่สุดและใช้บ่อยที่สุด
+INSERT
+คำสั่ง INSERT ใช้สำหรับเพิ่มข้อมูลใหม่เข้าไปในตาราง
+UPDATE
+คำสั่ง UPDATE ใช้สำหรับแก้ไขข้อมูลที่มีอยู่แล้วในตาราง
+DELETE
+คำสั่ง DELETE ใช้สำหรับลบข้อมูลที่มีอยู่แล้วในตาราง
 ```
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
 SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
 ```
-รูปผลการทดลอง
+<img width="777" height="245" alt="image" src="https://github.com/user-attachments/assets/82d1ad10-a5f3-4763-9d5b-e523068c70af" />
+
 ```
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
