@@ -336,9 +336,8 @@ docker exec -it postgres-config psql -U postgres
 SHOW wal_buffers;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า wal_buffers
-```
+<img width="258" height="119" alt="image" src="https://github.com/user-attachments/assets/cd47ee3f-6720-4c23-a6ba-705a6d0a4cc8" />
+
 
 #### 3.5 ปรับแต่ง Effective Cache Size
 ```sql
