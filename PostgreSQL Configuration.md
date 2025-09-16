@@ -422,11 +422,20 @@ ORDER BY data
 LIMIT 1000;
 ```
 ### ผลการทดลอง
-```
 1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
+- EXPLAIN: แสดง แผนการทำงาน (execution plan) ที่ PostgreSQL เลือกใช้สำหรับคำสั่ง SQL
+- ANALYZE: สั่งให้ รันคำสั่งจริง แล้วรายงานเวลาจริง จำนวนแถวจริง ฯลฯ (ไม่ใช่แค่คาดการณ์)
+- BUFFERS: รายงานสถิติการใช้บัฟเฟอร์/ดิสก์ เช่น shared hit/read/dirtied, temp read/written เพื่อดูว่ามีการ spill ลงดิสก์ หรือไม่ (ซึ่งเกี่ยวข้องโดยตรงกับ work_mem)
 2. รูปผลการรัน
-3. อธิบายผลลัพธ์ที่ได้
-```
+<img width="1874" height="570" alt="image" src="https://github.com/user-attachments/assets/154d4a59-8ef6-4ab2-8e05-bdfaf4857927" />
+
+3. อธิบายผลลัพธ์ที่ได้  
+- คำสั่ง EXPLAIN (ANALYZE, BUFFERS) แสดงว่า PostgreSQL ใช้ Parallel Seq Scan เพื่ออ่านข้อมูลจากตาราง large_table โดยมี worker 2 ตัวช่วยกันสแกน ทำให้อ่านข้อมูลได้เร็วขึ้น
+หลังจากอ่านข้อมูล ระบบทำการ Sort ตามคอลัมน์ data ด้วยวิธี top-N heapsort ซึ่งใช้หน่วยความจำเพียง 176–231 kB ต่อ process → เพียงพอที่จะจัดการข้อมูลได้ใน RAM
+- ไม่เกิดการ spill ลงดิสก์ (ไม่มี temp read/write) แสดงว่าการตั้งค่า work_mem เหมาะสม
+- จากนั้นใช้ Gather Merge รวมผลลัพธ์จาก worker ทั้งสอง และเลือกส่งออกเพียง 1000 แถวแรกตาม LIMIT
+- เวลาในการทำงานจริงอยู่ที่ ~119 ms ซึ่งถือว่าเร็วและมีประสิทธิภาพสำหรับข้อมูลหลายแสนแถว
+
 ```sql
 -- ทดสอบ Hash operation
 EXPLAIN (ANALYZE, BUFFERS)
@@ -438,11 +447,24 @@ LIMIT 100;
 ```
 
 ### ผลการทดลอง
-```
 1. รูปผลการรัน
+<img width="1888" height="506" alt="image" src="https://github.com/user-attachments/assets/c3651887-2df5-4e6c-a2a7-43fdd68340b1" />
+
 2. อธิบายผลลัพธ์ที่ได้ 
+- โครงสร้างแผน: Limit → GatherAggregate (GroupAggregate) → Index Only Scan
+- Index Only Scan using idx_large_table_number อ่านค่า number จากดัชนีโดยตรง (ไม่แตะ heap) รวม 5777 แถว แท้จริง (actual rows=5777), ใช้ cache ทั้งหมด (Buffers: shared hit=6)
+- GroupAggregate (Group Key: number) รวมกลุ่มตาม number แล้วใช้เงื่อนไข HAVING count(*) > 1 → มีกลุ่มที่ถูกตัดทิ้ง 354 (Rows Removed by Filter: 354) และคืนผลเฉพาะกลุ่มที่ผ่านเงื่อนไข
+- Limit 100 ทำให้หยุดเมื่อได้ 100 กลุ่มแรกที่ผ่านเงื่อนไข → ไม่ต้องประมวลผลต่อทั้งชุด
+- เวลา: Planning 1.437 ms, Execution 0.362 ms เร็วมากเพราะอ่านจากดัชนี/แคชล้วน และไม่ต้อง Sortไม่มี Sort/Hash และไม่มี temp I/O → งานนี้แทบไม่พึ่ง work_mem
+  
 3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
-```
+- ชนิดการสแกน: Index Only Scan บนดัชนี idx_large_table_number
+- เหตุผลหลัก:
+  1. มีดัชนีบนคอลัมน์ number และคิวรีต้องใช้เฉพาะคอลัมน์นี้ → ข้อมูล “ครบ” ในดัชนี
+  2. ดัชนีจัดเรียงตาม number อยู่แล้ว → ใช้ GroupAggregate ตามลำดับดัชนีได้เลย ไม่ต้อง Sort
+  3. Heap Fetches = 0 แปลว่าหน้าเพจถูกทำเครื่องหมาย all-visible ใน Visibility Map → อ่านจากดัชนีได้เพียว ๆ
+  4. มี LIMIT 100 ทำให้อ่าน/รวมกลุ่มเท่าที่จำเป็นแล้วหยุดเร็ว
+
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
 -- ทดสอบ CREATE INDEX (จะใช้ maintenance_work_mem)
