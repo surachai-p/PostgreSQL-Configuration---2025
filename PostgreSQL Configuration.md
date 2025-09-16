@@ -897,6 +897,10 @@ CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
 ```
 
+<img width="488" height="414" alt="image" src="https://github.com/user-attachments/assets/32579fcf-30c8-4246-902b-f44815e5a122" />
+<img width="775" height="513" alt="image" src="https://github.com/user-attachments/assets/1c7b4541-0079-4d59-9b13-60e072189b23" />
+
+
 #### 10.2 การทดสอบ Query Performance
 ```sql
 -- ฟังก์ชันสำหรับทดสอบ concurrent queries
