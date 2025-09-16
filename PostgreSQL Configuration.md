@@ -1084,7 +1084,9 @@ SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
-2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
+<img width="770" height="281" alt="image" src="https://github.com/user-attachments/assets/dc70e1cc-68f8-4cdb-838e-01ab819a789c" />
+
+3. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
 ```
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
@@ -1092,6 +1094,9 @@ SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
 ```
 รูปผลการทดลอง
+
+<img width="777" height="286" alt="image" src="https://github.com/user-attachments/assets/7f39fbce-2869-4b88-b602-933e29d6007f" />
+
 ```
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
