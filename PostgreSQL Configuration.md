@@ -214,7 +214,11 @@ SHOW data_directory;
 ### บันทึกผลการทดลอง
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+<img width="356" height="102" alt="image" src="https://github.com/user-attachments/assets/6babf2cb-f8d5-4420-a257-ef7654d47a40" />
+
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+<img width="266" height="92" alt="image" src="https://github.com/user-attachments/assets/172a209f-0575-4447-8aa3-4799c63f7227" />
+
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -225,9 +229,8 @@ WHERE name IN (
 );
 ```
 ### บันทึกผลการทดลอง
-```
-บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
-```
+<img width="971" height="343" alt="image" src="https://github.com/user-attachments/assets/6597468f-0b76-48f3-80cb-f23ffa27693f" />
+
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
