@@ -731,11 +731,11 @@ FROM performance_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
 1. รูปผลการทดลอง
-2. อธิบายผลลัพธ์ที่ได้
-```
+<img width="666" height="77" alt="image" src="https://github.com/user-attachments/assets/2053f57d-088e-4e25-b86a-2603f4e3e651" />
 
+2. อธิบายผลลัพธ์ที่ได้
+- ตารางผลลัพธ์มีคอลัมน์ test_name, config_set, execution_time_ms, avg_time
 
 ### Step 9: การ Monitoring และ Alerting
 
