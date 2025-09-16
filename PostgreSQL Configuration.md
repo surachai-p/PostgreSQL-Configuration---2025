@@ -1,4 +1,4 @@
-<img width="1871" height="833" alt="image" src="https://github.com/user-attachments/assets/c5652266-0fbe-434c-b8eb-58775d2a78cc" /># Lab 02: PostgreSQL Configuration and Memory Management
+# Lab 02: PostgreSQL Configuration and Memory Management
 
 
 ## วัตถุประสงค์
