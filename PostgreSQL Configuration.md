@@ -1188,9 +1188,8 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM run_benchmark_suite();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+<img width="685" height="191" alt="image" src="https://github.com/user-attachments/assets/456de478-2cba-40be-9b86-32837d47c40b" />
 
 -- ดูผลการทดสอบ
 SELECT 
@@ -1203,11 +1202,10 @@ SELECT
     test_timestamp
 FROM benchmark_results
 ORDER BY test_timestamp DESC;
-```
+
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+<img width="978" height="359" alt="image" src="https://github.com/user-attachments/assets/0b10b219-a203-403a-aa96-262dea97e073" />
 
 ### Step 12: การจัดการ Configuration แบบ Advanced
 
