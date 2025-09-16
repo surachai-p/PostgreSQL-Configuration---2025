@@ -1541,60 +1541,60 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 
 ## คำถามท้ายการทดลอง
-1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
-- Shared Memory คือหน่วยความจำกลางที่ทุก connection ใช้ร่วมกัน มีพารามิเตอร์หลัก ๆ ได้แก่:
-- shared_buffers → พื้นที่เก็บ data blocks ที่ดึงมาจากดิสก์ (ควรตั้ง ~25–40% ของ RAM)
-- wal_buffers → ใช้เก็บ Write-Ahead Log ชั่วคราว (ปกติ PostgreSQL คำนวณอัตโนมัติ แต่สามารถปรับได้)
-- work_mem (per query operation) → ใช้ต่อการทำงานของแต่ละ query (เช่น sort, hash join)
-- maintenance_work_mem → ใช้กับงาน maintenance (VACUUM, CREATE INDEX, ANALYZE)
-<br>**หลักการตั้งค่า:**
-- ตั้ง shared_buffers ให้เหมาะกับ workload (สูงไป → ระบบอื่นอาจ RAM ไม่พอ, ต่ำไป → query ต้องอ่านดิสก์บ่อย)
-- wal_buffers ปล่อยให้ auto ก็มักเพียงพอ
-- work_mem และ maintenance_work_mem ต้องบาลานซ์กับจำนวน connection
+**1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร**
+  - Shared Memory คือหน่วยความจำกลางที่ทุก connection ใช้ร่วมกัน มีพารามิเตอร์หลัก ๆ ได้แก่:
+  - shared_buffers → พื้นที่เก็บ data blocks ที่ดึงมาจากดิสก์ (ควรตั้ง ~25–40% ของ RAM)
+  - wal_buffers → ใช้เก็บ Write-Ahead Log ชั่วคราว (ปกติ PostgreSQL คำนวณอัตโนมัติ แต่สามารถปรับได้)
+  - work_mem (per query operation) → ใช้ต่อการทำงานของแต่ละ query (เช่น sort, hash join)
+  - maintenance_work_mem → ใช้กับงาน maintenance (VACUUM, CREATE INDEX, ANALYZE)
+  <br>**หลักการตั้งค่า:**
+  - ตั้ง shared_buffers ให้เหมาะกับ workload (สูงไป → ระบบอื่นอาจ RAM ไม่พอ, ต่ำไป → query ต้องอ่านดิสก์บ่อย)
+  - wal_buffers ปล่อยให้ auto ก็มักเพียงพอ
+  - work_mem และ maintenance_work_mem ต้องบาลานซ์กับจำนวน connection
   
-2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
-- **work_mem** → ใช้หน่วยความจำต่อ 1 การดำเนินการ (เช่น sort, hash join) ใน 1 query
-  - ถ้า query ซับซ้อน มีหลาย sort/join → แต่ละขั้นตอนใช้ work_mem แยกกัน
-  - หลักการตั้งค่า: ไม่ควรเกิน (RAM ÷ max_connections ÷ 2) เพื่อกันไม่ให้กิน RAM จน OOM
-
-- **maintenance_work_mem** → ใช้ในงาน maintenance เช่น VACUUM, REINDEX, CREATE INDEX
-  - ใช้ต่อ process เดียว
-  - หลักการตั้งค่า: ตั้งค่าสูงกว่าปกติได้ เพราะงานเหล่านี้ทำไม่บ่อย แต่ต้องใช้ memory เยอะ
-
-3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
-- กัน RAM ให้ระบบปฏิบัติการและอื่น ๆ → เหลือ ~12GB สำหรับ PostgreSQL
-- สมมุติใช้ shared_buffers = 4GB
-- เหลือ ~8GB สำหรับ work_mem และ maintenance
-- คำนวณ work_mem: `8GB ÷ 200 connections ≈ 40MB`→ แนะนำตั้ง work_mem ~ 32MB (เพื่อเผื่อ margin)
-- maintenance_work_mem: 
-  - กำหนดได้สูง เช่น 512MB – 1GB เพราะใช้ทีละงาน ไม่ได้ใช้พร้อมกันทุก connection
-
-4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
-- postgresql.conf → ไฟล์หลัก เก็บค่าคอนฟิกทั้งหมด
-- postgresql.auto.conf → เก็บค่าที่ถูกแก้ไขผ่านคำสั่ง ALTER SYSTEM
-- ลำดับความสำคัญ: PostgreSQL จะอ่าน postgresql.conf ก่อน แล้ว override ด้วยค่าใน `postgresql.auto.conf` แปลว่า ถ้าสองไฟล์มีค่าซ้ำกัน → postgresql.auto.conf จะมีผล
-5. Buffer hit ratio คืออะไร
-- คือ อัตราส่วนการอ่านข้อมูลจาก shared_buffers (memory) เทียบกับการอ่านจากดิสก์
-- สูตร:
-```
-hit_ratio = heap_blks_hit / (heap_blks_hit + heap_blks_read)
-```
-- ค่าใกล้ 100% = ดี (ส่วนใหญ่ข้อมูลอยู่ในหน่วยความจำ → query เร็ว)
-- ค่า < 90% = ควรเพิ่ม shared_buffers หรือปรับ query/index
-
-6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
-- RAM รวม = 16GB
-- OS reserve ~ 4GB
-- PostgreSQL available ~ 12GB
-- การกำหนด:
-  - shared_buffers = 4GB
-  - wal_buffers = 16MB (auto คำนวณ)
-  - work_mem = 32MB × 200 connections → worst-case ~6.4GB
-  - maintenance_work_mem = 1GB
-- รวมแล้วไม่เกิน 12GB → balance ดี
+**2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร**
+  - **work_mem** → ใช้หน่วยความจำต่อ 1 การดำเนินการ (เช่น sort, hash join) ใน 1 query
+    - ถ้า query ซับซ้อน มีหลาย sort/join → แต่ละขั้นตอนใช้ work_mem แยกกัน
+    - หลักการตั้งค่า: ไม่ควรเกิน (RAM ÷ max_connections ÷ 2) เพื่อกันไม่ให้กิน RAM จน OOM
   
-7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+  - **maintenance_work_mem** → ใช้ในงาน maintenance เช่น VACUUM, REINDEX, CREATE INDEX
+    - ใช้ต่อ process เดียว
+    - หลักการตั้งค่า: ตั้งค่าสูงกว่าปกติได้ เพราะงานเหล่านี้ทำไม่บ่อย แต่ต้องใช้ memory เยอะ
+
+**3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร**
+  - กัน RAM ให้ระบบปฏิบัติการและอื่น ๆ → เหลือ ~12GB สำหรับ PostgreSQL
+  - สมมุติใช้ shared_buffers = 4GB
+  - เหลือ ~8GB สำหรับ work_mem และ maintenance
+  - คำนวณ work_mem: `8GB ÷ 200 connections ≈ 40MB`→ แนะนำตั้ง work_mem ~ 32MB (เพื่อเผื่อ margin)
+  - maintenance_work_mem: 
+    - กำหนดได้สูง เช่น 512MB – 1GB เพราะใช้ทีละงาน ไม่ได้ใช้พร้อมกันทุก connection
+
+**4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร**
+  - postgresql.conf → ไฟล์หลัก เก็บค่าคอนฟิกทั้งหมด
+  - postgresql.auto.conf → เก็บค่าที่ถูกแก้ไขผ่านคำสั่ง ALTER SYSTEM
+  - ลำดับความสำคัญ: PostgreSQL จะอ่าน postgresql.conf ก่อน แล้ว override ด้วยค่าใน `postgresql.auto.conf` แปลว่า ถ้าสองไฟล์มีค่าซ้ำกัน → postgresql.auto.conf จะมีผล
+
+**5. Buffer hit ratio คืออะไร**
+  - คือ อัตราส่วนการอ่านข้อมูลจาก shared_buffers (memory) เทียบกับการอ่านจากดิสก์
+  - สูตร:
+  ```
+  hit_ratio = heap_blks_hit / (heap_blks_hit + heap_blks_read)
+  ```
+  - ค่าใกล้ 100% = ดี (ส่วนใหญ่ข้อมูลอยู่ในหน่วยความจำ → query เร็ว)
+  - ค่า < 90% = ควรเพิ่ม shared_buffers หรือปรับ query/index
+
+**6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง**
+  - RAM รวม = 16GB
+  - OS reserve ~ 4GB
+  - PostgreSQL available ~ 12GB
+  - การกำหนด:
+    - shared_buffers = 4GB
+    - wal_buffers = 16MB (auto คำนวณ)
+    - work_mem = 32MB × 200 connections → worst-case ~6.4GB
+    - maintenance_work_mem = 1GB
+  - รวมแล้วไม่เกิน 12GB → balance ดี
   
+**7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ**
 1. Seq Scan (Sequential Scan)
 - อ่านตารางทั้งก้อนไล่ทีละแถว
 - เหมาะกับ query ที่ดึงข้อมูลจำนวนมาก หรือไม่มี index
@@ -1607,9 +1607,9 @@ hit_ratio = heap_blks_hit / (heap_blks_hit + heap_blks_read)
 4. Bitmap Index Scan
 - ใช้ดัชนีหาหลายค่า → รวมเป็น “bitmap” → แล้วอ่านข้อมูลจาก heap ทีเดียวเป็นช่วง ๆ
 - เหมาะกับการ query ที่มีหลายค่าหรือช่วงกว้าง
-
-- **เปรียบเทียบสั้น ๆ:**
-  - Seq Scan → ดีเมื่ออ่านทั้งตาราง
-  - Index Scan → ดีเมื่อกรองแถวเล็กน้อย
-  - Index Only Scan → เร็วที่สุดเมื่อใช้ได้ (covering index)
-  - Bitmap Scan → ตัวกลาง ระหว่าง Seq และ Index Scan ใช้เมื่อผลลัพธ์มากพอ
+  
+  - **เปรียบเทียบสั้น ๆ:**
+    - Seq Scan → ดีเมื่ออ่านทั้งตาราง
+    - Index Scan → ดีเมื่อกรองแถวเล็กน้อย
+    - Index Only Scan → เร็วที่สุดเมื่อใช้ได้ (covering index)
+    - Bitmap Scan → ตัวกลาง ระหว่าง Seq และ Index Scan ใช้เมื่อผลลัพธ์มากพอ
