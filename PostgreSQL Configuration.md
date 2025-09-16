@@ -639,10 +639,35 @@ WHERE name LIKE '%autovacuum%'
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+
+<img width="1078" height="371" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 55 09" src="https://github.com/user-attachments/assets/ce458daf-7d32-4777-8234-04d817e28222" />
+
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
-```
+Autovacuum
+เป็น background process ของ PostgreSQL ที่ช่วย ทำความสะอาด table อัตโนมัติ
+ลบ dead tuples → ป้องกัน table บวม
+อัปเดต statistics → ให้ query planner ทำงานได้แม่นยำ
+ป้องกัน transaction ID wraparound → สำคัญมากสำหรับความถูกต้องของฐานข้อมูล
+| Name | Setting | Unit | ความหมาย |
+|------|---------|------|----------------|
+| autovacuum | on | – | เปิด/ปิด autovacuum (on = ทำงานอัตโนมัติ) |
+| autovacuum_analyze_scale_factor | 0.1 | – | ถ้ามี tuple เปลี่ยน ≥ 10% ของ table → trigger analyze |
+| autovacuum_analyze_threshold | 50 | – | หรือถ้ามี tuple เปลี่ยน ≥ 50 → trigger analyze |
+| autovacuum_freeze_max_age | 200,000,000 | – | อายุ XID ที่ถึงจุดต้อง autovacuum ป้องกัน wraparound |
+| autovacuum_max_workers | 3 | – | worker พร้อมทำงานพร้อมกันสูงสุด 3 process |
+| autovacuum_multixact_freeze_max_age | 400,000,000 | – | อายุ multixact ที่ต้อง autovacuum เพื่อป้องกัน wraparound |
+| autovacuum_naptime | 60 | s | เวลารอระหว่างรอบ autovacuum (default 1 นาที) |
+| autovacuum_vacuum_cost_delay | 2 | ms | delay หลังจากใช้ resources ตาม limit |
+| autovacuum_vacuum_cost_limit | -1 | – | limit ของ resource ก่อน delay (-1 = ใช้ default) |
+| autovacuum_vacuum_insert_scale_factor | 0.2 | – | trigger vacuum ถ้า insert ≥ 20% ของ table |
+| autovacuum_vacuum_insert_threshold | 1000 | – | trigger vacuum ถ้า insert ≥ 1000 tuples |
+| autovacuum_vacuum_scale_factor | 0.2 | – | trigger vacuum ถ้า update/delete ≥ 20% ของ table |
+| autovacuum_vacuum_threshold | 50 | – | trigger vacuum ถ้า update/delete ≥ 50 tuples |
+| autovacuum_work_mem | -1 | kB | memory สูงสุดที่แต่ละ worker ใช้ (-1 = default) |
+| log_autovacuum_min_duration | 600,000 | ms | log autovacuum ถ้าใช้เวลา ≥ 10 นาที |
+
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
 ```sql
@@ -669,9 +694,8 @@ ALTER SYSTEM SET autovacuum_work_mem = '512MB';
 SELECT pg_reload_conf();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
-```
+
+<img width="645" height="350" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 58 29" src="https://github.com/user-attachments/assets/5fb42b77-5152-4faf-995d-bf0745c9a11c" />
 
 ### Step 8: Performance Testing และ Benchmarking
 
@@ -744,10 +768,13 @@ FROM performance_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
 1. รูปผลการทดลอง
+
+<img width="525" height="183" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 15 07 15 สำเนา" src="https://github.com/user-attachments/assets/7740a124-23cb-4dd8-9973-d5774145b1d6" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+ไมม่พบอะไรเลย
+
 
 
 ### Step 9: การ Monitoring และ Alerting
@@ -781,9 +808,8 @@ FROM pg_settings WHERE name = 'maintenance_work_mem';
 SELECT * FROM memory_monitor;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+<img width="590" height="168" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 15 08 28" src="https://github.com/user-attachments/assets/ad470792-5ec0-41c1-9f71-f695d29ad563" />
 
 ### Step 10: การจำลอง Load Testing
 
@@ -830,9 +856,9 @@ CREATE INDEX idx_orders_product_id ON load_test_orders(product_id);
 CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
-```
+
+<img width="720" height="577" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 15 09 31" src="https://github.com/user-attachments/assets/1159d644-7aa1-44d7-bc32-6663570446eb" />
+
 
 #### 10.2 การทดสอบ Query Performance
 ```sql
@@ -1007,23 +1033,30 @@ SELECT * FROM simulate_oltp_workload(25);
 
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+<img width="628" height="185" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 15 22 22" src="https://github.com/user-attachments/assets/b6d2416c-6c37-4fae-8633-4c84d1b01e0d" />
+
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
-```
 1. รูปผลการทดลอง
+
+<img width="618" height="203" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 15 24 29" src="https://github.com/user-attachments/assets/1c1df91e-f53c-4ff3-968d-623634ab1012" />
+
 2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
-```
+โอเคครับ มาสรุป **แบบที่คุณอยากได้** สำหรับ 4 operation:
+- SELECT: เฉลี่ย 0.139 ms เวลาต่ำสุด 0.040 ms เวลามากสุด 9.718 ms total\_operations 100
+- INSERT: เฉลี่ย 0.102 ms เวลาต่ำสุด 0.016 ms เวลามากสุด 1.189 ms total\_operations 100
+- UPDATE: เฉลี่ย 64.170 ms เวลาต่ำสุด 62.755 ms เวลามากสุด 131.038 ms total\_operations 100
+- DELETE: เฉลี่ย 86.109 ms เวลาต่ำสุด 80.091 ms เวลามากสุด 333.105 ms total\_operations 100
+
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
 SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="627" height="202" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 15 24 01" src="https://github.com/user-attachments/assets/f73d8eb3-bff1-41f6-8407-a262777d15d2" />
+
+
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
 
