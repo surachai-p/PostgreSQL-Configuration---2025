@@ -1,4 +1,5 @@
-<img width="982" height="193" alt="image" src="https://github.com/user-attachments/assets/6c123b95-3ad5-453b-809d-4cf072ad503b" /># Lab 02: PostgreSQL Configuration and Memory Management
+# Lab 02: PostgreSQL Configuration and Memory Management
+
 
 ## วัตถุประสงค์
 1. เรียนรู้การกำหนดค่า PostgreSQL สำหรับการปรับประสิทธิภาพ
