@@ -311,9 +311,8 @@ SELECT pg_reload_conf();
 SHOW maintenance_work_mem;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
-```
+<img width="779" height="501" alt="image" src="https://github.com/user-attachments/assets/e94fdc6d-4ae2-49c9-81b8-393ceeb4a610" />
+
 
 #### 3.4 ปรับแต่ง WAL Buffers
 ```sql
