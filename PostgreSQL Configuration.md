@@ -381,9 +381,8 @@ WHERE name IN (
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
-รูปผลการลัพธ์การตั้งค่า
-```
+<img width="1394" height="591" alt="image" src="https://github.com/user-attachments/assets/31e110f2-be59-4f8c-ac25-a050bf23e92f" />
+
 
 ### Step 5: การสร้างและทดสอบ Workload
 
