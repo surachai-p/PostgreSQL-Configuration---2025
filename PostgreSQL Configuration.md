@@ -561,9 +561,8 @@ SELECT
 FROM get_memory_usage();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="924" height="378" alt="image" src="https://github.com/user-attachments/assets/11332118-6c54-4728-acec-4d4e34c03994" />
+
 
 #### 6.2 การติดตาม Buffer Hit Ratio
 ```sql
@@ -585,7 +584,12 @@ ORDER BY heap_blks_read + heap_blks_hit DESC;
 ```
 1. รูปผลการทดลอง
 2. อธิบายผลลัพธ์ที่ได้
+ตอบ : heap_blks_read = 0 → ไม่มีการอ่านข้อมูลจาก disk เลย
+      heap_blks_hit = 620839 → ข้อมูลทั้งหมดถูกอ่านจาก memory (buffer cache)
+      hit_ratio_percent = 100.00 → หมายถึง การเข้าถึงข้อมูลทั้งหมดเป็น cache hit (เร็วที่สุด เพราะไม่ต้องอ่านจาก disk)
 ```
+<img width="955" height="425" alt="image" src="https://github.com/user-attachments/assets/9d88b6e5-1f37-4328-9d55-336bafed9bfc" />
+
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
 SELECT datname,
@@ -599,7 +603,12 @@ WHERE datname = current_database();
 ```
 1. รูปผลการทดลอง
 2. อธิบายผลลัพธ์ที่ได้
+ตอบ : blks_read → อ่านจาก disk = 3481 blocks 
+      blks_hit→ อ่านจาก memory = 4,052,764 blocks เยอะมากเมื่อเทียบกับ disk
+      hit_ratio_percent = 99.91% → แทบทั้งหมดมาจาก memory
 ```
+<img width="883" height="294" alt="image" src="https://github.com/user-attachments/assets/6d64104b-6660-42a5-8cce-9716a4370193" />
+
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
 ```sql
@@ -620,7 +629,11 @@ LIMIT 10;
 ```
 1. รูปผลการทดลอง
 2. อธิบายผลลัพธ์ที่ได้
+ตอบ : มี เงื่อนไข WHERE heap_blks_read > 0 → หมายถึงเอาเฉพาะตารางที่ มีการอ่านจาก disk จริง ๆ เท่านั้น
+ซึ่งได้ผลลัพธ์ได้ 0 rows → แสดงว่า ไม่มีตารางใดที่มีการอ่านจาก disk เลยในรอบสถิติที่เก็บ
 ```
+<img width="1079" height="402" alt="image" src="https://github.com/user-attachments/assets/f4c5ca92-4a2f-4515-b076-3ede291a93f2" />
+
 ### Step 7: การปรับแต่ง Autovacuum
 
 #### 7.1 ทำความเข้าใจ Autovacuum Parameters
