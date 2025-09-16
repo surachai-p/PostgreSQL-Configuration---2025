@@ -158,13 +158,13 @@ effective_cache_size = 24GB (75%)
 docker volume create postgres-config-data
 
 # สร้าง Container พร้อม Volume และจำกัด memory
-docker run --name postgres-config \
-  -e POSTGRES_PASSWORD=admin123 \
-  -e POSTGRES_DB=configdb \
-  -p 5432:5432 \
-  -v postgres-config-data:/var/lib/postgresql/data \
-  --memory=2g \
-  --cpus=2 \
+docker run --name postgres-config 
+  -e POSTGRES_PASSWORD=admin123 
+  -e POSTGRES_DB=configdb 
+  -p 5432:5432 
+  -v postgres-config-data:/var/lib/postgresql/data 
+  --memory=2g 
+  --cpus=2 
   -d postgres
 
 # ตรวจสอบสถานะ container
@@ -188,11 +188,16 @@ docker exec postgres-config nproc
 docker exec postgres-config df -h
 ```
 ### บันทึกผลการทดลอง
-```
+
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+<img width="847" height="108" alt="image" src="https://github.com/user-attachments/assets/d9545a92-d33b-44c6-b434-325f2b729d20" />
+<img width="561" height="223" alt="image" src="https://github.com/user-attachments/assets/4f633035-9671-4c31-9254-5c60544aff18" />
+
 2. option -h ในคำสั่งมีผลอย่างไร
+- ใช้เพื่อแสดงวิธีใช้ command
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
-```
+<img width="632" height="103" alt="image" src="https://github.com/user-attachments/assets/25c234ac-b31b-476b-a652-e0aacad6729b" />
+
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
 docker exec -it postgres-config psql -U postgres
@@ -210,7 +215,11 @@ SHOW data_directory;
 ### บันทึกผลการทดลอง
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+   -อยู่ที่  1 row 
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+   -อยู่ที่ 1 row
+   <img width="876" height="411" alt="image" src="https://github.com/user-attachments/assets/cd5bb9f2-ae5b-4e3a-a2ad-7c0be391378e" />
+
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -221,9 +230,10 @@ WHERE name IN (
 );
 ```
 ### บันทึกผลการทดลอง
-```
-บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
-```
+
+<img width="1538" height="363" alt="image" src="https://github.com/user-attachments/assets/00e76635-93fb-4183-a14d-b2d794f549e0" />
+
+
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
@@ -237,8 +247,12 @@ WHERE name = 'shared_buffers';
 ### ผลการทดลอง
 ```
 1.รูปผลการรันคำสั่ง
+ - ตอบ <img width="767" height="167" alt="image" src="https://github.com/user-attachments/assets/f85d21cb-7ef2-4603-a548-d5707f91d404" />
+
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+   - ตอบ  setting = 16384 unit = 8kB
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+   - มีค่าเป็น f    = false → ไม่จำเป็นต้อง restart, การเปลี่ยนค่านี้ถูกนำไปใช้แล้วทันที 
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
@@ -253,13 +267,17 @@ WHERE name = 'shared_buffers';
 ```
 -- ออกจาก postgres prompt (กด \q แล้ว enter) ทำการ Restart PostgreSQL ด้วยคำสั่ง แล้ว run docker อีกครั้ง หรือใช้วิธีการ stop และ run containner
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
+<img width="1251" height="433" alt="image" src="https://github.com/user-attachments/assets/9892d0d3-d23a-4754-b286-f593561e9619" />
 
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า pending_restart
-รูปหลังจาก restart postgres
 
-```
+รูปผลการเปลี่ยนแปลงค่า pending_restart
+<img width="678" height="363" alt="image" src="https://github.com/user-attachments/assets/d676d857-3c30-4c4f-8127-bb571dbce658" />
+
+รูปหลังจาก restart postgres
+<img width="948" height="412" alt="image" src="https://github.com/user-attachments/assets/68a6901a-71cc-4886-af45-ea42f708fa42" />
+
+
 
 #### 2.2 ปรับแต่ง Work Memory (ไม่ต้อง restart)
 ```sql
@@ -280,9 +298,10 @@ FROM pg_settings
 WHERE name = 'work_mem';
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า work_mem
-```
+
+<img width="605" height="633" alt="image" src="https://github.com/user-attachments/assets/6aba1d40-069e-4dbf-af61-4409b68e7d7a" />
+
+
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
 ```sql
@@ -297,9 +316,8 @@ SELECT pg_reload_conf();
 SHOW maintenance_work_mem;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
-```
+<img width="703" height="432" alt="image" src="https://github.com/user-attachments/assets/c4980dfa-3bd9-433d-8d9d-a7f87eda1e0b" />
+
 
 #### 3.4 ปรับแต่ง WAL Buffers
 ```sql
@@ -322,9 +340,10 @@ docker exec -it postgres-config psql -U postgres
 SHOW wal_buffers;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า wal_buffers
-```
+
+<img width="338" height="128" alt="image" src="https://github.com/user-attachments/assets/0deaeb49-e6d6-4be9-a84c-d3ef396ac87d" />
+
+
 
 #### 3.5 ปรับแต่ง Effective Cache Size
 ```sql
@@ -339,9 +358,8 @@ SELECT pg_reload_conf();
 SHOW effective_cache_size;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า effective_cache_size
-```
+<img width="740" height="426" alt="image" src="https://github.com/user-attachments/assets/3b387665-11e2-4309-82d2-049edfe0585a" />
+
 
 ### Step 4: ตรวจสอบผล
 
@@ -368,9 +386,8 @@ WHERE name IN (
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
-รูปผลการลัพธ์การตั้งค่า
-```
+<img width="1401" height="591" alt="image" src="https://github.com/user-attachments/assets/1fa7bf48-c173-4cf0-8d42-4f195af04019" />
+
 
 ### Step 5: การสร้างและทดสอบ Workload
 
