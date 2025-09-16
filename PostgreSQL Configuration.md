@@ -1534,9 +1534,9 @@ $$ LANGUAGE plpgsql;
 SELECT auto_tune_memory();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+eror ที่ยังไม่ได้ติดตั้ง EXTENSION
+<img width="424" height="73" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 15 35 41" src="https://github.com/user-attachments/assets/91e63e7b-2110-4834-8377-4e075b6f9f01" />
+
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
 SELECT 
@@ -1549,9 +1549,8 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY hit_ratio;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+<img width="782" height="274" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 15 36 27" src="https://github.com/user-attachments/assets/4f676070-109c-4a8a-bb43-303f5e8b74e0" />
 
 ### การคำนวณ Memory Requirements
 
