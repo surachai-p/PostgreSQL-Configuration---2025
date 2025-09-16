@@ -166,6 +166,8 @@ docker run --name postgres-config \
   --memory=2g \
   --cpus=2 \
   -d postgres
+or
+docker run --name postgres-config -e POSTGRES_PASSWORD=admin123 -e POSTGRES_DB=configdb -p 5432:5432 -v postgres-config-data:/var/lib/postgresql/data --memory=2g --cpus=2 -d postgres
 
 # ตรวจสอบสถานะ container
 docker ps
@@ -190,8 +192,13 @@ docker exec postgres-config df -h
 ### บันทึกผลการทดลอง
 ```
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+ใช้เพื่อเรียกดูสถานะการใช้หน่วยความจำ (memory usage) ภายใน container ที่ชื่อ postgres-config โดยคำสั่ง free เป็นคำสั่งในระบบลินุกซ์ที่แสดงข้อมูลเกี่ยวกับหน่วยความจำ เช่น จำนวนหน่วยความจำทั้งหมด หน่วยความจำที่ใช้ หน่วยความจำว่าง และ swap memory
+
 2. option -h ในคำสั่งมีผลอย่างไร
+ให้แสดงผลลัพธ์เป็นหน่วยที่อ่านง่าย (human-readable) เช่น แสดงเป็น MB, GB แทนที่จะเป็นหน่วยบล็อกหรือไบต์ดิบ ซึ่งช่วยให้เข้าใจข้อมูลได้ง่ายขึ้น
+
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
+แสดงจำนวน CPU cores ที่ container postgres-config สามารถใช้งานได้ คำสั่ง nproc ในลินุกซ์จะแสดงจำนวนโปรเซสเซอร์ที่พร้อมใช้งานในระบบ ค่าผลลัพธ์คือจำนวนเต็มที่ระบุจำนวน CPU cores ที่ระบบหรือ container นั้นเห็นและสามารถใช้งานได้
 ```
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
@@ -211,6 +218,10 @@ SHOW data_directory;
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+<img width="536" height="145" alt="image" src="https://github.com/user-attachments/assets/925c99df-d0ba-4235-b22b-51da89d22e83" />    
+<img width="498" height="148" alt="image" src="https://github.com/user-attachments/assets/02453e90-8623-47df-8f60-8c4b7ac5bb57" />    
+<img width="399" height="136" alt="image" src="https://github.com/user-attachments/assets/f2958dcb-6875-459d-9e6c-2393c4d9f7a0" />    
+
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -224,6 +235,7 @@ WHERE name IN (
 ```
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
 ```
+<img width="1310" height="402" alt="image" src="https://github.com/user-attachments/assets/9e59a468-aea1-4a53-a639-666cefcbe38e" />
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
@@ -236,6 +248,8 @@ WHERE name = 'shared_buffers';
 
 ### ผลการทดลอง
 ```
+<img width="712" height="299" alt="image" src="https://github.com/user-attachments/assets/493587e6-aa6a-4f14-a250-ac4f6a7475de" />
+
 1.รูปผลการรันคำสั่ง
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
@@ -251,6 +265,8 @@ FROM pg_settings
 WHERE name = 'shared_buffers';
 
 ```
+<img width="774" height="381" alt="image" src="https://github.com/user-attachments/assets/d8bd8ef2-b8be-4125-842f-5bfd7bbc1eaa" />
+
 -- ออกจาก postgres prompt (กด \q แล้ว enter) ทำการ Restart PostgreSQL ด้วยคำสั่ง แล้ว run docker อีกครั้ง หรือใช้วิธีการ stop และ run containner
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
 
@@ -260,6 +276,8 @@ docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresq
 รูปหลังจาก restart postgres
 
 ```
+<img width="693" height="327" alt="image" src="https://github.com/user-attachments/assets/65f0b3b4-59de-4adb-ad55-1be981053736" />
+
 
 #### 2.2 ปรับแต่ง Work Memory (ไม่ต้อง restart)
 ```sql
@@ -283,6 +301,7 @@ WHERE name = 'work_mem';
 ```
 รูปผลการเปลี่ยนแปลงค่า work_mem
 ```
+<img width="525" height="192" alt="image" src="https://github.com/user-attachments/assets/5af68938-1d1f-4671-8828-65ab150423f0" />
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
 ```sql
@@ -300,6 +319,7 @@ SHOW maintenance_work_mem;
 ```
 รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
 ```
+<img width="507" height="144" alt="image" src="https://github.com/user-attachments/assets/c6e029f7-cf85-4b51-ac4b-217e5825bcbe" />
 
 #### 3.4 ปรับแต่ง WAL Buffers
 ```sql
@@ -325,6 +345,7 @@ SHOW wal_buffers;
 ```
 รูปผลการเปลี่ยนแปลงค่า wal_buffers
 ```
+<img width="359" height="144" alt="image" src="https://github.com/user-attachments/assets/466d7df7-3ea2-4086-bf40-a4eb77ba375d" />
 
 #### 3.5 ปรับแต่ง Effective Cache Size
 ```sql
@@ -342,10 +363,9 @@ SHOW effective_cache_size;
 ```
 รูปผลการเปลี่ยนแปลงค่า effective_cache_size
 ```
+<img width="451" height="155" alt="image" src="https://github.com/user-attachments/assets/3217e9aa-f6e0-4a4f-94e5-b7f01dad68df" />
 
 ### Step 4: ตรวจสอบผล
-
-
 ```sql
 -- สร้างรายงานการตั้งค่า
 SELECT 
@@ -371,6 +391,7 @@ ORDER BY name;
 ```
 รูปผลการลัพธ์การตั้งค่า
 ```
+<img width="1312" height="284" alt="image" src="https://github.com/user-attachments/assets/0a0df04c-e0d3-48d8-a243-855b106ea2bd" />
 
 ### Step 5: การสร้างและทดสอบ Workload
 
@@ -413,10 +434,21 @@ LIMIT 1000;
 ```
 ### ผลการทดลอง
 ```
-1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
+1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร
+คำสั่ง EXPLAIN ใช้ใน PostgreSQL เพื่อแสดงแผนการดำเนินการ (execution plan) ของคิวรี SQL การเพิ่ม option ANALYZE จะทำให้ PostgreSQL รันคำสั่งจริงและแสดงเวลาที่ใช้ในการประมวลผลแต่ละขั้นตอน ส่วน BUFFERS จะรายงานการใช้งานแคชข้อมูล (buffer usage) โดยบอกว่าข้อมูลโหลดจากแคชหรือดิสก์ ทำให้เห็นละเอียดว่าคิวรีใช้ทรัพยากรอย่างไรและมีประสิทธิภาพแค่ไหน
+
 2. รูปผลการรัน
+
 3. อธิบายผลลัพธ์ที่ได้
+Limit: ใช้เพื่อจำกัดจำนวนผลลัพธ์ที่แสดง (1000 แถว) พร้อมค่า cost และเวลาดำเนินการจริง (actual time)
+Gather Merge: เป็นการนำข้อมูลจาก worker หลายตัวมารวมและเรียงลำดับ โดยใช้ parallel query processing มี worker จริง 2 ตัว
+Sort: การ sort ใช้วิธี top-N heapsort ซึ่งใช้หน่วยความจำ 239kB, 179kB, 168kB สำหรับ worker แต่ละคน ใช้งาน work_mem ตามค่าเหล่านี้
+Parallel Seq Scan on large_table: การสแกนตารางด้วย parallel scan เพื่อดึงข้อมูลจากตาราง large_table มี buffer hit 5059 ครั้ง แสดงว่าข้อมูลส่วนใหญ่ถูกอ่านจาก cache
+Buffers: แสดงจำนวน page ที่อ่านผ่าน shared buffer ซึ่งช่วยวิเคราะห์การใช้ cache ใน query นี้
+Planning Time: เวลาที่ใช้ในการวางแผน query เพียง 0.151 ms
 ```
+<img width="1305" height="503" alt="image" src="https://github.com/user-attachments/assets/1d010214-0f19-41ae-938c-e8ef35df592c" />
+
 ```sql
 -- ทดสอบ Hash operation
 EXPLAIN (ANALYZE, BUFFERS)
@@ -430,9 +462,20 @@ LIMIT 100;
 ### ผลการทดลอง
 ```
 1. รูปผลการรัน
-2. อธิบายผลลัพธ์ที่ได้ 
+
+2. อธิบายผลลัพธ์ที่ได้
+Limit: จำกัดผลลัพธ์ที่แสดงเพียง 100 แถว ใช้เวลาแค่ 0.201 ms
+GroupAggregate: ดำเนินการ group ข้อมูลตาม number พร้อมใช้ filter (นับเฉพาะ group ที่ count > 1) และใช้เวลารันจริงที่รวดเร็วมาก (0.191 ms)
+Index Only Scan: PostgreSQL เลือกใช้ index idx_large_table_number แทนการอ่านข้อมูลจากตารางโดยตรง (Heap Fetches: 0) ส่งผลให้ query ทำงานเร็ว เพราะข้อมูลที่ต้องใช้ถูกเก็บครบใน index แล้ว
+Buffers: มีแต่ shared hit (อ่านจาก cache) ไม่ต้องเข้าถึงบนดิสก์ และไม่มีการ fetch ข้อมูลจาก heap จริง
+Planning Time / Execution Time: ใช้เวลาเตรียมแผน 6.080 ms และใช้เวลารวมทั้งคิวรีเพียง 0.260 ms
+
 3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+Index Only Scan: PostgreSQL ใช้วิธีสแกนเฉพาะดัชนี (Index Only Scan) เพราะต้องการแค่ข้อมูลในคอลัมน์ number ซึ่งอยู่ใน index แล้ว ทำให้ไม่ต้องอ่านข้อมูลจริงทั้งแถว (Heap Fetches: 0)
+เหตุผล: เลือกสแกนแบบนี้เพราะ query ใช้เฉพาะคอลัมน์ที่มี index ครบ และค่าใน index เพียงพอต่อการสร้างผลลัพธ์ จึงประหยัดเวลาและ IO อีกทั้งข้อมูลถูกอ่านจาก buffer cache ทั้งหมด (shared hit) เพิ่มความเร็วในการประมวลผลอย่างมาก
 ```
+<img width="1323" height="506" alt="image" src="https://github.com/user-attachments/assets/af327acb-f09e-4c3c-86fe-b539e0f397b8" />
+
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
 -- ทดสอบ CREATE INDEX (จะใช้ maintenance_work_mem)
@@ -450,7 +493,14 @@ VACUUM (ANALYZE, VERBOSE) large_table;
 ```
 1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
 2. อธิบายผลลัพธ์ที่ได้
+ระบบจะรายงานรายละเอียดจำนวนแถวที่ถูกลบหรือ reclaimed อัตโนมัติ และค่าอื่น ๆ ที่เกี่ยวข้องกับการทำ vacuum
+จะแสดงข้อมูลว่าสถิติอะไรในแต่ละคอลัมน์ถูกอัปเดตและประเมินค่าต่าง ๆ เพื่อช่วยวางแผน query ในอนาคต
+ช่วยให้ฐานข้อมูลทำงานเร็วขึ้น และมีประสิทธิภาพในการจัดการพื้นที่จัดเก็บข้อมูล
+การใช้ VERBOSE ทำให้รู้ขั้นตอนและสถานะของกระบวนการ vacuum และ analyze ช่วยสำหรับตรวจสอบ และแก้ไขปัญหาได้ดีขึ้น
 ```
+<img width="1289" height="323" alt="image" src="https://github.com/user-attachments/assets/38a75f29-8580-452e-a702-bfeee2a2706d" />
+<img width="1316" height="419" alt="image" src="https://github.com/user-attachments/assets/229a1417-b121-4e7e-b48f-385feca07bbb" />
+
 ### Step 6: การติดตาม Memory Usage
 
 #### 6.1 สร้างฟังก์ชันติดตาม Memory
