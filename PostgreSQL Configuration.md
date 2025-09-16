@@ -1,4 +1,4 @@
-<img width="1032" height="264" alt="image" src="https://github.com/user-attachments/assets/e7365c1f-71ec-43ef-881b-8516c06548e3" /># Lab 02: PostgreSQL Configuration and Memory Management
+# Lab 02: PostgreSQL Configuration and Memory Management
 
 
 ## วัตถุประสงค์
@@ -1498,11 +1498,9 @@ $$ LANGUAGE plpgsql;
 
 -- ใช้งาน auto-tuning
 SELECT auto_tune_memory();
-```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="1042" height="286" alt="image" src="https://github.com/user-attachments/assets/5f473ab3-b03f-4ad1-8a9f-067e79dac3d5" />
+
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
 SELECT 
