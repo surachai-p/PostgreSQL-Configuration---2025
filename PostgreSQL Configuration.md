@@ -1216,9 +1216,7 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM run_benchmark_suite();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="1042" height="286" alt="image" src="https://github.com/user-attachments/assets/5f473ab3-b03f-4ad1-8a9f-067e79dac3d5" />
 
 -- ดูผลการทดสอบ
 SELECT 
@@ -1497,9 +1495,8 @@ $$ LANGUAGE plpgsql;
 ```
 
 -- ใช้งาน auto-tuning
-SELECT auto_tune_memory();
+```SELECT auto_tune_memory();```
 ### ผลการทดลอง
-<img width="1042" height="286" alt="image" src="https://github.com/user-attachments/assets/5f473ab3-b03f-4ad1-8a9f-067e79dac3d5" />
 
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
