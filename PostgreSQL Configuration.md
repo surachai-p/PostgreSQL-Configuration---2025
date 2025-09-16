@@ -295,9 +295,8 @@ FROM pg_settings
 WHERE name = 'work_mem';
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า work_mem
-```
+<img width="644" height="681" alt="image" src="https://github.com/user-attachments/assets/f4ea95de-080e-4ba7-a47f-f7ae6f29e8de" />
+
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
 ```sql
