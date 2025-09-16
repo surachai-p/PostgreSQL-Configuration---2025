@@ -1510,9 +1510,8 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY hit_ratio;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="845" height="161" alt="image" src="https://github.com/user-attachments/assets/e412da5c-0e6e-46d6-a7a2-d6534ee1b834" />
+
 
 ### การคำนวณ Memory Requirements
 
