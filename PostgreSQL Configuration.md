@@ -1034,12 +1034,12 @@ $$ LANGUAGE plpgsql;
 -- รัน load test ทดสอบเบาๆ
 SELECT * FROM simulate_oltp_workload(25);
 
-```
+
 ### ผลการทดลอง
-```
+
 <img width="851" height="288" alt="image" src="https://github.com/user-attachments/assets/5717b81a-3e53-46ec-b42e-1f6a4f106807" />
 
-```
+
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
