@@ -530,6 +530,7 @@ VACUUM (ANALYZE, VERBOSE) large_table;
 <img width="1333" height="499" alt="image" src="https://github.com/user-attachments/assets/0448622d-abe6-4b5d-9f74-de655ac2f705" />
 
 ```
+2. อธิบายผลลัพธ์ที่ได้
 ผลการรัน VACUUM ANALYZE แสดงว่า
   -ตาราง large_table มี 450,000 แถวที่ใช้งานอยู่ (live rows)
   -ไม่มีแถวที่ถูกลบหรือหมดอายุ (dead rows = 0)
@@ -627,6 +628,11 @@ WHERE datname = current_database();
 1. รูปผลการทดลอง
 2. อธิบายผลลัพธ์ที่ได้
 ```
+<img width="819" height="311" alt="image" src="https://github.com/user-attachments/assets/223f828c-5fb5-4626-9161-319b02df6f63" />
+
+```
+2. อธิบายผลลัพธ์ที่ได้
+```
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
 ```sql
@@ -648,6 +654,12 @@ LIMIT 10;
 1. รูปผลการทดลอง
 2. อธิบายผลลัพธ์ที่ได้
 ```
+<img width="967" height="174" alt="image" src="https://github.com/user-attachments/assets/ad47fe37-5f48-4cdc-8928-30d5562bfbfa" />
+
+```
+2. อธิบายผลลัพธ์ที่ได้
+```
+
 ### Step 7: การปรับแต่ง Autovacuum
 
 #### 7.1 ทำความเข้าใจ Autovacuum Parameters
