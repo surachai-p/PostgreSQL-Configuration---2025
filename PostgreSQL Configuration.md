@@ -1518,7 +1518,8 @@ SELECT auto_tune_memory();
 ```
 ### ผลการทดลอง
 ```
-รูปผลการทดลอง
+<img width="546" height="59" alt="image" src="https://github.com/user-attachments/assets/940e8fd0-7f55-4129-a379-77255a0a3c32" />
+
 ```
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
@@ -1531,10 +1532,7 @@ FROM pg_statio_user_tables
 WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY hit_ratio;
 ```
-### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="914" height="340" alt="image" src="https://github.com/user-attachments/assets/9ae3e45d-e8ac-4564-86ad-84f7f0fa4399" />
 
 ### การคำนวณ Memory Requirements
 
@@ -1566,9 +1564,59 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 ## คำถามท้ายการทดลอง
 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
+
+Shared memory คือ หน่วยความจำที่ผู้ใช้หลาย process ของ PostgreSQL สามารถเข้าถึงร่วมกัน ใช้สำหรับ cache ข้อมูล, index, และการประสานงานระหว่าง process
+
 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+
+work_mem
+เป็น หน่วยความจำชั่วคราวต่อ session สำหรับงานเช่น sorting, hashing, join
+ถูกใช้ ต่อ operation ต่อ query
+ไม่ใช่ shared memory (เป็น private memory)
+หลักการตั้งค่า:
+ขึ้นกับจำนวน connection และลักษณะ query
+หากตั้งมากเกินไป → อาจเกิด out-of-memory
+
+maintenance_work_mem
+ใช้สำหรับงาน maintenance เช่น VACUUM, CREATE INDEX, ALTER TABLE
+มีขนาดใหญ่กว่า work_mem เพราะงานเหล่านี้ใช้หน่วยความจำมาก
+หลักการตั้งค่า:
+ขึ้นกับงาน maintenance และ RAM
+แนะนำ 1/4 – 1/2 ของ RAM ที่เหลือหลัง shared_buffers
+
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+
+สมมติ:
+shared_buffers = 4 GB
+RAM ที่เหลือ ≈ 12 GB → ใช้สำหรับ OS cache + work_mem + maintenance_work_mem
+คำนวณคร่าว ๆ:
+RAM ที่เหลือสำหรับ work_mem = 12 GB
+หาก connection = 200 และต้องการ work_mem ต่อ operation = x MB
+สมมติ query หนึ่งทำ sort/hash 1 operation:
+
+200 connections * x MB ≤ 12 GB
+x ≤ 12 GB / 200 = 61.44 MB
+
+→ ตั้ง work_mem ≈ 60 MB
+
+maintenance_work_mem สำหรับงานใหญ่ เช่น VACUUM → ตั้ง 1–2 GB
+
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
+
+postgresql.conf → ไฟล์หลัก สำหรับตั้งค่าทั้งหมด
+postgresql.auto.conf → ไฟล์อัตโนมัติ ใช้เมื่อเปลี่ยนค่าด้วย ALTER SYSTEM SET
+หลักการ:
+PostgreSQL จะอ่าน postgresql.conf ก่อน
+ถ้ามีค่าใน postgresql.auto.conf จะ override ค่าใน postgresql.conf
+
 5. Buffer hit ratio คืออะไร
+
+<img width="674" height="361" alt="image" src="https://github.com/user-attachments/assets/3aa49a67-63bd-4a6c-8d0b-a2a47f82c6df" />
+
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+
+<img width="752" height="295" alt="image" src="https://github.com/user-attachments/assets/13586529-76e2-4321-a83f-d15b4c802954" />
+
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+
+<img width="878" height="532" alt="image" src="https://github.com/user-attachments/assets/43f80024-8376-4b3f-9e61-99514ebe96d0" />
