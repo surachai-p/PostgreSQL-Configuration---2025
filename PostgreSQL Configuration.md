@@ -1219,6 +1219,7 @@ SELECT * FROM run_benchmark_suite();
 <img width="1042" height="286" alt="image" src="https://github.com/user-attachments/assets/5f473ab3-b03f-4ad1-8a9f-067e79dac3d5" />
 
 -- ดูผลการทดสอบ
+```
 SELECT 
     config_name,
     test_type,
@@ -1231,9 +1232,8 @@ FROM benchmark_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="1879" height="214" alt="image" src="https://github.com/user-attachments/assets/379ca4ee-497e-440f-abf2-934458b2228a" />
+
 
 ### Step 12: การจัดการ Configuration แบบ Advanced
 
