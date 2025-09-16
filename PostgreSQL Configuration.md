@@ -679,9 +679,8 @@ ALTER SYSTEM SET autovacuum_work_mem = '512MB';
 SELECT pg_reload_conf();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
-```
+<img width="229" height="376" alt="image" src="https://github.com/user-attachments/assets/607a31a7-9b48-479a-8280-a70b1c972a5b" />
+
 
 ### Step 8: Performance Testing และ Benchmarking
 
