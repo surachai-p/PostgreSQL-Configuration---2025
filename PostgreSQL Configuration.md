@@ -1,4 +1,4 @@
-# Lab 02: PostgreSQL Configuration and Memory Management
+<img width="1032" height="264" alt="image" src="https://github.com/user-attachments/assets/e7365c1f-71ec-43ef-881b-8516c06548e3" /># Lab 02: PostgreSQL Configuration and Memory Management
 
 
 ## วัตถุประสงค์
@@ -989,26 +989,41 @@ $$ LANGUAGE plpgsql;
 
 -- รัน load test ทดสอบเบาๆ
 SELECT * FROM simulate_oltp_workload(25);
+<img width="1057" height="266" alt="image" src="https://github.com/user-attachments/assets/6e5294e7-6e04-4061-814d-be7dee1e7e14" />
 
-```
-### ผลการทดลอง
-```
 รูปผลการทดลอง
-```
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
-```
 1. รูปผลการทดลอง
+<img width="1032" height="264" alt="image" src="https://github.com/user-attachments/assets/ca0323ab-2a3a-4be0-8ff7-f8f09eb1fa08" />
+
 2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
-```
+1. SELECT (JOIN + WHERE)
+  - avg_time_ms = 0.037 ms (เร็วที่สุด)
+  - ค่า min/max อยู่ระหว่าง 0.022 – 0.451 ms
+  - แสดงว่า PostgreSQL สามารถอ่านข้อมูลจากดัชนี/แคชได้อย่างรวดเร็ว → การอ่านข้อมูลมีประสิทธิภาพสูง
+
+2. INSERT
+- avg_time_ms = 0.031 ms (ใกล้เคียง SELECT และเร็วมาก)]
+- การเพิ่มข้อมูลยังทำได้เร็วเพราะตารางไม่ใหญ่มาก และไม่มีคอขวดจาก constraint หรือ index จำนวนมาก
+
+3. UPDATE
+- avg_time_ms = 97.408 ms (ช้ากว่า SELECT/INSERT มาก)
+- ช่วงเวลาอยู่ระหว่าง 88.559 – 145.164 ms
+- สาเหตุ: UPDATE ต้องเขียนข้อมูลใหม่ (tuple ใหม่) + ทำให้ tuple เดิมกลายเป็น dead tuple → มี overhead สูงกว่าการอ่าน/เขียนใหม่
+
+4. DELETE (soft delete)
+- avg_time_ms = 124.355 ms (ช้าที่สุด)
+- ช่วงเวลาอยู่ระหว่าง 113.463 – 176.438 ms
+- Soft delete อาจมีการอัปเดตคอลัมน์ deleted_at → ทำงานใกล้เคียง UPDATE แต่แพงกว่าเพราะต้องจัดการหลายค่า/หลาย row
+
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
 SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="1043" height="269" alt="image" src="https://github.com/user-attachments/assets/32228819-d29d-406b-94a2-a9a506587ffb" />
+
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
 
