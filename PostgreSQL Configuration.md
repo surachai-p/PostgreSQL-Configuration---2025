@@ -376,9 +376,8 @@ WHERE name IN (
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
-รูปผลการลัพธ์การตั้งค่า
-```
+<img width="1198" height="302" alt="image" src="https://github.com/user-attachments/assets/23d80e42-e2f6-487e-a6a9-ac16978dbda3" />
+
 
 ### Step 5: การสร้างและทดสอบ Workload
 
@@ -421,9 +420,15 @@ LIMIT 1000;
 ```
 ### ผลการทดลอง
 ```
-1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
+1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร
+ตอบ ใช้สำหรับ "ส่อง" ดูแผนการทำงานเบื้องหลัง ของคำสั่ง SQL เพื่อวิเคราะห์ประสิทธิภาพและหาจุดที่ทำงานช้า (Bottleneck)
+```
 2. รูปผลการรัน
+<img width="1158" height="512" alt="image" src="https://github.com/user-attachments/assets/b6987733-6778-459f-9352-8e8aad4dc825" />
+
+```
 3. อธิบายผลลัพธ์ที่ได้
+ตอบ บอกว่าเบื้องหลังการดึงข้อมูลนั้นมีขั้นตอนอะไรบ้าง และแต่ละขั้นตอนใช้เวลาและทรัพยากรไปเท่าไหร่
 ```
 ```sql
 -- ทดสอบ Hash operation
@@ -436,10 +441,15 @@ LIMIT 100;
 ```
 
 ### ผลการทดลอง
-```
+
 1. รูปผลการรัน
-2. อธิบายผลลัพธ์ที่ได้ 
+<img width="1195" height="362" alt="image" src="https://github.com/user-attachments/assets/7bf3fc43-bdeb-4968-8053-843a58df52c7" />
+
+```
+2. อธิบายผลลัพธ์ที่ได้
+ตอบ มี Index ที่เหมาะสมทำให้ PostgreSQL สามารถใช้แผน Index Only Scan ซึ่งเป็นวิธีที่เร็วและมีประสิทธิภาพสูง โดยดึงข้อมูลทั้งหมดที่จำเป็นจาก Index ได้เลยโดยไม่ต้อง     ไปอ่านข้อมูลจากตารางหลัก
 3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+ตอบ Index Scan ต้องการข้อมูลแค่ส่วนน้อย (High Selectivity)
 ```
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
@@ -499,9 +509,8 @@ SELECT
 FROM get_memory_usage();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="811" height="277" alt="image" src="https://github.com/user-attachments/assets/b9094f47-3b91-4c8e-883b-8d5232021eb3" />
+
 
 #### 6.2 การติดตาม Buffer Hit Ratio
 ```sql
@@ -520,9 +529,15 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY heap_blks_read + heap_blks_hit DESC;
 ```
 ### ผลการทดลอง
-```
 1. รูปผลการทดลอง
+
+<img width="837" height="512" alt="image" src="https://github.com/user-attachments/assets/428e80b5-2e32-4e1e-933b-3e9ce1f9703b" />
+
+<img width="837" height="512" alt="image" src="https://github.com/user-attachments/assets/776d85a6-a42f-4c44-99a1-846685f02a0f" />
+
+```
 2. อธิบายผลลัพธ์ที่ได้
+ตอบ หาข้อมูลในตารางแรกเอแต่ตารางสองไม่เจอ
 ```
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
@@ -534,9 +549,13 @@ FROM pg_stat_database
 WHERE datname = current_database();
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+<img width="821" height="207" alt="image" src="https://github.com/user-attachments/assets/1844dbb7-d30c-4b3b-9cca-fde0de7b1dc1" />
+
+```
 2. อธิบายผลลัพธ์ที่ได้
+ตอบ แสดง สถิติประสิทธิภาพแคชโดยรวมของฐานข้อมูล ที่กำลังเชื่อมต่ออยู่ ซึ่งก็คือฐานข้อมูล postgres
 ```
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
@@ -555,9 +574,13 @@ ORDER BY heap_blks_read DESC
 LIMIT 10;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+<img width="989" height="285" alt="image" src="https://github.com/user-attachments/assets/435aae50-a156-4d0a-b913-7a237c2a726a" />
+
+```
 2. อธิบายผลลัพธ์ที่ได้
+ตอบ ไม่พบตารางใดๆ ที่มีการอ่านข้อมูลจากดิสก์ (Disk) เลย ในฐานข้อมูล postgres
 ```
 ### Step 7: การปรับแต่ง Autovacuum
 
