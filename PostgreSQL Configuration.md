@@ -351,9 +351,8 @@ SELECT pg_reload_conf();
 SHOW effective_cache_size;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า effective_cache_size
-```
+<img width="501" height="143" alt="image" src="https://github.com/user-attachments/assets/23b2a5db-f81d-4685-8682-17a2e21725ac" />
+
 
 ### Step 4: ตรวจสอบผล
 
