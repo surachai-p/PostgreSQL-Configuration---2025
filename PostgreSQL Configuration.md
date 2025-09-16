@@ -530,9 +530,8 @@ SELECT
 FROM get_memory_usage();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="936" height="196" alt="image" src="https://github.com/user-attachments/assets/428b14e7-ba82-4cd6-a5f6-07331a5caacf" />
+
 
 #### 6.2 การติดตาม Buffer Hit Ratio
 ```sql
