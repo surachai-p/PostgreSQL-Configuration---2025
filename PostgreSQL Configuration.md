@@ -601,10 +601,12 @@ FROM pg_stat_database
 WHERE datname = current_database();
 ```
 ### ผลการทดลอง
-```
-1. รูปผลการทดลอง
+
+<img width="812" height="266" alt="image" src="https://github.com/user-attachments/assets/50cf03a0-8ac7-40c8-9a3f-26a7949310f7" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+ฐานข้อมูล performance_test มี cache hit ratio สูงถึง 99.91% แปลว่าระบบใช้ memory cache ได้อย่างมีประสิทธิภาพมาก การอ่านจาก disk มีน้อยมาก → ทำให้ query ตอบสนองเร็วขึ้น
+
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
 ```sql
