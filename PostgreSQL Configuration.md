@@ -988,7 +988,7 @@ SELECT * FROM simulate_oltp_workload(100);
 <img width="696" height="247" alt="image" src="https://github.com/user-attachments/assets/9c0d9ad3-970b-487c-b936-71051e7d8525" />
 
 อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
-ตอบ SELECT มีเวลาเฉลี่ยต่อ query เร็วมาก, INSERT เวลาเฉลี่ยค่อนข้างเร็ว, UPDATE ใช้เวลามากกว่าการ SELECT/INSERT หลายร้อยเท่า สุดท้าย DELETE ช้เวลามากที่สุดในกลุ่มนี้
+ตอบ SELECT มีเวลาเฉลี่ยต่อ query เร็วมาก, INSERT เวลาเฉลี่ยค่อนข้างเร็ว, UPDATE ใช้เวลามากกว่าการ SELECT/INSERT หลายร้อยเท่า สุดท้าย DELETE ใช้เวลามากที่สุดในกลุ่มนี้
 
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
@@ -1533,7 +1533,7 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 ตอบ คือสัดส่วนของครั้งที่ PostgreSQL สามารถอ่านข้อมูลจาก shared_buffers (หน่วยความจำ cache) โดยไม่ต้องไปอ่านจากดิสก์ ซึ่งคำนวณเป็นเปอร์เซ็นต์จากจำนวน buffer hits ÷ (buffer hits + buffer reads); ค่าที่สูงใกล้ 100% หมายถึงระบบใช้ cache ได้มีประสิทธิภาพ ลด I/O บนดิสก์ ทำให้ query ทำงานเร็วขึ้น
 
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
-ตอบ เครื่องผมมี RAM 16 GB และ 200 connections แนะนำตั้ง shared_buffers 4 GB เพื่อเก็บ cache, work_mem ประมาณ 20 MB ต่อ query operation และ maintenance_work_mem 512 MB–1 GB เพื่อให้ VACUUM หรือ CREATE INDEX ทำงานรวดเร็วโดยไม่กระทบ session อื่น
+ตอบ เครื่องผมมี RAM 16 GB, ROM 512 GB และ SSD 1 TB แนะนำตั้ง shared_buffers 4 GB เพื่อเก็บ cache, work_mem ประมาณ 20 MB ต่อ query operation, maintenance_work_mem 512 MB–1 GB สำหรับ VACUUM/CREATE INDEX, และ effective_cache_size 12 GB เพื่อประเมิน OS cache ลด I/O
 
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
 ตอบ มีการสแกนหลัก ๆ 3 แบบ คือ
