@@ -220,10 +220,10 @@ SHOW data_directory;
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
    ตอบ data directory ของ PostgreSQL
    
-![config file path](<img width="419" height="215" alt="image" src="https://github.com/user-attachments/assets/933af969-037d-426b-8fa5-92186053d1ab" />
-)
-![data directory](<img width="344" height="221" alt="image" src="https://github.com/user-attachments/assets/e8c7bd85-926d-42e2-b1f3-019c928b7391" />
-)
+<img width="419" height="215" alt="image" src="https://github.com/user-attachments/assets/933af969-037d-426b-8fa5-92186053d1ab" />
+
+<img width="344" height="221" alt="image" src="https://github.com/user-attachments/assets/e8c7bd85-926d-42e2-b1f3-019c928b7391" />
+
 ```
 
 -- ตรวจสอบการตั้งค่าปัจจุบัน
