@@ -727,6 +727,8 @@ SELECT pg_reload_conf();
 ```
 รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
 ```
+<img width="712" height="500" alt="image" src="https://github.com/user-attachments/assets/6c442b98-4665-40d4-b68f-c3a24573453f" />
+
 
 ### Step 8: Performance Testing และ Benchmarking
 
