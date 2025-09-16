@@ -272,6 +272,7 @@ WHERE name = 'shared_buffers';
 ### 1.รูปผลการรันคำสั่ง
 <img width="687" height="190" alt="image" src="https://github.com/user-attachments/assets/2e772513-95eb-4f7f-a4a2-3f2c86d8f5dc" />
 
+```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
 ALTER SYSTEM SET shared_buffers = '512MB';
@@ -283,15 +284,19 @@ FROM pg_settings
 WHERE name = 'shared_buffers';
 
 ```
+```
 -- ออกจาก postgres prompt (กด \q แล้ว enter) ทำการ Restart PostgreSQL ด้วยคำสั่ง แล้ว run docker อีกครั้ง หรือใช้วิธีการ stop และ run containner
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
-
 ```
 ### ผลการทดลอง
+```
 รูปผลการเปลี่ยนแปลงค่า pending_restart
 รูปหลังจาก restart postgres
-
 ```
+<img width="678" height="414" alt="image" src="https://github.com/user-attachments/assets/dccd56d1-1767-4f8b-ba72-3891aafa5aa2" />
+<img width="670" height="225" alt="image" src="https://github.com/user-attachments/assets/64cdd8aa-200e-4b1c-a8e0-8b5e7c1c6f41" />
+
+
 
 #### 2.2 ปรับแต่ง Work Memory (ไม่ต้อง restart)
 ```sql
