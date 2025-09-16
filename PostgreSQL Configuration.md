@@ -1666,6 +1666,7 @@ ORDER BY hit_ratio;
 ```
 รูปผลการทดลอง
 ```
+<img width="878" height="338" alt="image" src="https://github.com/user-attachments/assets/9c04b010-d92d-4ff1-8c5c-a30453365b19" />
 
 ### การคำนวณ Memory Requirements
 
