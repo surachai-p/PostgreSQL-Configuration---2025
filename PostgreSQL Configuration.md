@@ -581,6 +581,8 @@ FROM get_memory_usage();
 รูปผลการทดลอง
 ```
 
+<img width="740" height="411" alt="image" src="https://github.com/user-attachments/assets/ebefdfb7-e1d7-4940-9b1d-5b235dbe0a92" />
+
 #### 6.2 การติดตาม Buffer Hit Ratio
 ```sql
 -- ตรวจสอบ buffer hit ratio (ควรอยู่เหนือ 95%)
