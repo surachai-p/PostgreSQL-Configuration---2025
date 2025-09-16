@@ -190,15 +190,20 @@ docker exec postgres-config df -h
 ### บันทึกผลการทดลอง
 ```
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+ตอบ docker exec postgres-config free ใช้ตรวจสอบการใช้งานหน่วยความจำ ภายใน container ว่ามีทั้งหมดเท่าไหร่ กำลังใช้ไปเท่าไหร่ และยังเหลือว่างเท่าไหร่ ส่วน docker exec postgres-config df ใช้ตรวจสอบพื้นที่เก็บข้อมูลว่า volume หรือ filesystem ต่าง ๆ ใช้ไปแล้วเท่าไหร่ เหลือว่างเท่าไหร่ และคิดเป็นกี่เปอร์เซ็นต์ของพื้นที่ทั้งหมด
+
 2. option -h ในคำสั่งมีผลอย่างไร
-3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
+ตอบ option -h ทำให้ผลลัพธ์ของคำสั่ง free และ df แสดงหน่วยความจำและพื้นที่จัดเก็บในรูปแบบที่อ่านง่าย เช่น MB หรือ GB แทนการแสดงเป็นตัวเลขหน่วย byte
+
+3. docker exec postgres-config nproc แสดงค่าผลลัพธ์อย่างไร
+ตอบ 12
+
 ```
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
 docker exec -it postgres-config psql -U postgres
 ```
 
-```sql
 -- ตรวจสอบเวอร์ชัน
 SELECT version();
 
@@ -207,10 +212,14 @@ SHOW config_file;
 SHOW hba_file;
 SHOW data_directory;
 
-### บันทึกผลการทดลอง
-```
+<img width="350" height="324" alt="image" src="https://github.com/user-attachments/assets/481bb333-790e-46e4-bed3-cae5cb999a1c" />
+
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+ตอบ /var/lib/postgresql/data/postgresql.conf
+
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+ตอบ /var/lib/postgresql/data
+
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -221,21 +230,21 @@ WHERE name IN (
 );
 ```
 ### บันทึกผลการทดลอง
-```
-บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
-```
+
+<img width="1350" height="289" alt="image" src="https://github.com/user-attachments/assets/2207d592-4c85-4eec-adc1-73e9db969e30" />
+
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
 #### 2.1 ปรับแต่ง Shared Buffers (ต้อง restart)
-```sql
+
 -- ตรวจสอบค่าปัจจุบัน
 SELECT name, setting, unit, source, pending_restart
 FROM pg_settings 
 WHERE name = 'shared_buffers';
 
-### ผลการทดลอง
-```
+<img width="584" height="137" alt="image" src="https://github.com/user-attachments/assets/970f878d-152d-4ca5-b370-8ecbafe82b19" />
+
 1.รูปผลการรันคำสั่ง
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
