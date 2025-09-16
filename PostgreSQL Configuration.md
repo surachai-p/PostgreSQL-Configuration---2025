@@ -188,11 +188,16 @@ docker exec postgres-config nproc
 docker exec postgres-config df -h
 ```
 ### บันทึกผลการทดลอง
-```
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+<img width="1450" height="224" alt="image" src="https://github.com/user-attachments/assets/09843c77-1f2d-4f6b-b945-a3ef392ab61c" />
+
 2. option -h ในคำสั่งมีผลอย่างไร
+<img width="591" height="55" alt="image" src="https://github.com/user-attachments/assets/990ba1be-7c35-4a24-924a-672ce97f8b10" />
+
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
-```
+<img width="659" height="220" alt="image" src="https://github.com/user-attachments/assets/d259dec4-57a1-4ca7-8d3d-dfd5b6b185ed" />
+
+
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
 docker exec -it postgres-config psql -U postgres
