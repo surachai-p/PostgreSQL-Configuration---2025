@@ -217,7 +217,10 @@ SHOW data_directory;
 ### บันทึกผลการทดลอง
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+   ตอบ :  /var/lib/postgresql/data/postgresql.conf
+   
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+   ตอบ : /var/lib/postgresql/data
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -228,9 +231,10 @@ WHERE name IN (
 );
 ```
 ### บันทึกผลการทดลอง
-```
-บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
-```
+
+บันทึกรูปผลของ configuration ทั้ง 6 ค่า
+<img width="1424" height="392" alt="image" src="https://github.com/user-attachments/assets/53672104-39c4-4944-bf61-95431dd4ad50" />
+
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
@@ -243,6 +247,9 @@ WHERE name = 'shared_buffers';
 
 ### ผลการทดลอง
 ```
+<img width="725" height="208" alt="image" src="https://github.com/user-attachments/assets/4a870fe1-6028-4669-a099-a0732a67dfc4" />
+
+
 1.รูปผลการรันคำสั่ง
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
@@ -250,6 +257,7 @@ WHERE name = 'shared_buffers';
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
 ALTER SYSTEM SET shared_buffers = '512MB';
+<img width="507" height="60" alt="image" src="https://github.com/user-attachments/assets/2bf27a47-dd65-42c4-8444-0f52f422719d" />
 
 -- ตรวจสอบการเปลี่ยนแปลง
 select pg_reload_conf();
@@ -265,8 +273,9 @@ docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresq
 ```
 รูปผลการเปลี่ยนแปลงค่า pending_restart
 รูปหลังจาก restart postgres
-
 ```
+<img width="834" height="378" alt="image" src="https://github.com/user-attachments/assets/06a4bb11-7db1-47ea-ac53-cb50c85ed926" />
+
 
 #### 2.2 ปรับแต่ง Work Memory (ไม่ต้อง restart)
 ```sql
@@ -290,6 +299,8 @@ WHERE name = 'work_mem';
 ```
 รูปผลการเปลี่ยนแปลงค่า work_mem
 ```
+<img width="908" height="212" alt="image" src="https://github.com/user-attachments/assets/a6d9942d-d4fa-4c4f-9c13-abc99171e0bf" />
+
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
 ```sql
@@ -307,6 +318,8 @@ SHOW maintenance_work_mem;
 ```
 รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
 ```
+<img width="778" height="341" alt="image" src="https://github.com/user-attachments/assets/2df3c686-46d3-44be-9b1d-ecdc096af537" />
+
 
 #### 3.4 ปรับแต่ง WAL Buffers
 ```sql
@@ -332,6 +345,8 @@ SHOW wal_buffers;
 ```
 รูปผลการเปลี่ยนแปลงค่า wal_buffers
 ```
+<img width="689" height="162" alt="image" src="https://github.com/user-attachments/assets/7c6877cc-7601-4dcc-be47-2410152ef2f7" />
+
 
 #### 3.5 ปรับแต่ง Effective Cache Size
 ```sql
