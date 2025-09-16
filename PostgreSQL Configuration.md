@@ -1311,7 +1311,10 @@ ORDER BY test_timestamp DESC;
 ### ผลการทดลอง
 ```
 รูปผลการทดลอง
+<img width="1159" height="231" alt="image" src="https://github.com/user-attachments/assets/bdddef4f-580c-4f0f-8981-c2243b45baba" />
+
 ```
+
 
 ### Step 12: การจัดการ Configuration แบบ Advanced
 
