@@ -379,7 +379,7 @@ WHERE name IN (
 ORDER BY name;
 ```
 ### ผลการทดลอง
-<img width="1416" height="125" alt="image" src="https://github.com/user-attachments/assets/92aaa188-859a-4b2a-adb8-78e93f5cb06d" />
+<img width="1539" height="162" alt="image" src="https://github.com/user-attachments/assets/b9a04cfa-0ce5-40e0-b250-fe1e57105be8" />
 
 
 ### Step 5: การสร้างและทดสอบ Workload
