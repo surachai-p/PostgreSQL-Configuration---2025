@@ -190,9 +190,15 @@ docker exec postgres-config df -h
 ### บันทึกผลการทดลอง
 ```
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+= ดูการใช้งานหน่วยความจำ |  อีกคำสั่งใช้ตรวจสอบการใช้งาน disk
 2. option -h ในคำสั่งมีผลอย่างไร
+= ทำให้ค่าที่แสดงอ่านง่ายขึ้น เช่น แสดงเป็น MB / GB แทนที่จะเป็นหน่วย KB
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
+= 12
+
 ```
+<img width="596" height="69" alt="image" src="https://github.com/user-attachments/assets/7c471ce1-dd79-4c1f-8bca-ae65ec336014" />
+
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
 docker exec -it postgres-config psql -U postgres
@@ -224,6 +230,7 @@ WHERE name IN (
 ```
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
 ```
+<img width="1454" height="448" alt="image" src="https://github.com/user-attachments/assets/4663e51e-3ee9-4512-a730-d3541a2c4302" />
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
@@ -255,11 +262,14 @@ WHERE name = 'shared_buffers';
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
 
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า pending_restart
-รูปหลังจาก restart postgres
 
-```
+รูปผลการเปลี่ยนแปลงค่า pending_restart
+<img width="874" height="536" alt="image" src="https://github.com/user-attachments/assets/ee88a149-a19c-43d5-b308-7ac1a968221b" />
+
+รูปหลังจาก restart postgres
+<img width="895" height="534" alt="image" src="https://github.com/user-attachments/assets/5427f5cf-c03a-47f9-a6a6-c3300e020045" />
+
+
 
 #### 2.2 ปรับแต่ง Work Memory (ไม่ต้อง restart)
 ```sql
