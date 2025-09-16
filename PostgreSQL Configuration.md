@@ -215,9 +215,9 @@ SHOW data_directory;
 ![alt text](img/0image.png)
 
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
-/var/lib/postgresql/data/postgresql.conf
+ตอบ /var/lib/postgresql/data/postgresql.conf
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
-/var/lib/postgresql/data
+ตอบ /var/lib/postgresql/data
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -254,9 +254,9 @@ WHERE name = 'shared_buffers';
 1. รูปผลการรันคำสั่ง
 ![alt text](img/2image.png)
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
-ค่า setting = 16384 หน่วย unit = 8kB
+ตอบ ค่า setting = 16384 หน่วย unit = 8kB
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
-ค่า pending_restart = f (false) ไม่จำเป็นต้องrestartPostgreSQLเพื่อให้ค่าการตั้งค่านี้มีผลเพราะค่าที่ใช้อยู่ตรงกับค่าที่กำหนดไว้ในไฟล์ config แล้ว
+ตอบ ค่า pending_restart = f (false) ไม่จำเป็นต้องrestartPostgreSQLเพื่อให้ค่าการตั้งค่านี้มีผลเพราะค่าที่ใช้อยู่ตรงกับค่าที่กำหนดไว้ในไฟล์ config แล้ว
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
@@ -275,9 +275,13 @@ docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresq
 ### ผลการทดลอง
 ```
 รูปผลการเปลี่ยนแปลงค่า pending_restart
-รูปหลังจาก restart postgres
-
 ```
+![alt text](img/3image.png)
+```
+รูปหลังจาก restart postgres
+```
+![alt text](img/4image.png)
+
 
 #### 2.2 ปรับแต่ง Work Memory (ไม่ต้อง restart)
 ```sql
@@ -301,6 +305,8 @@ WHERE name = 'work_mem';
 ```
 รูปผลการเปลี่ยนแปลงค่า work_mem
 ```
+![alt text](img/6image.png)
+
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
 ```sql
@@ -318,6 +324,8 @@ SHOW maintenance_work_mem;
 ```
 รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
 ```
+![alt text](img/7image.png)
+
 
 #### 3.4 ปรับแต่ง WAL Buffers
 ```sql
@@ -343,6 +351,8 @@ SHOW wal_buffers;
 ```
 รูปผลการเปลี่ยนแปลงค่า wal_buffers
 ```
+![alt text](img/8image.png)
+
 
 #### 3.5 ปรับแต่ง Effective Cache Size
 ```sql
