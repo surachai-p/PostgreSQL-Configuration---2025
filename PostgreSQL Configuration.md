@@ -190,8 +190,11 @@ docker exec postgres-config df -h
 ### บันทึกผลการทดลอง
 ```
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+= freeเพื่อดูการใช้งานหน่วยความจำ (RAM) | dfเพื่อตรวจสอบการใช้งาน disk
 2. option -h ในคำสั่งมีผลอย่างไร
+= ทำให้ค่าที่แสดงอ่านง่ายขึ้น เช่น แสดงเป็น MB / GB แทนที่จะเป็นหน่วย KB
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
+= 12
 ```
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
@@ -210,8 +213,9 @@ SHOW data_directory;
 ### บันทึกผลการทดลอง
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+= /var/lib/postgresql/data/postgresql.conf
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
-```
+= /var/lib/postgresql/data
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
 FROM pg_settings 
@@ -223,6 +227,8 @@ WHERE name IN (
 ### บันทึกผลการทดลอง
 ```
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
+<img width="1722" height="456" alt="image" src="https://github.com/user-attachments/assets/a8cd385a-4678-4c92-aa40-6ff357e8b289" />
+
 ```
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
@@ -238,7 +244,10 @@ WHERE name = 'shared_buffers';
 ```
 1.รูปผลการรันคำสั่ง
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+<img width="892" height="254" alt="image" src="https://github.com/user-attachments/assets/44b4d070-19a0-4bf5-a376-55bf343b784d" />
+
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+= ค่า f = false → แปลว่า ค่าที่ตั้งปัจจุบันของ parameter (shared_buffers) มีผลแล้วทันที
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
@@ -255,9 +264,12 @@ WHERE name = 'shared_buffers';
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
 
 ### ผลการทดลอง
-```
+
 รูปผลการเปลี่ยนแปลงค่า pending_restart
+<img width="886" height="681" alt="image" src="https://github.com/user-attachments/assets/1485ffd7-1c73-41f4-9c0b-68cf924789f4" />
+
 รูปหลังจาก restart postgres
+<img width="949" height="547" alt="image" src="https://github.com/user-attachments/assets/d1733d25-5781-40ac-8352-3bc60209c770" />
 
 ```
 
@@ -283,6 +295,10 @@ WHERE name = 'work_mem';
 ```
 รูปผลการเปลี่ยนแปลงค่า work_mem
 ```
+<img width="364" height="180" alt="image" src="https://github.com/user-attachments/assets/abc803c0-8017-4830-b5ce-909e71206250" />
+<img width="581" height="220" alt="image" src="https://github.com/user-attachments/assets/e092ae8e-6918-4d38-8cdd-ee5b58b9683a" />
+<img width="367" height="133" alt="image" src="https://github.com/user-attachments/assets/e3f19f62-dd46-4a3c-8bdc-8ce9871c2798" />
+<img width="603" height="225" alt="image" src="https://github.com/user-attachments/assets/5fb4ab65-a20b-4c97-aed5-a2207895921c" />
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
 ```sql
@@ -300,6 +316,9 @@ SHOW maintenance_work_mem;
 ```
 รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
 ```
+<img width="477" height="177" alt="image" src="https://github.com/user-attachments/assets/2124348d-edf8-440a-a354-bbaabe5630d1" />
+<img width="742" height="224" alt="image" src="https://github.com/user-attachments/assets/58f918c2-b241-4054-ac71-9c61c2c76dc3" />
+<img width="470" height="191" alt="image" src="https://github.com/user-attachments/assets/eb0fe66c-99ff-4e8c-973b-7abf558ee620" />
 
 #### 3.4 ปรับแต่ง WAL Buffers
 ```sql
@@ -325,6 +344,8 @@ SHOW wal_buffers;
 ```
 รูปผลการเปลี่ยนแปลงค่า wal_buffers
 ```
+<img width="399" height="181" alt="image" src="https://github.com/user-attachments/assets/2862b0d8-4e45-4241-b885-e9a9fcfdf8dd" />
+<img width="379" height="182" alt="image" src="https://github.com/user-attachments/assets/37c0ce6e-c7f1-488c-988b-4e208207780b" />
 
 #### 3.5 ปรับแต่ง Effective Cache Size
 ```sql
@@ -342,6 +363,9 @@ SHOW effective_cache_size;
 ```
 รูปผลการเปลี่ยนแปลงค่า effective_cache_size
 ```
+<img width="467" height="199" alt="image" src="https://github.com/user-attachments/assets/ee76c2c8-eb31-43db-8721-99ae24c23d8f" />
+<img width="762" height="233" alt="image" src="https://github.com/user-attachments/assets/e1c3e723-603e-4813-8a42-267c79f89eb3" />
+<img width="736" height="367" alt="image" src="https://github.com/user-attachments/assets/1e99b533-76f1-4dd9-9394-b2563603d4cc" />
 
 ### Step 4: ตรวจสอบผล
 
@@ -371,6 +395,7 @@ ORDER BY name;
 ```
 รูปผลการลัพธ์การตั้งค่า
 ```
+<img width="1506" height="458" alt="image" src="https://github.com/user-attachments/assets/b7f9bfda-ac39-4c48-bbbe-4e71e7798296" />
 
 ### Step 5: การสร้างและทดสอบ Workload
 
@@ -412,10 +437,20 @@ ORDER BY data
 LIMIT 1000;
 ```
 ### ผลการทดลอง
-```
-1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
+
+1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร
+= EXPLAIN ใช้เพื่อดูแผนการทำงาน (query execution plan) ของ PostgreSQL
+ANALYZE ให้ PostgreSQL รัน query จริง แล้วบอกเวลาจริง (actual time) + จำนวนแถวจริง (rows) ที่ประมวลผล
+BUFFERS แสดงการใช้งาน buffer I/O (จำนวน page ที่อ่านจาก disk หรือจาก shared buffer cache)
 2. รูปผลการรัน
+<img width="864" height="527" alt="image" src="https://github.com/user-attachments/assets/4444b766-d559-4568-b7b9-5183d7be8047" />
+<img width="886" height="406" alt="image" src="https://github.com/user-attachments/assets/7bed6c8e-611a-4c35-95c2-f334a1281993" />
 3. อธิบายผลลัพธ์ที่ได้
+= PostgreSQL อ่านตาราง large_table แบบ parallel scan โดยใช้ workers 2 ตัว
+ทำการ sort โดยใช้ top-N heapsort (ประหยัดกว่า full sort)
+ดึงข้อมูล 1000 แถวแรกออกมา
+Execution ใช้เวลา ~189 ms
+ส่วนใหญ่ข้อมูลอ่านจาก cache (shared hit) มีอ่านจาก disk เพียงเล็กน้อย (read=224)
 ```
 ```sql
 -- ทดสอบ Hash operation
@@ -428,10 +463,19 @@ LIMIT 100;
 ```
 
 ### ผลการทดลอง
-```
+
 1. รูปผลการรัน
-2. อธิบายผลลัพธ์ที่ได้ 
+<img width="1695" height="740" alt="image" src="https://github.com/user-attachments/assets/c473d718-230e-41bd-a720-82d8191f16e4" />
+2. อธิบายผลลัพธ์ที่ได้
+=Query ใช้ Index Only Scan บนคอลัมน์ number → ทำงานเร็วมาก เพราะไม่ต้องอ่านตารางจริง
+ใช้ GroupAggregate เพื่อรวมกลุ่มและกรองเฉพาะกลุ่มที่มีมากกว่า 1 แถว
+Query ใช้เวลารวม ไม่ถึง 1 ms → ประสิทธิภาพดีมาก
+การมี Index (idx_large_table_number) ช่วยทำให้ PostgreSQL ทำงานเร็วขึ้นอย่างชัดเจน
 3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+= Index Only Scan มีการใช้ Index ครอบคลุม (Covering Index):
+คอลัมน์ที่ใช้ใน query (เช่น number) อยู่ใน index idx_large_table_number
+PostgreSQL ตรวจสอบ visibility map แล้วว่า index เพียงพอ
+PostgreSQL จะเลือกใช้ Index Only Scan ก็ต่อเมื่อสามารถแน่ใจได้ว่า row นั้น "visible" โดยไม่ต้องอ่าน heap
 ```
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
@@ -447,9 +491,14 @@ DELETE FROM large_table WHERE id % 10 = 0;
 VACUUM (ANALYZE, VERBOSE) large_table;
 ```
 ### ผลการทดลอง
-```
+``
 1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
+<img width="1683" height="714" alt="image" src="https://github.com/user-attachments/assets/2153c6df-69fc-4d9f-ac9e-5fb902348f76" />
 2. อธิบายผลลัพธ์ที่ได้
+= PostgreSQL ทำการ Vacuum และ Analyze ตาราง large_table โดยได้ทำการสแกนทั้งตารางจำนวน 10,117 หน้า (pages) และพบว่ามีข้อมูลที่ไม่จำเป็น (dead tuples) จำนวน 100,000 แถว ซึ่งถูกลบออกเรียบร้อยแล้ว หลังจาก Vacuum เสร็จแล้ว ตารางคงเหลือแถวข้อมูลที่ใช้งานอยู่ (live rows) จำนวน 900,000 แถว และไม่มีแถวที่ตาย (dead rows) เหลืออยู่เลย
+สำหรับดัชนี (Indexes) ทั้งหมด เช่น idx_large_table_number, idx_large_table_created_at, และ idx_large_table_data ไม่มีการลบข้อมูลใด ๆ เพิ่มเติม เพราะไม่มีรายการที่ถูกลบหรือสามารถนำกลับมาใช้ใหม่ได้ใน index เหล่านี้
+ระบบมีการอ่านข้อมูลด้วยความเร็วเฉลี่ยประมาณ 262 MB/s และเขียนข้อมูลที่ความเร็วเฉลี่ยประมาณ 378 MB/s โดยมีการใช้งาน buffer อย่างมีประสิทธิภาพ รวมถึงมีการบันทึกข้อมูลลงใน Write-Ahead Log (WAL) เพื่อความปลอดภัยของข้อมูล
+PostgreSQL ยังได้ทำการ Analyze ตารางโดยการสุ่มข้อมูล 30,000 แถวจากทั้งหมด เพื่อนำมาประเมินและอัปเดตสถิติของตาราง ซึ่งจะช่วยให้ระบบสามารถวางแผนการทำงานของคำสั่ง SQL ได้มีประสิทธิภาพมากขึ้น
 ```
 ### Step 6: การติดตาม Memory Usage
 
@@ -494,6 +543,7 @@ FROM get_memory_usage();
 ```
 รูปผลการทดลอง
 ```
+<img width="1162" height="731" alt="image" src="https://github.com/user-attachments/assets/41d42c5b-14d8-401c-a6bb-d4b235a89ed8" />
 
 #### 6.2 การติดตาม Buffer Hit Ratio
 ```sql
@@ -512,9 +562,13 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY heap_blks_read + heap_blks_hit DESC;
 ```
 ### ผลการทดลอง
-```
+``
 1. รูปผลการทดลอง
+<img width="1097" height="462" alt="image" src="https://github.com/user-attachments/assets/b542cbc8-1ab7-433e-9b4d-a6f0cf4e5875" />
+
 2. อธิบายผลลัพธ์ที่ได้
+= อัตราส่วน buffer hit ratio = 99.35% ถือว่าสูงมาก และ เกินค่ามาตรฐานที่แนะนำ (> 95%)
+แสดงว่า PostgreSQL สามารถอ่านข้อมูลจาก หน่วยความจำ (RAM) ได้เกือบทั้งหมด ซึ่งดีกว่าการอ่านจาก disk มาก เพราะเร็วและประหยัดทรัพยากร
 ```
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
@@ -526,9 +580,14 @@ FROM pg_stat_database
 WHERE datname = current_database();
 ```
 ### ผลการทดลอง
-```
+``
 1. รูปผลการทดลอง
+<img width="1112" height="297" alt="image" src="https://github.com/user-attachments/assets/54639428-efc3-4680-95ce-5d5ea86a1580" />
 2. อธิบายผลลัพธ์ที่ได้
+=blks_read: จำนวน block ที่ PostgreSQL ต้องไปอ่านจากดิสก์ (disk I/O)
+blks_hit: จำนวน block ที่ PostgreSQL หาเจอในหน่วยความจำ (shared buffer)
+hit_ratio_percent: อัตราส่วนของการอ่านจากหน่วยความจำเทียบกับทั้งหมด (RAM vs Disk)
+
 ```
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
@@ -547,9 +606,15 @@ ORDER BY heap_blks_read DESC
 LIMIT 10;
 ```
 ### ผลการทดลอง
-```
+``
 1. รูปผลการทดลอง
+<img width="1423" height="421" alt="image" src="https://github.com/user-attachments/assets/10ee8f39-865e-46fc-845d-5632a91db5fa" />
+
 2. อธิบายผลลัพธ์ที่ได้
+= ตาราง large_table มีการเข้าถึงข้อมูลรวมกว่า 1.24 ล้านครั้ง
+แต่มีเพียง 80,445 ครั้ง (ประมาณ 6.5%) ที่ PostgreSQL ต้องอ่านจากดิสก์
+ที่เหลือกว่า 99.35% อ่านได้จาก memory (RAM) ทำให้ query ทำงานเร็ว
+ตารางนี้มีขนาดไม่ใหญ่มาก (167 MB) และยังสามารถถูก cache ไว้ใน memory ได้อย่างดี
 ```
 ### Step 7: การปรับแต่ง Autovacuum
 
@@ -562,9 +627,15 @@ WHERE name LIKE '%autovacuum%'
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
+``
 1. รูปผลการทดลอง
+<img width="1728" height="736" alt="image" src="https://github.com/user-attachments/assets/dc293b4f-ab47-4474-8bee-18f134547258" />
+
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
+= ระบบถูกตั้งค่าให้ ทำงานอย่างปลอดภัย เพื่อป้องกัน wraparound (ค่าต่าง ๆ เช่น freeze_max_age และ multixact_freeze_max_age สูง)
+Autovacuum ถูกตั้งให้เกิดขึ้นเมื่อ มีการเปลี่ยนแปลงข้อมูล 20% ขึ้นไป (ทั้ง update/delete และ insert)
+มีการกำหนดจำนวน worker = 3 เพื่อไม่ให้ระบบ autovacuum หนักเกินไป
+การทำงานของ autovacuum 
 ```
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
@@ -595,6 +666,8 @@ SELECT pg_reload_conf();
 ```
 รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
 ```
+<img width="701" height="750" alt="image" src="https://github.com/user-attachments/assets/d1af5541-0146-45aa-b6c9-3d9067b9619d" />
+<img width="479" height="579" alt="image" src="https://github.com/user-attachments/assets/944f1861-2fef-4b39-9e83-2428e00a318a" />
 
 ### Step 8: Performance Testing และ Benchmarking
 
@@ -667,9 +740,16 @@ FROM performance_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
+``
 1. รูปผลการทดลอง
+<img width="1470" height="702" alt="image" src="https://github.com/user-attachments/assets/599fba80-159a-4103-93eb-61d1e3880c7a" />
+
+
 2. อธิบายผลลัพธ์ที่ได้
+= ระบบได้ทำการทดสอบ 2 แบบ คือ large_sort และ aggregation โดยใช้ configuration 'optimized'
+ผลคือ large_sort ทำงานได้รวดเร็วมาก ในขณะที่ aggregation ใช้เวลานานกว่า
+ตาราง performance_results เก็บข้อมูลเวลาที่ใช้ในแต่ละ test
+การใช้ WINDOW FUNCTION (เช่น AVG(...) OVER (...)) ทำให้สามารถวิเคราะห์ข้อมูลหลายรอบของ test เดียวกันได้สะดวก
 ```
 
 
@@ -707,6 +787,7 @@ SELECT * FROM memory_monitor;
 ```
 รูปผลการทดลอง
 ```
+<img width="1477" height="752" alt="image" src="https://github.com/user-attachments/assets/36fccb2b-f455-45cf-baff-891977ddc4aa" />
 
 ### Step 10: การจำลอง Load Testing
 
@@ -756,6 +837,7 @@ CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 ```
 รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
 ```
+<img width="947" height="742" alt="image" src="https://github.com/user-attachments/assets/072fb34e-39e8-4bc5-85da-bafbc65b0686" />
 
 #### 10.2 การทดสอบ Query Performance
 ```sql
@@ -932,13 +1014,36 @@ SELECT * FROM simulate_oltp_workload(25);
 ### ผลการทดลอง
 ```
 รูปผลการทดลอง
+<img width="1029" height="287" alt="image" src="https://github.com/user-attachments/assets/762d133f-c066-4182-b547-235493190218" />
+
 ```
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
-2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
+<img width="1058" height="359" alt="image" src="https://github.com/user-attachments/assets/d4df1e46-0f64-47b3-b264-105007cf5ebb" />
+
+2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร
+ = 1. SELECT
+avg_time_ms: 0.049 ms → เร็วมาก
+min/max: 0.018 - 0.758 ms
+เป็นการอ่านข้อมูลโดยใช้ JOIN และ WHERE
+ประสิทธิภาพดีเยี่ยม แสดงว่า index และ join strategy ถูกใช้ได้ดี
+2. INSERT
+avg_time_ms: 0.281 ms → เร็ว
+min/max: 0.010 - 8.681 ms
+มีความเร็วสูง แต่มีบางครั้งที่ใช้เวลาสูงสุดถึง 8.6 ms อาจเกิดจากการรอ I/O หรือ WAL
+3. UPDATE
+avg_time_ms: 93.687 ms → ช้ากว่ามาก
+min/max: 80.075 - 142.573 ms
+การ update ข้อมูลใน PostgreSQL จริง ๆ แล้วคล้ายกับการลบแล้วแทรกใหม่ (MVCC) ทำให้เกิด overhead
+หากมี index หรือ trigger เพิ่ม อาจส่งผลให้ช้าขึ้น
+4. DELETE (soft)
+avg_time_ms: 110.975 ms → ช้าที่สุด
+min/max: 97.800 - 146.863 ms
+เป็น "soft delete" โดยน่าจะใช้การตั้งค่า deleted_at หรือ flag เพื่อไม่ลบจริง
+ช้ากว่า UPDATE แสดงว่ามี logic เพิ่มใน query เช่นตรวจสอบเงื่อนไขก่อน update
 ```
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
@@ -946,6 +1051,8 @@ SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
 ```
 รูปผลการทดลอง
+<img width="1097" height="310" alt="image" src="https://github.com/user-attachments/assets/5113aea8-3bfb-41e0-9fee-00015f21af4b" />
+
 ```
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
@@ -1139,8 +1246,10 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM run_benchmark_suite();
 ```
 ### ผลการทดลอง
-```
+``
 รูปผลการทดลอง
+<img width="1040" height="234" alt="image" src="https://github.com/user-attachments/assets/7beb5d8e-0512-4f71-9a12-e1830a58f19c" />
+
 ```
 
 -- ดูผลการทดสอบ
@@ -1159,13 +1268,14 @@ ORDER BY test_timestamp DESC;
 ```
 รูปผลการทดลอง
 ```
+<img width="1467" height="285" alt="image" src="https://github.com/user-attachments/assets/b16f25ad-0c24-4351-862b-9894c9b58e28" />
 
 ### Step 12: การจัดการ Configuration แบบ Advanced
 
 #### 12.1 การสร้าง Configuration Profiles
 ```sql
 -- สร้างตาราง config templates
-CREATE TABLE IF NOT EXISTS config_templates (
+tems'),CREATE TABLE IF NOT EXISTS config_templates (
     template_id SERIAL PRIMARY KEY,
     template_name VARCHAR(50) UNIQUE,
     parameter_name VARCHAR(100),
@@ -1177,7 +1287,7 @@ CREATE TABLE IF NOT EXISTS config_templates (
 -- เพิ่ม configuration profiles สำหรับ workload ต่างๆ
 INSERT INTO config_templates (template_name, parameter_name, parameter_value, description) VALUES
 -- Small OLTP Profile (สำหรับระบบเล็ก < 2GB RAM)
-('small_oltp', 'shared_buffers', '256MB', 'Buffer cache for small systems'),
+('small_oltp', 'shared_buffers', '256MB', 'Buffer cache for small sys
 ('small_oltp', 'work_mem', '4MB', 'Conservative work memory'),
 ('small_oltp', 'maintenance_work_mem', '128MB', 'Maintenance operations memory'),
 ('small_oltp', 'effective_cache_size', '1GB', 'OS cache size estimation'),
@@ -1425,6 +1535,8 @@ SELECT auto_tune_memory();
 ### ผลการทดลอง
 ```
 รูปผลการทดลอง
+<img width="895" height="602" alt="image" src="https://github.com/user-attachments/assets/f8c69432-c114-48d8-912e-477376f8791a" />
+
 ```
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
@@ -1441,6 +1553,7 @@ ORDER BY hit_ratio;
 ```
 รูปผลการทดลอง
 ```
+<img width="1262" height="424" alt="image" src="https://github.com/user-attachments/assets/a649e036-4e74-49a4-a999-1fe7da91846d" />
 
 ### การคำนวณ Memory Requirements
 
@@ -1472,9 +1585,30 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 ## คำถามท้ายการทดลอง
 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
+=ใน PostgreSQL หน่วยความจำที่จัดอยู่ในประเภท Shared Memory คือหน่วยความจำที่ใช้ร่วมกันระหว่าง backend processes โดยหน่วยความจำสำคัญที่อยู่ในกลุ่มนี้ ได้แก่ shared_buffers, wal_buffers และ temp_buffers ซึ่ง shared_buffers เป็นส่วนสำคัญที่สุด ใช้เก็บข้อมูลที่ถูกดึงจากดิสก์เข้ามาไว้ในหน่วยความจำเพื่อให้การเข้าถึงครั้งถัดไปเร็วขึ้น โดยหลักในการตั้งค่าคือให้ shared_buffers อยู่ที่ประมาณ 25% ถึง 40% ของหน่วยความจำทั้งหมดของเครื่อง ส่วน wal_buffers แนะนำให้ใช้ค่า -1 เพื่อให้ PostgreSQL คำนวณให้อัตโนมัติ และ temp_buffers ใช้เฉพาะเมื่อมี temporary tables ที่ต้องใช้ใน query เท่านั้น
 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+=work_mem คือหน่วยความจำที่ใช้ต่อหนึ่ง operation ต่อหนึ่ง query เช่น การ sort, hash join หรือ aggregate หาก query มีหลาย operation ก็จะใช้ work_mem หลายเท่า เช่น มี 3 joins ก็ใช้ 3 × work_mem ถ้าไม่พอ PostgreSQL จะใช้ temporary file บน disk แทน ทำให้ช้าลง
+ส่วน maintenance_work_mem เป็นหน่วยความจำที่ใช้ในงานเบื้องหลัง เช่น การสร้าง index, VACUUM, ANALYZE โดยปกติสามารถตั้งค่านี้ได้สูงกว่าค่า work_mem เพื่อให้กระบวนการทำงานรวดเร็วขึ้น
+หลักการตั้งค่าคือ work_mem ควรหารจาก RAM ที่เหลือหลังจากหัก shared_buffers แล้ว แบ่งตามจำนวน connection และจำนวน operation ต่อ query ส่วน maintenance_work_mem แนะนำให้ตั้งไว้ตั้งแต่ 64MB ถึง 1GB ขึ้นอยู่กับขนาดข้อมูลและความถี่ในการรัน vacuum หรือสร้าง index
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+=หากเครื่องมี RAM 16GB และกำหนด connection = 200 ควรกำหนด shared_buffers ประมาณ 4GB (25% ของ RAM) ซึ่งจะเหลือ RAM อีก 12GB สำหรับ process ต่างๆ หากกำหนดว่าแต่ละ query ใช้งานเฉลี่ย 2 operation พร้อมกัน ก็ควรกำหนด work_mem ประมาณ 12MB ต่อ operation ดังนั้น 200 connections × 2 operation × 12MB = 4.8GB ซึ่งยังอยู่ในขอบเขตของ RAM
+สำหรับ maintenance_work_mem ควรกำหนดไว้ที่ 512MB ถึง 1GB เพื่อให้กระบวนการ vacuum หรือ index creation ทำงานได้มีประสิทธิภาพ โดยไม่กระทบต่อระบบโดยรวม
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
+=ไฟล์ postgresql.conf คือไฟล์หลักที่ใช้ในการกำหนดค่าการทำงานของ PostgreSQL และสามารถแก้ไขโดยตรงได้ ขณะที่ postgresql.auto.conf คือไฟล์ที่ PostgreSQL สร้างขึ้นเองเมื่อมีการใช้คำสั่ง ALTER SYSTEM SET เพื่อแก้ไขค่า configuration แบบ runtime โดยค่าใน postgresql.auto.conf จะถูกอ่านและ override ค่าใน postgresql.conf เมื่อเริ่มต้นระบบใหม่ ดังนั้นหากต้องการตั้งค่าระบบแบบถาวรโดยไม่ใช้คำสั่ง ALTER SYSTEM ควรแก้ใน postgresql.conf แต่ถ้าใช้คำสั่ง ALTER SYSTEM จะถูกเขียนลงใน postgresql.auto.conf แทน
 5. Buffer hit ratio คืออะไร
+=Buffer Hit Ratio คือสัดส่วนของการอ่านข้อมูลจากหน่วยความจำ (buffer cache) เมื่อเทียบกับการอ่านจากดิสก์ โดยค่าที่สูงแสดงถึงประสิทธิภาพที่ดี เพราะ PostgreSQL สามารถดึงข้อมูลจาก memory ได้โดยไม่ต้องเข้าถึง disk ซึ่งเร็วกว่ามาก
+สามารถคำนวณได้จากสูตร heap_blks_hit / (heap_blks_hit + heap_blks_read) ซึ่งค่าที่ดีควรอยู่ในช่วง 95% ขึ้นไป โดยการเพิ่ม shared_buffers และการใช้งาน index อย่างเหมาะสมจะช่วยเพิ่มค่า buffer hit ratio ได้
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+=
+wal_buffers = 4mb
+work_mem = 20MB
+effective_cache_size = 4Gb
+maintenance_work_mem = 512MB
+
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+=
+1.Sequential Scan คือการอ่านข้อมูลทุกแถวในตาราง เรียงจากต้นจนจบ เหมาะกับตารางเล็ก ๆ หรือ query ที่ไม่สามารถใช้ index ได้ ข้อดีคือไม่ต้องมี index แต่ข้อเสียคือช้าสำหรับตารางขนาดใหญ่
+
+2.Index Scan คือการใช้ index เพื่อค้นหาเฉพาะแถวที่ต้องการ โดย PostgreSQL จะค้น index ก่อนแล้วไปดึงข้อมูลจากตารางจริงอีกครั้ง เหมาะกับ query ที่มีเงื่อนไขชัดเจน เช่น WHERE id = 10 ข้อดีคือเร็วเมื่อมี index ที่เหมาะสม แต่ข้อเสียคืออาจต้องเข้าถึงข้อมูลจริงหลายครั้ง (random I/O)
+
+3.Bitmap Index Scan คือการใช้ index หลายอันพร้อมกัน และสร้าง bitmap เพื่อระบุแถวที่ต้องอ่าน จากนั้นอ่านข้อมูลแบบต่อเนื่อง (sequential) เหมาะกับกรณีที่มีหลายเงื่อนไขและหลาย index เช่น WHERE status = 'active' AND category = 'A' ข้อดีคือประหยัด I/O และสามารถใช้ index หลายตัวพร้อมกันได้ ข้อเสียคือใช้หน่วยความจำมากกว่าปกติ
