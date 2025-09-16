@@ -527,6 +527,16 @@ VACUUM (ANALYZE, VERBOSE) large_table;
 1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
 2. อธิบายผลลัพธ์ที่ได้
 ```
+<img width="1333" height="499" alt="image" src="https://github.com/user-attachments/assets/0448622d-abe6-4b5d-9f74-de655ac2f705" />
+
+```
+ผลการรัน VACUUM ANALYZE แสดงว่า
+  -ตาราง large_table มี 450,000 แถวที่ใช้งานอยู่ (live rows)
+  -ไม่มีแถวที่ถูกลบหรือหมดอายุ (dead rows = 0)
+  -PostgreSQL อัปเดตสถิติ (statistics) เรียบร้อย ทำให้ query planner เลือกแผนได้ดี
+  -ใช้เวลาประมาณ 560 ms
+```
+
 ### Step 6: การติดตาม Memory Usage
 
 #### 6.1 สร้างฟังก์ชันติดตาม Memory
