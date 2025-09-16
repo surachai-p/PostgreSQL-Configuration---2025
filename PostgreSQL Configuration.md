@@ -754,8 +754,10 @@ ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
 ```
-1. รูปผลการทดลอง
+<img width="779" height="438" alt="image" src="https://github.com/user-attachments/assets/22c2162f-5283-4bdc-9198-c2b7b59421a7" />
+
 2. อธิบายผลลัพธ์ที่ได้
+ไม่เจอตาราง
 ```
 
 
