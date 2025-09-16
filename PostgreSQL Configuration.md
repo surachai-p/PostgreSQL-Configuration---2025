@@ -734,6 +734,7 @@ ORDER BY name;
 
 <img width="1442" height="503" alt="image" src="https://github.com/user-attachments/assets/2dad731c-5205-4299-a760-776ad5c7c3a2" />
 ```
+```
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
 ค่าที่ ควบคุมความถี่ ของ autovacuum คือ:
   autovacuum_naptime
@@ -746,7 +747,7 @@ ORDER BY name;
   autovacuum_vacuum_cost_delay
   autovacuum_vacuum_cost_limit
   autovacuum_work_mem
-
+```
 ```
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
