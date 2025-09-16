@@ -1594,6 +1594,7 @@ hit_ratio = heap_blks_hit / (heap_blks_hit + heap_blks_read)
 - รวมแล้วไม่เกิน 12GB → balance ดี
   
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+  
 1. Seq Scan (Sequential Scan)
 - อ่านตารางทั้งก้อนไล่ทีละแถว
 - เหมาะกับ query ที่ดึงข้อมูลจำนวนมาก หรือไม่มี index
