@@ -977,7 +977,7 @@ $$ LANGUAGE plpgsql;
 -- รัน load test ทดสอบเบาๆ
 SELECT * FROM simulate_oltp_workload(25);
 
-```
+
 ### ผลการทดลอง
 
 <img width="682" height="229" alt="image" src="https://github.com/user-attachments/assets/86888d48-652e-4359-b0ee-f7de55488fa9" />
@@ -987,17 +987,15 @@ SELECT * FROM simulate_oltp_workload(100);
 
 <img width="696" height="247" alt="image" src="https://github.com/user-attachments/assets/9c0d9ad3-970b-487c-b936-71051e7d8525" />
 
-```
-1. รูปผลการทดลอง
-2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
-```
+อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
+ตอบ SELECT มีเวลาเฉลี่ยต่อ query เร็วมาก, INSERT เวลาเฉลี่ยค่อนข้างเร็ว, UPDATE ใช้เวลามากกว่าการ SELECT/INSERT หลายร้อยเท่า สุดท้าย DELETE ช้เวลามากที่สุดในกลุ่มนี้
+
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
 SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+<img width="698" height="247" alt="image" src="https://github.com/user-attachments/assets/513957c0-c62e-4c64-8278-e335ecf3433d" />
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
 
