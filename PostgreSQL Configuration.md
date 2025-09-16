@@ -840,9 +840,8 @@ CREATE INDEX idx_orders_product_id ON load_test_orders(product_id);
 CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
-```
+<img width="634" height="373" alt="image" src="https://github.com/user-attachments/assets/e0af5b9d-b41e-4188-b98a-b19f7dcc408e" />
+
 
 #### 10.2 การทดสอบ Query Performance
 ```sql
