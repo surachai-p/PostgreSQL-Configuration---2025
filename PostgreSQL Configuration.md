@@ -424,7 +424,7 @@ ORDER BY data
 LIMIT 1000;
 ```
 ### ผลการทดลอง
-```
+
 1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร
 EXPLAIN → ใช้บอก แผนการทำงานของ Query (query execution plan) ว่าฐานข้อมูลจะทำงานอย่างไร เช่นใช้ Index หรือ Scan ตารางตรง ๆ
 ANALYZE → บังคับให้รัน Query จริง แล้วแสดงเวลาที่ใช้จริง (execution time) เทียบกับแผนที่คาดการณ์
@@ -470,10 +470,37 @@ LIMIT 100;
 ```
 
 ### ผลการทดลอง
-```
-1. รูปผลการรัน
-2. อธิบายผลลัพธ์ที่ได้ 
+
+<img width="1424" height="513" alt="image" src="https://github.com/user-attachments/assets/92f46486-be61-4091-919d-f974c6cd436a" />
+
+2. อธิบายผลลัพธ์ที่ได้
+Limit
+Query ดึงมาแค่ 100 แถวแรก → ใช้เวลาเพียง 0.269..0.474 ms
+
+GroupAggregate
+ใช้ Group Key: number หมายถึงทำการ Group ตามค่า number
+
+Filter (count(*) > 1) → ตัดแถวที่ count ≤ 1 ออกไป (Rows Removed by Filter: 366)
+เวลาที่ใช้: 0.257..0.457 ms
+
+Index Only Scan using idx_large_table_number
+ใช้ index ที่สร้างไว้บนคอลัมน์ number เพื่ออ่านข้อมูล → ทำให้ query ทำงานได้เร็วมาก
+ไม่ต้องอ่านตารางจริง (Heap Fetches = 0) เพราะ index มีข้อมูลครบสำหรับ query
+
+Buffers
+shared hit=5 → ข้อมูลถูกอ่านจาก memory buffer ไม่ต้องไป disk
+
+Execution Time
+ทั้ง query ใช้เพียง 0.920 ms → เร็วมาก
+
 3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+
+การสแกนที่ใช้คือ Index Only Scan
+เหตุผลที่ PostgreSQL เลือก Index Only Scan:
+มีการสร้าง index บนคอลัมน์ number อยู่แล้ว (idx_large_table_number)
+คำสั่ง GROUP BY number และ HAVING ใช้ข้อมูลที่อยู่ใน index ได้โดยตรง → ไม่ต้องอ่านตารางเต็ม (heap)
+Query เลยดึงข้อมูลเฉพาะจาก index → เร็วกว่า Seq Scan หรือ Index Scan ปกติ
+
 ```
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
