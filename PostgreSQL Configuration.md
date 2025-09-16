@@ -1,4 +1,4 @@
-# Lab 02: PostgreSQL Configuration and Memory Management
+<img width="982" height="193" alt="image" src="https://github.com/user-attachments/assets/6c123b95-3ad5-453b-809d-4cf072ad503b" /># Lab 02: PostgreSQL Configuration and Memory Management
 
 ## วัตถุประสงค์
 1. เรียนรู้การกำหนดค่า PostgreSQL สำหรับการปรับประสิทธิภาพ
@@ -240,12 +240,17 @@ WHERE name IN (
 SELECT name, setting, unit, source, pending_restart
 FROM pg_settings 
 WHERE name = 'shared_buffers';
-
-### ผลการทดลอง
 ```
-1.รูปผลการรันคำสั่ง
+### ผลการทดลอง
+1. รูปผลการรันคำสั่ง
+<img width="871" height="165" alt="image" src="https://github.com/user-attachments/assets/12c907cd-acae-420d-922d-a153efc16582" />
+
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+<br>`คำนวณจาก setting × unit = 16384 × 8kB = 131072 kB ≈ 128 MB`
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+<br>`ค่าในผลทดสอบคือ f (false)
+ ความหมาย: ตอนนี้ ไม่มีการเปลี่ยนค่า ของพารามิเตอร์ที่รอให้รีสตาร์ทจึงจะมีผล — ค่าที่ทำงานอยู่คือค่าปัจจุบันแล้ว (แม้ว่า shared_buffers จะเป็นพารามิเตอร์ที่ “ถ้าจะเปลี่ยนค่า” ต้องรีสตาร์ทเซิร์ฟเวอร์ก็ตาม)
+`
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
@@ -259,14 +264,16 @@ WHERE name = 'shared_buffers';
 
 ```
 -- ออกจาก postgres prompt (กด \q แล้ว enter) ทำการ Restart PostgreSQL ด้วยคำสั่ง แล้ว run docker อีกครั้ง หรือใช้วิธีการ stop และ run containner
+```
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
+```
 
 ### ผลการทดลอง
-```
 รูปผลการเปลี่ยนแปลงค่า pending_restart
-รูปหลังจาก restart postgres
+<img width="871" height="165" alt="image" src="https://github.com/user-attachments/assets/c1442ceb-bfeb-4efb-a841-0224ddfccaaf" />
 
-```
+รูปหลังจาก restart postgres
+<img width="982" height="193" alt="image" src="https://github.com/user-attachments/assets/407737b2-7a16-4109-baa9-2d4eb1836b1e" />
 
 #### 2.2 ปรับแต่ง Work Memory (ไม่ต้อง restart)
 ```sql
