@@ -395,6 +395,8 @@ ORDER BY name;
 ```
 รูปผลการลัพธ์การตั้งค่า
 ```
+<img width="1439" height="222" alt="image" src="https://github.com/user-attachments/assets/24c800ef-9cd6-43b5-a669-5e22375cdd7f" />
+
 
 ### Step 5: การสร้างและทดสอบ Workload
 
@@ -437,10 +439,40 @@ LIMIT 1000;
 ```
 ### ผลการทดลอง
 ```
-1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
+1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร
+ตอบ : EXPLAIN ฐานข้อมูลวางแผนจะทำอะไร? 
+      ANALYZE สิ่งที่ทำจริงเป็นอย่างไร? 
+      BUFFERS การทำงานนั้นต้องใช้การอ่านข้อมูลจากดิสก์มากแค่ไหน? 
+การดูข้อมูลเหล่านี้จะช่วยให้เราเห็นจุดอ่อนของคำสั่ง SQL และสามารถปรับปรุงให้ทำงานได้เร็วขึ้น
+
 2. รูปผลการรัน
+
 3. อธิบายผลลัพธ์ที่ได้
+ตอบ :
+PostgreSQL ดึงข้อมูลมาแค่ 1000 แถวแรก
+actual time=181.720..194.056 ms → ใช้เวลาประมาณ 12.3 ms ในขั้นตอนนี้
+rows=1000 → ได้ผลลัพธ์ 1000 แถว
+Buffers: shared hit=5133 → มีการดึงข้อมูลจาก shared buffer 5,133 ครั้ง
+
+Gather Merge
+PostgreSQL ใช้งาน parallel query โดยมี worker 2 ตัว (เพื่อเพิ่มความเร็ว)
+Gather Merge คือการรวมผลลัพธ์จาก worker หลายตัวเข้าด้วยกัน โดย merge ให้เรียงลำดับตาม ORDER BY data
+ใช้เวลาประมาณ 12 ms (181.703 → 193.923)
+
+Sort
+มีการ sort ข้อมูลจากแต่ละ worker (ทำ 3 รอบ → loops=3 เพราะมี 2 worker + main)
+ใช้เทคนิค top-N heapsort ซึ่งจะหยุดทันทีเมื่อได้ข้อมูลครบตามที่ต้องการ (1000 แถว)
+ใช้หน่วยความจำในการ sort ประมาณ 232 KB
+ใช้เวลาเฉลี่ย 0.04 ms ต่อ loop ในการ sort
+
+Parallel Seq Scan on large_table (การอ่านข้อมูล)
+PostgreSQL อ่านข้อมูลจากตาราง large_table โดย ไม่ใช้ index (sequential scan)
+ใช้การอ่านแบบขนาน (parallel) → loop 3 รอบ แปลว่าแบ่งข้อมูลให้ thread ทั้งหมด 3 ตัว (main + 2 workers)
+rows=166667 ต่อ loop → รวมกันเป็นประมาณ 500,000 แถว (ครบทั้งหมด)
+ใช้เวลาเร็วมากในการอ่านข้อมูล (0.015 → 32.811 ms)
 ```
+<img width="1451" height="534" alt="image" src="https://github.com/user-attachments/assets/7b83b516-09f7-4369-9ddd-997a32256982" />
+
 ```sql
 -- ทดสอบ Hash operation
 EXPLAIN (ANALYZE, BUFFERS)
