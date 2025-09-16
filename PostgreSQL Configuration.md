@@ -190,8 +190,16 @@ docker exec postgres-config df -h
 ### บันทึกผลการทดลอง
 ```
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+1.1docker exec postgres-config free
+สั่งให้เข้าไป รันคำสั่ง free ใน container ที่ชื่อ postgres-config
+free คือ การใช้ดู หน่วยความจำ (RAM)
+1.2docker exec postgres-config df
+สั่งให้เข้าไป รันคำสั่ง df ใน container
+df ใช้ดู การใช้งานพื้นที่ดิสก์ (disk space) ของ filesystem และบอกว่า mount ไหนใช้ไปกี่ % และเหลือกี่ %
 2. option -h ในคำสั่งมีผลอย่างไร
+ทำให้แสดงผลในรูปแบบอ่านง่าย เช่น MB, GB
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
+แสดงเป็นตัวเลข
 ```
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
@@ -209,8 +217,8 @@ SHOW data_directory;
 
 ### บันทึกผลการทดลอง
 ```
-1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
-2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด                                                                /var/lib/postgresql/data/postgresql.conf
+3. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด                                                                                        /var/lib/postgresql/data
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -224,6 +232,7 @@ WHERE name IN (
 ```
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
 ```
+<img width="1470" height="956" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 05 41" src="https://github.com/user-attachments/assets/16d1a471-e8a5-44bd-abd2-3ceadb757b44" />
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
@@ -237,8 +246,13 @@ WHERE name = 'shared_buffers';
 ### ผลการทดลอง
 ```
 1.รูปผลการรันคำสั่ง
+<img width="1470" height="956" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 08 38" src="https://github.com/user-attachments/assets/0f0cffb2-27b4-4b09-9214-663ae207ccc7" />
+
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+setting 16384 unit8kB 
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+มีค่าเป็น f หมายถึง flag ที่บอกว่า การตั้งค่า (parameter) ใน PostgreSQL จำเป็นต้อง restart instance ถึงจะมีผลหรือไม่
+ค่า f = false → ไม่ต้อง restart (เปลี่ยนแล้วมีผลทันที หรือ reload config ก็พอ)
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
@@ -255,11 +269,14 @@ WHERE name = 'shared_buffers';
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
 
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า pending_restart
-รูปหลังจาก restart postgres
 
-```
+รูปผลการเปลี่ยนแปลงค่า pending_restart
+<img width="1470" height="956" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 15 12" src="https://github.com/user-attachments/assets/7eef33f5-52c0-4fd0-80bb-e93496ed8e55" />
+
+รูปหลังจาก restart postgres
+<img width="1470" height="956" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 17 40" src="https://github.com/user-attachments/assets/de546728-0117-4137-9c31-312eec1837df" />
+
+
 
 #### 2.2 ปรับแต่ง Work Memory (ไม่ต้อง restart)
 ```sql
@@ -280,9 +297,9 @@ FROM pg_settings
 WHERE name = 'work_mem';
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า work_mem
-```
+
+<img width="1470" height="956" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 19 28" src="https://github.com/user-attachments/assets/5629e8fe-5608-49e9-ac13-ec761e974488" />
+
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
 ```sql
@@ -297,9 +314,9 @@ SELECT pg_reload_conf();
 SHOW maintenance_work_mem;
 ```
 ### ผลการทดลอง
-```
 รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
-```
+<img width="351" height="115" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 20 48" src="https://github.com/user-attachments/assets/491dd176-01c5-4836-9ac3-b6085c72a25d" />
+
 
 #### 3.4 ปรับแต่ง WAL Buffers
 ```sql
@@ -322,9 +339,9 @@ docker exec -it postgres-config psql -U postgres
 SHOW wal_buffers;
 ```
 ### ผลการทดลอง
-```
 รูปผลการเปลี่ยนแปลงค่า wal_buffers
-```
+<img width="1470" height="956" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 22 50" src="https://github.com/user-attachments/assets/390369de-521f-462c-99fd-4fc8319532fe" />
+
 
 #### 3.5 ปรับแต่ง Effective Cache Size
 ```sql
@@ -339,9 +356,9 @@ SELECT pg_reload_conf();
 SHOW effective_cache_size;
 ```
 ### ผลการทดลอง
-```
 รูปผลการเปลี่ยนแปลงค่า effective_cache_size
-```
+<img width="341" height="109" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 23 42" src="https://github.com/user-attachments/assets/0c2a08f2-e8a4-43b5-ba29-4d7ba1ee72e7" />
+
 
 ### Step 4: ตรวจสอบผล
 
@@ -368,9 +385,9 @@ WHERE name IN (
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
 รูปผลการลัพธ์การตั้งค่า
-```
+<img width="1470" height="956" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 24 31" src="https://github.com/user-attachments/assets/93fdf6eb-6615-428c-a4dc-827ec7a71f12" />
+
 
 ### Step 5: การสร้างและทดสอบ Workload
 
@@ -412,11 +429,15 @@ ORDER BY data
 LIMIT 1000;
 ```
 ### ผลการทดลอง
-```
-1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
-2. รูปผลการรัน
-3. อธิบายผลลัพธ์ที่ได้
-```
+1.คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร
+EXPLAIN = ใช้ดู Query Plan ว่า PostgreSQL จะเลือกใช้วิธีการไหนในการรัน query (เช่น Seq Scan, Index Scan, Join Method)
+ANALYZE = ให้ PostgreSQL รัน query จริง (ไม่ใช่แค่คาดการณ์) แล้วแสดง เวลาจริง ที่ใช้ในแต่ละขั้นตอน
+BUFFERS = แสดงข้อมูล การใช้หน่วยความจำ (shared buffers) เช่น อ่านจาก disk หรือ memory
+2.รูปผลการรัน
+![Uploading ภาพถ่ายหน้าจอ2568-09-16เวลา 14.37.01.png…]()
+   
+3.อธิบายผลลัพธ์ที่ได้
+
 ```sql
 -- ทดสอบ Hash operation
 EXPLAIN (ANALYZE, BUFFERS)
