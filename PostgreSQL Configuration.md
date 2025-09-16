@@ -470,6 +470,7 @@ LIMIT 1000;
 3. อธิบายผลลัพธ์ที่ได้
 ```
 <img width="1308" height="465" alt="image" src="https://github.com/user-attachments/assets/d78ae44a-f761-46b1-87ca-ea72ea256498" />
+
 ```
 1.EXPLAIN ใช้เพื่อตรวจสอบ execution plan ของ query
   ANALYZE  บอกให้ PostgreSQL รัน query จริง และเก็บเวลา
