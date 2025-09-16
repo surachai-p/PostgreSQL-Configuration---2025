@@ -391,6 +391,7 @@ SHOW effective_cache_size;
 ```
 รูปผลการเปลี่ยนแปลงค่า effective_cache_size
 ```
+<img width="582" height="484" alt="image" src="https://github.com/user-attachments/assets/aa040435-0269-4673-a280-9a00e9d8253d" />
 
 ### Step 4: ตรวจสอบผล
 
