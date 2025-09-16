@@ -249,7 +249,7 @@ WHERE name = 'shared_buffers';
 ### ผลการทดลอง
 ```
 1. <img width="656" height="294" alt="image" src="https://github.com/user-attachments/assets/7760e6bd-4c8b-45ce-8302-f7183e36a56c" />
-2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (128MB)
+2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (16384 × 8kB = 131072kB = 128MB)
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
 
 ถ้าเป็น f (false) → หมายถึงค่าที่ใช้อยู่ตรงกับการตั้งค่าแล้ว ไม่ต้อง restart
