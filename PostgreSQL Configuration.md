@@ -498,6 +498,17 @@ LIMIT 100;
 2. อธิบายผลลัพธ์ที่ได้ 
 3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
 ```
+<img width="1313" height="429" alt="image" src="https://github.com/user-attachments/assets/74234d80-7bdb-4ff6-ad7c-a9dca79ed108" />
+
+```
+2. อธิบายผลลัพธ์ที่ได้
+  -ผลลัพธ์แสดงว่า query เร็วมาก เพราะใช้ Index Only Scan ผ่าน idx_large_table_number
+  -PostgreSQL ไม่ต้องอ่านตารางจริง (heap fetches = 0)
+
+3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+  ใช้ Index Only Scan เพราะ index ครอบคลุมข้อมูลที่ต้องการทั้งหมด และตารางพร้อมสำหรับการสแกนผ่าน index อย่างเดียว
+```
+
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
 -- ทดสอบ CREATE INDEX (จะใช้ maintenance_work_mem)
