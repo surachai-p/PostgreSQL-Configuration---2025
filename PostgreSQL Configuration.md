@@ -1581,6 +1581,8 @@ SELECT auto_tune_memory();
 ### ผลการทดลอง
 ```
 รูปผลการทดลอง
+<img width="781" height="249" alt="image" src="https://github.com/user-attachments/assets/f1864b78-ed37-4ecc-a7d6-ab6ae930a986" />
+
 ```
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
