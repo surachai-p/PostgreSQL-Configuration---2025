@@ -216,9 +216,9 @@ SHOW data_directory;
 <img width="1430" height="635" alt="image" src="https://github.com/user-attachments/assets/72b13c5f-7e58-4a97-9544-a1ce0d9e899a" />
 
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
-`/var/lib/postgresql/data/postgresql.conf`
+<br>`/var/lib/postgresql/data/postgresql.conf`
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
-`/var/lib/postgresql/data`
+<br>`/var/lib/postgresql/data`
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -229,9 +229,8 @@ WHERE name IN (
 );
 ```
 ### บันทึกผลการทดลอง
-```
-บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
-```
+<img width="1314" height="397" alt="image" src="https://github.com/user-attachments/assets/ca3337cb-2832-4377-8d70-8c2a7bd256f5" />
+
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
