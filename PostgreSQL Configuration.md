@@ -663,6 +663,8 @@ LIMIT 10;
 
 ```
 2. อธิบายผลลัพธ์ที่ได้
+Query: ตรวจสอบ Buffer Cache Hit Ratio รายตาราง
+ผลลัพธ์ที่ได้คือ (0 rows) เพราะ ไม่มีข้อมูลตารางแสดงผล เพราะตอน query ไม่มี table-level stats ให้รายงาน 
 ```
 
 ### Step 7: การปรับแต่ง Autovacuum
