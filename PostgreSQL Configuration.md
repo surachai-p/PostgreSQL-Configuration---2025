@@ -549,9 +549,8 @@ SELECT
 FROM get_memory_usage();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+<img width="598" height="242" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 47 26" src="https://github.com/user-attachments/assets/bc28802e-31a1-470d-a227-a5d3c6b8619b" />
 
 #### 6.2 การติดตาม Buffer Hit Ratio
 ```sql
@@ -570,10 +569,19 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY heap_blks_read + heap_blks_hit DESC;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+
+<img width="632" height="278" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 48 06" src="https://github.com/user-attachments/assets/e16fb17f-c663-4dbb-9e0b-0b5f0cb8b457" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+
+schema public
+table large_table
+heap_blks_read = 0  ไม่ต้องอ่าน disk เลย
+heap_blks_hit = 620,839  อ่านทั้งหมดจาก memory
+hit_ratio_percent = 100%  cache hit 100%
+
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
 SELECT datname,
@@ -584,10 +592,17 @@ FROM pg_stat_database
 WHERE datname = current_database();
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+
+<img width="643" height="199" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 50 47" src="https://github.com/user-attachments/assets/053c62c6-6254-4fea-a33d-91f07473df05" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+Database performance_test
+blks_read = 3481 → มี block ที่อ่านจาก disk น้อยมาก
+blks_hit = 4,052,197 → ส่วนใหญ่ อ่านจาก memory
+hit_ratio_percent = 99.91% → cache hit rate สูงมาก → query ส่วนใหญ่ เร็วเพราะอยู่ใน buffer
+
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
 ```sql
@@ -605,10 +620,14 @@ ORDER BY heap_blks_read DESC
 LIMIT 10;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+
+<img width="794" height="284" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 52 45" src="https://github.com/user-attachments/assets/89716c61-bc52-4e5e-9297-cdf1f0e6caee" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+ทุก table ที่มีอยู่ในฐานข้อมูล ถูกอ่านจาก shared buffer (memory) → ไม่มี disk I/O → query นี้ไม่เจอ table ใด ๆ
+
 ### Step 7: การปรับแต่ง Autovacuum
 
 #### 7.1 ทำความเข้าใจ Autovacuum Parameters
