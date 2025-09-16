@@ -272,6 +272,11 @@ WHERE name = 'shared_buffers';
 <img width="687" height="190" alt="image" src="https://github.com/user-attachments/assets/2e772513-95eb-4f7f-a4a2-3f2c86d8f5dc" />
 
 ```
+ค่า  shared_buffers มีการกำหนดค่าไว้ setting = 16384  unit = 8 Kb
+ค่า pending_restart ในผลการทดลองมีค่าเป็น F
+```
+
+```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
 ALTER SYSTEM SET shared_buffers = '512MB';
