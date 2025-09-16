@@ -648,7 +648,24 @@ ORDER BY name;
 ```
 1. รูปผลการทดลอง
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
+autovacuum                      | on        | เปิดใช้งาน autovacuum daemon (ควรเปิดเสมอ)
+autovacuum_analyze_scale_factor | 0.1       | ANALYZE เมื่อมี row เปลี่ยน 10% ของตาราง
+autovacuum_analyze_threshold    | 50        | ANALYZE เมื่อมี row เปลี่ยนเกิน 50 แถวขึ้นไป
+autovacuum_freeze_max_age       | 200000000 | ป้องกัน transaction ID wraparound (บังคับ vacuum)
+autovacuum_max_workers          | 3         | จำนวน worker autovacuum ที่รันพร้อมกันได้สูงสุด
+autovacuum_multixact_freeze_max_age | 400000000 | ป้องกัน multixact wraparound
+autovacuum_naptime              | 60s       | ช่วงเวลาพักก่อน autovacuum รอบถัดไป
+autovacuum_vacuum_cost_delay    | 2ms       | หน่วงเวลาแต่ละรอบ vacuum เพื่อลดผลกระทบ workload
+autovacuum_vacuum_cost_limit    | -1        | ค่า cost limit (ใช้ default ของระบบ)
+autovacuum_vacuum_insert_scale_factor | 0.2 | VACUUM insert เมื่อ row insert เปลี่ยน 20%
+autovacuum_vacuum_insert_threshold   | 1000 | VACUUM insert เมื่อมี insert เกิน 1000 แถว
+autovacuum_vacuum_scale_factor  | 0.2       | VACUUM เมื่อมี row update/delete 20% ของตาราง
+autovacuum_vacuum_threshold     | 50        | VACUUM เมื่อมี row update/delete เกิน 50 แถว
+autovacuum_work_mem             | -1        | memory สูงสุดที่ใช้ต่อ worker (ค่า -1 = ใช้ default)
+log_autovacuum_min_duration     | 600000ms  | log ถ้า autovacuum ใช้เวลานานกว่า 10 นาที
 ```
+<img width="1419" height="554" alt="image" src="https://github.com/user-attachments/assets/550dbbb1-8f3f-419d-bd79-0bbcf845f2db" />
+
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
 ```sql
@@ -675,9 +692,8 @@ ALTER SYSTEM SET autovacuum_work_mem = '512MB';
 SELECT pg_reload_conf();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
-```
+<img width="965" height="510" alt="image" src="https://github.com/user-attachments/assets/1ee26cd9-e81e-44e1-8267-65bd2f4379d7" />
+
 
 ### Step 8: Performance Testing และ Benchmarking
 
