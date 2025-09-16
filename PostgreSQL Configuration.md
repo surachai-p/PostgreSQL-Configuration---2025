@@ -217,10 +217,12 @@ SHOW data_directory;
 ### บันทึกผลการทดลอง
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
-   <img width="382" height="133" alt="image" src="https://github.com/user-attachments/assets/baab57b9-2634-4521-a90b-6fb21e963f96" />
+
+<img width="382" height="133" alt="image" src="https://github.com/user-attachments/assets/baab57b9-2634-4521-a90b-6fb21e963f96" />
 
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
-   <img width="277" height="129" alt="image" src="https://github.com/user-attachments/assets/3a06387a-044c-46cb-98e8-e71c68223675" />
+
+<img width="277" height="129" alt="image" src="https://github.com/user-attachments/assets/3a06387a-044c-46cb-98e8-e71c68223675" />
 
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
