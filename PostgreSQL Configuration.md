@@ -190,8 +190,31 @@ docker exec postgres-config df -h
 ### บันทึกผลการทดลอง
 ```
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+
+docker exec postgres-config free
+หน้าที่: ดูสถานะหน่วยความจำ (RAM/SWAP) ภายในคอนเทนเนอร์
+Mem: total / used / free / shared / buff/cache / available
+Swap: เช่นเดียวกันสำหรับสว็อป
+ใช้งานจริง (อ่านง่าย):
+
+ docker exec postgres-config df
+หน้าที่: ดูการใช้งานดิสก์ของไฟล์ซิสเต็มภายในคอนเทนเนอร์ (รวมถึง volume ที่ mount เข้าไป)
+คอลัมน์สำคัญ:
+Filesystem / Size / Used / Avail / Use% / Mounted on
+
+ใช้งานจริง (อ่านง่าย):
+```
+docker exec -it postgres-config df -h
+```
+ใช้เมื่อไร: เวลา Postgres เขียนไฟล์ไม่ได้/ล่ม เพราะ “ดิสก์เต็ม” ให้เช็ค Use% ของพาร์ทิชันที่ Mounted on เช่น /var/lib/postgresql/data
+
 2. option -h ในคำสั่งมีผลอย่างไร
+option -h ที่ใช้กับคำสั่ง free และ df ใน Linux มีผลเหมือนกัน คือทำให้ ผลลัพธ์อ่านง่ายขึ้น (human-readable) โดยเปลี่ยนการแสดงหน่วยจาก byte ตัวเลขยาว ๆ ให้กลายเป็นหน่วยที่คนคุ้นเคย เช่น KB, MB, GB แทน
+
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
+<img width="473" height="58" alt="image" src="https://github.com/user-attachments/assets/74aba92c-84b2-4cb7-920b-f01d1acb5fff" />
+
+
 ```
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
@@ -210,7 +233,10 @@ SHOW data_directory;
 ### บันทึกผลการทดลอง
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+<img width="355" height="97" alt="image" src="https://github.com/user-attachments/assets/c11d257d-a584-48c6-9094-e5933a51f84a" />
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+<img width="242" height="87" alt="image" src="https://github.com/user-attachments/assets/177b05b0-e91c-4694-8ba2-e073a0cf7ba7" />
+
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -237,8 +263,18 @@ WHERE name = 'shared_buffers';
 ### ผลการทดลอง
 ```
 1.รูปผลการรันคำสั่ง
+<img width="539" height="81" alt="image" src="https://github.com/user-attachments/assets/fb801e94-29d0-4480-a7bc-2259b949b9b3" />
+
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+16384 × 8kB = 131072kB = 128MB
+
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+ผลลัพธ์ที่เห็นคือ f (false)
+
+ความหมาย:
+ถ้า pending_restart = f → ค่า shared_buffers ที่ตั้งอยู่ตอนนี้ มีผลแล้วทันที ไม่จำเป็นต้องรีสตาร์ท PostgreSQL ใหม่
+ถ้าเป็น t (true) → หมายถึงเรามีการเปลี่ยนค่า parameter ที่ต้องการ restart PostgreSQL เพื่อให้ค่ามีผล (ไม่พอแค่ pg_reload_conf())
+
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
@@ -255,11 +291,15 @@ WHERE name = 'shared_buffers';
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
 
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า pending_restart
-รูปหลังจาก restart postgres
 
-```
+รูปผลการเปลี่ยนแปลงค่า pending_restart
+<img width="518" height="175" alt="image" src="https://github.com/user-attachments/assets/2c09f905-d9bc-4cf2-b562-2de7adb99609" />
+
+รูปหลังจาก restart postgres
+<img width="660" height="130" alt="image" src="https://github.com/user-attachments/assets/035e356a-4032-41f8-a001-15ba6c056310" />
+
+
+
 
 #### 2.2 ปรับแต่ง Work Memory (ไม่ต้อง restart)
 ```sql
@@ -280,9 +320,10 @@ FROM pg_settings
 WHERE name = 'work_mem';
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการเปลี่ยนแปลงค่า work_mem
-```
+<img width="422" height="222" alt="image" src="https://github.com/user-attachments/assets/2130cdc4-61cf-4447-a6a5-bfdb31e0dbfe" />
+
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
 ```sql
@@ -297,9 +338,10 @@ SELECT pg_reload_conf();
 SHOW maintenance_work_mem;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
-```
+<img width="470" height="226" alt="image" src="https://github.com/user-attachments/assets/8ecad133-0fc3-45f5-84e4-9b1e221bdbab" />
+
 
 #### 3.4 ปรับแต่ง WAL Buffers
 ```sql
@@ -322,9 +364,10 @@ docker exec -it postgres-config psql -U postgres
 SHOW wal_buffers;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการเปลี่ยนแปลงค่า wal_buffers
-```
+<img width="356" height="201" alt="image" src="https://github.com/user-attachments/assets/55d040c1-65f6-4cc2-880a-ccf4970fd4e0" />
+
 
 #### 3.5 ปรับแต่ง Effective Cache Size
 ```sql
@@ -339,9 +382,10 @@ SELECT pg_reload_conf();
 SHOW effective_cache_size;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการเปลี่ยนแปลงค่า effective_cache_size
-```
+<img width="295" height="98" alt="image" src="https://github.com/user-attachments/assets/d2caf0bd-c39f-4127-8448-abf9bbd6a7c4" />
+
 
 ### Step 4: ตรวจสอบผล
 
@@ -368,9 +412,9 @@ WHERE name IN (
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการลัพธ์การตั้งค่า
-```
+<img width="1049" height="204" alt="image" src="https://github.com/user-attachments/assets/f666e606-dd33-43bf-ab02-1cc787b3a173" />
 
 ### Step 5: การสร้างและทดสอบ Workload
 
@@ -412,11 +456,42 @@ ORDER BY data
 LIMIT 1000;
 ```
 ### ผลการทดลอง
-```
+
 1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
+EXPLAIN: แสดง “แผนการทำงาน” (execution plan) ที่ Postgres เลือกใช้
+ANALYZE: ให้รันคำสั่งจริง แล้วรายงานเวลาที่ใช้และจำนวนแถวจริง (ไม่ใช่แค่คาดคะเน)
+BUFFERS: รายงานสถิติ buffer I/O เช่น shared hit/read/dirtied/written เพื่อดูว่าอ่านจากแคชแค่ไหน vs ต้องอ่านจากดิสก์
+
 2. รูปผลการรัน
+<img width="1048" height="388" alt="image" src="https://github.com/user-attachments/assets/145c5e37-2bf6-4e38-9d73-f64cb3b45b3a" />
+
 3. อธิบายผลลัพธ์ที่ได้
-```
+   Limit (… actual rows=1000 …)
+โหนดบนสุดตัดผลลัพธ์เหลือ 1000 แถวตามคำสั่ง
+
+Gather Merge (Workers Planned/Launched: 2)
+รวมผลจาก “คนงาน” 2 ตัว + ตัวหลัก (leader) โดย “merge” แบบเรียงลำดับเพื่อคงออร์เดอร์ ORDER BY data
+
+Sort … Sort Method: top-N heapsort
+แต่ละสตรีมทำ sort แบบ Top-N (เก็บเฉพาะรายการที่มีสิทธิ์ติด 1000 อันดับแรก)
+
+ใช้หน่วยความจำเล็กมาก: ~242 kB (worker ~170–178 kB) → ไม่มีการ spill ลงดิสก์ แปลว่า work_mem เพียงพอสำหรับเคสนี้
+
+Parallel Seq Scan on large_table (… rows=166667 loops=3)
+สแกนทั้งตารางแบบขนาน 3 ลูป = leader + 2 workers แบ่งงานกันอ่านรวม ~500k แถวพอดี
+
+Buffers
+
+Buffers: shared hit=5059 (ใต้ Parallel Seq Scan) และ shared hit=5133 (โหนดบน ๆ)
+
+ทั้งหมดคือ hit ใน shared buffers (8kB ต่อบล็อก) → ~40 MB (5133 × 8kB)
+
+ไม่มี shared read ⇒ ไม่ต้องอ่านจากดิสก์จริงเลย (ข้อมูลอยู่ในแคชแล้ว) ⇒ งานเป็น CPU-bound
+
+Planning Time: 0.270 ms / Execution Time: 158.966 ms
+วางแผนเร็วมาก; เวลาหลักอยู่ที่สแกนและจัดเรียง
+ค่า “Time: 160.369 ms” คือเวลาที่ psql รายงานรวม ๆ
+
 ```sql
 -- ทดสอบ Hash operation
 EXPLAIN (ANALYZE, BUFFERS)
@@ -428,11 +503,29 @@ LIMIT 100;
 ```
 
 ### ผลการทดลอง
-```
+
 1. รูปผลการรัน
+<img width="1152" height="326" alt="image" src="https://github.com/user-attachments/assets/d8fb3998-df00-482c-b2bc-ca30dc41a6fa" />
+
 2. อธิบายผลลัพธ์ที่ได้ 
+Limit … (actual rows=100)
+ตัดผลลัพธ์เหลือ 100 แถวสุดท้ายที่ผ่านเงื่อนไข
+GroupAggregate … Group Key: number
+จัดกลุ่มตามคอลัมน์ number แล้วนับจำนวนแถวในแต่ละกลุ่ม
+มี Filter: (count(*)) > 1 ⇒ กลุ่มที่มีสมาชิก ≤ 1 จะถูกตัดทิ้ง
+Rows Removed by Filter: 319 หมายถึงมี 319 กลุ่มที่ถูกกรองออกเพราะนับได้ ≤ 1
+Index Only Scan using idx_large_table_number on large_table
+อ่านข้อมูลจาก ดัชนี เพียงอย่างเดียว (ไม่ต้องแตะตาราง) เพื่อป้อนให้ GroupAggregate
+Heap Fetches: 0 ⇒ ไม่ต้องไปอ่านตารางจริงเลย เพราะ
+
+ข้อมูลที่ต้องใช้สำหรับการรวมกลุ่ม/คัดกรองมีแค่คอลัมน์ number ซึ่งอยู่ในดัชนีครบ (ดัชนี “ครอบคลุม” งานนี้)
+หน้า (pages) ในตารางถูกมาร์กว่า all-visible ใน visibility map ทำให้ Index-Only สามารถยืนยันความมองเห็นได้โดยไม่ต้องแตะ heap
+
 3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
-```
+หตุผลที่ได้ Index Only Scan:
+คำสั่งต้องใช้แค่คอลัมน์ number (สำหรับ GROUP BY และ COUNT(*)) ⇒ ดัชนีครอบคลุมคอลัมน์ที่ต้องใช้
+Visibility map ของตารางบอกว่าหน้าเหล่านั้นเป็น all-visible ⇒ ไม่ต้องอ่าน heap เพื่อตรวจสิทธิ์การมองเห็นทุกรายการ (Heap Fetches: 0)
+
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
 -- ทดสอบ CREATE INDEX (จะใช้ maintenance_work_mem)
@@ -447,10 +540,44 @@ DELETE FROM large_table WHERE id % 10 = 0;
 VACUUM (ANALYZE, VERBOSE) large_table;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
+<img width="1200" height="728" alt="image" src="https://github.com/user-attachments/assets/b154eac6-a8b2-42da-9241-b6f9c846372d" />
+<img width="1031" height="292" alt="image" src="https://github.com/user-attachments/assets/829e6f1a-b41a-4d38-b429-436a3e87f327" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+1) ส่วนของตาราง (heap)
+
+pages: 0 removed, 5059 remain, 5059 scanned (100.00% of total)
+สแกนทั้งตารางครบทุกหน้า
+
+dead item identifiers removed: 50000
+เก็บกวาด dead tuples ที่เกิดจาก DELETE เรียบร้อย → พื้นที่ว่างกลับมาใช้ใหม่ได้ (ลด bloat)
+
+index scan needed: 0 pages … (ขึ้นกับบรรทัดย่อย)
+เป็นสถิติว่าต้องใช้สแกนดัชนีช่วยล้างบางมากน้อยแค่ไหนในรอบนี้
+
+avg rate: … / WAL usage: …
+ความเร็วและ WAL ที่เกิดขึ้น—เคสนี้เบามาก (WAL 1 record, ~188 bytes) เพราะ VACUUM ส่วนใหญ่เป็นงานภายใน
+
+2) ส่วนของดัชนี
+
+เห็นรายงานต่อดัชนีแต่ละตัว เช่น
+idx_large_table_number, idx_large_table_created_at, และตัวใหม่ idx_large_table_data
+
+ตัวอย่าง:
+pages: 1743 in total, 0 newly deleted, 0 currently deleted, 0 reusable
+แปลว่า “ยังไม่มีหน้าของดัชนีที่ลบทิ้งได้” ในรอบนี้—เป็นไปได้ว่าทuples ที่ถูกลบเป็น HOT-prunable หรือ VACUUM ยังไม่พบสิ่งที่ต้องลบในดัชนี
+
+launched 2 parallel vacuum workers for index vacuuming (planned: 2)
+ใช้ Parallel VACUUM เร่งจัดการดัชนี
+
+3) ANALYZE (อัปเดตสถิติ)
+
+analyzing "public.large_table" และบรรทัดสรุป:
+scanned 5059 of 5059 pages, containing 450000 live rows and 0 dead rows; 30000 rows in sample, 450000 estimated total rows
+
+ความหมาย: อัปเดตสถิติเรียบร้อย → Planner จะ “รู้ความจริงล่าสุด” ของขนาดตาราง/การกระจายข้อมูล ทำให้เลือกแผนเหมาะสม (เช่น ใช้ดัชนีตัวใหม่)
 ### Step 6: การติดตาม Memory Usage
 
 #### 6.1 สร้างฟังก์ชันติดตาม Memory
@@ -491,9 +618,10 @@ SELECT
 FROM get_memory_usage();
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง
-```
+<img width="555" height="273" alt="image" src="https://github.com/user-attachments/assets/6b737045-0c50-42ee-b4bd-cb37803e7520" />
+
 
 #### 6.2 การติดตาม Buffer Hit Ratio
 ```sql
@@ -512,10 +640,14 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY heap_blks_read + heap_blks_hit DESC;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+<img width="647" height="280" alt="image" src="https://github.com/user-attachments/assets/bd3eecb1-f5bf-4c06-8551-d37fa99491a7" />
 2. อธิบายผลลัพธ์ที่ได้
-```
+   ตาราง large_table ถูกใช้งานจาก แคชทั้งหมด ในช่วงเวลาที่เก็บสถิตินี้ → ดีต่อความเร็ว (latency ต่ำ)
+
+ตัวเลขเหล่านี้เป็น สะสม ตั้งแต่สถิติล่าสุดถูกรีเซ็ตหรือเซิร์ฟเวอร์เริ่มใหม่—not per query
+
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
 SELECT datname,
@@ -526,10 +658,13 @@ FROM pg_stat_database
 WHERE datname = current_database();
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+<img width="586" height="235" alt="image" src="https://github.com/user-attachments/assets/cf242855-000c-45d7-8dc3-a5fa2e79c837" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+วิร์กโหลดที่ผ่านมา “วิ่งบนแคช” แทบจะทั้งหมด → latency ต่ำ, CPU-bound มากกว่า I/O-bound
+blks_read มีบ้างเล็กน้อย อาจมาจากรอบแรกที่ยังไม่อุ่นแคช, ตอนสร้างดัชนี, หรือช่วงสแกนครั้งแรกก่อนข้อมูลเข้า shared buffers
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
 ```sql
@@ -547,10 +682,14 @@ ORDER BY heap_blks_read DESC
 LIMIT 10;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+<img width="790" height="288" alt="image" src="https://github.com/user-attachments/assets/b8f3f096-7e02-4c43-a50f-78965d1f9351" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+   ไม่มีตารางผู้ใช้ (user tables) ใด ๆ ที่มี heap_blks_read > 0 ในรอบสถิติปัจจุบัน
+แปลว่าในช่วงที่เก็บสถิตินี้ ทุกการเข้าถึงตารางถูกเสิร์ฟจาก shared buffers (แคชของ Postgres) ทั้งหมด → ไม่มีการต้อง “ดึงบล็อก 8KB จากระบบไฟล์” เข้าสู่ shared buffers เลย
+
 ### Step 7: การปรับแต่ง Autovacuum
 
 #### 7.1 ทำความเข้าใจ Autovacuum Parameters
@@ -562,10 +701,75 @@ WHERE name LIKE '%autovacuum%'
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+
+<img width="1085" height="674" alt="image" src="https://github.com/user-attachments/assets/1cf1a54f-0f6a-41b6-a48c-a20e50c34807" />
+
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
-```
+เกณฑ์ “ถึงเวลา ANALYZE”
+
+ใช้สูตร:
+ถึงเวลาเมื่อ reltuples_changed ≥ autovacuum_analyze_threshold + autovacuum_analyze_scale_factor × reltuples
+
+autovacuum_analyze_threshold = 50
+ค่าคงที่ฐาน
+autovacuum_analyze_scale_factor = 0.1
+สัดส่วนตามขนาดตาราง (10%)
+ตาราง 1,000,000 แถว → เกณฑ์ ≈ 50 + 0.1×1,000,000 = 100,050 แถวเปลี่ยนแปลง จึง ANALYZE
+ทิป: ตารางใหญ่/อัพเดตบ่อย → ลด scale_factor (หรือกำหนด per-table) เพื่อให้สถิติสดขึ้น
+
+เกณฑ์ “ถึงเวลา VACUUM” (จาก UPDATE/DELETE)
+
+ใช้สูตร:
+ถึงเวลาเมื่อ dead_tuples ≥ autovacuum_vacuum_threshold + autovacuum_vacuum_scale_factor × reltuples
+autovacuum_vacuum_threshold = 50
+ค่าคงที่ฐาน
+
+autovacuum_vacuum_scale_factor = 0.2
+สัดส่วนตามขนาดตาราง (20%)
+
+ตาราง 1,000,000 แถว → เกณฑ์ ≈ 50 + 0.2×1,000,000 = 200,050 dead tuples จึง VACUUM
+ทิป: ตาราง production ใหญ่ ๆ มัก “ลดแรง” ค่านี้ลง (เช่น 0.05 หรือ 0.01) เฉพาะบางตาราง ผ่าน ALTER TABLE ... SET (autovacuum_vacuum_scale_factor=...) เพื่อกันบวม
+เกณฑ์ “VACUUM จากการ INSERT จำนวนมาก”
+
+(ช่วยจัดการ visibility map/ฟื้นคืนพื้นที่เร็วขึ้นแม้ไม่มี DELETE/UPDATE)
+
+ใช้สูตรคล้ายกัน:
+ถึงเวลาเมื่อ inserted_tuples ≥ autovacuum_vacuum_insert_threshold + autovacuum_vacuum_insert_scale_factor × reltuples
+
+autovacuum_vacuum_insert_threshold = 1000
+autovacuum_vacuum_insert_scale_factor = 0.2
+ทิป: เวิร์กโหลดที่ “เขียนหนัก” แม้ไม่ค่อยลบ/อัพเดต → ปรับสองค่านี้ให้ไวขึ้นเพื่อลดสแกน heap ที่ไม่จำเป็น
+
+ควบคุมความแรง/การหน่วงของ VACUUM
+autovacuum_vacuum_cost_delay = 2 ms
+หน่วงเวลาต่อ cost unit เพื่อไม่ให้กิน I/O เกินไป (มากขึ้น = นุ่มนวลขึ้น แต่ช้าลง)
+autovacuum_vacuum_cost_limit = -1
+-1 = สืบทอด ค่าระดับ global vacuum_cost_limit (ปกติ ~200)
+
+อยากให้เก็บกวาดเร็วขึ้น → เพิ่ม limit / ลด delay (เฉพาะตารางสำคัญทำผ่าน storage parameters จะปลอดภัยกว่า)
+หน่วยความจำของ worker
+
+autovacuum_work_mem = -1 (kB)
+-1 = ใช้ค่า maintenance_work_mem แทน
+งาน VACUUM/ANALYZE ขนาดใหญ่ → เพิ่ม maintenance_work_mem (หรือกำหนด autovacuum_work_mem ตรง ๆ) ให้พอ แต่หลีกเลี่ยงการตั้งสูงจนกิน RAM เกิน
+
+ป้องกัน Transaction ID wraparound
+
+autovacuum_freeze_max_age = 2,000,000,000
+อายุ XID ที่ถึงแล้วจะบังคับทำ anti-wraparound VACUUM (งานนี้สำคัญมาก—ห้ามปล่อยเลยจุด)
+
+autovacuum_multixact_freeze_max_age = 4,000,000,000
+ขีดจำกัดสำหรับ MultiXact (ล็อกหลายผู้ใช้) ในทำนองเดียวกัน
+การบันทึก Log
+
+log_autovacuum_min_duration = 600000 ms (10 นาที)
+ล็อกเฉพาะงาน autovacuum ที่ใช้เวลานานกว่า 10 นาที
+
+ดีสำหรับ production: ถ้ากำลังจูน ให้ตั้ง ชั่วคราว เป็น 0 (ล็อกทุกครั้ง) เพื่อเก็บหลักฐาน แล้วปรับกลับเมื่อจบการทดสอบ
+
+แนวทางจูนแบบสรุป
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
 ```sql
@@ -592,9 +796,10 @@ ALTER SYSTEM SET autovacuum_work_mem = '512MB';
 SELECT pg_reload_conf();
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
-```
+<img width="714" height="398" alt="image" src="https://github.com/user-attachments/assets/133ddfb6-269c-4489-b37c-8af3587afbc3" />
+
 
 ### Step 8: Performance Testing และ Benchmarking
 
@@ -667,10 +872,16 @@ FROM performance_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+<img width="552" height="182" alt="image" src="https://github.com/user-attachments/assets/72208bde-95ca-4d8f-91f8-c4b9c90eab9e" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+  0 rows) หมายความว่า คำสั่ง SELECT ไม่พบแถวให้แสดง จากตาราง performance_results ครับ สาเหตุที่เป็นไปได้:
+
+ตารางยัง ไม่มีข้อมูล (ว่าง)
+อ่าน ผิดสคีมา (มีตารางชื่อเดียวกันในสคีมาอื่น)
+เงื่อนไข/สิทธิ์ (เช่นมี RLS) ทำให้มองไม่เห็นแถว
 
 
 ### Step 9: การ Monitoring และ Alerting
@@ -704,9 +915,10 @@ FROM pg_settings WHERE name = 'maintenance_work_mem';
 SELECT * FROM memory_monitor;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง
-```
+<img width="628" height="129" alt="image" src="https://github.com/user-attachments/assets/e79d4588-0a34-4ada-aef1-ee530da816d8" />
+
 
 ### Step 10: การจำลอง Load Testing
 
@@ -753,9 +965,10 @@ CREATE INDEX idx_orders_product_id ON load_test_orders(product_id);
 CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
-```
+<img width="223" height="106" alt="image" src="https://github.com/user-attachments/assets/9e67307a-4ada-44a7-9585-f75e0ea6bf30" />
+
 
 #### 10.2 การทดสอบ Query Performance
 ```sql
@@ -928,9 +1141,10 @@ $$ LANGUAGE plpgsql;
 -- รัน load test ทดสอบเบาๆ
 SELECT * FROM simulate_oltp_workload(25);
 
-```
+
 ### ผลการทดลอง
-```
+<img width="609" height="239" alt="image" src="https://github.com/user-attachments/assets/1953f83a-cf95-402a-99ba-b0938e16e47b" />
+
 รูปผลการทดลอง
 ```
 -- ทดสอบปานกลาง  
@@ -938,15 +1152,50 @@ SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
+<img width="616" height="204" alt="image" src="https://github.com/user-attachments/assets/661ed22c-c718-407a-947b-e64d3f638477" />
+
 2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
-```
+
+1) SELECT (JOIN + WHERE) — เร็วมาก (~0.05 ms/ครั้ง)
+สะท้อนว่าเคสที่รัน มีดัชนีตรงกับเงื่อนไข (เช่น customer_id, product_id, order_date) และ/หรือข้อมูลอยู่ใน shared buffers (แคช) แล้ว
+ไม่มี sort/spill และขนาดผลลัพธ์เล็ก (มี LIMIT หรือเลือกจุดเฉพาะ)
+แทบไม่แตะดิสก์จริง ⇒ CPU-bound เล็กน้อย
+ทิป: รักษาดัชนีที่สอดคล้องกับ pattern จริง (WHERE, JOIN, ORDER BY) และ ANALYZE สม่ำเสมอ
+
+2) INSERT — เร็วมาก (~0.03 ms/ครั้ง)
+
+เขียนบรรทัดเดียว/ไม่ซับซ้อน, ไม่มี FK/Trigger หนัก ๆ
+ดัชนีบนตารางมีอยู่ แต่จำนวนไม่มาก จึงยังไม่เกิด write amplification สูง
+อาจยังอยู่ในช่วง OS cache + WAL group commit ช่วยให้ latency ต่ำ
+ทิป: bulk-insert ขนาดใหญ่ค่อยสร้าง index ทีหลังจะยิ่งเร็ว; งาน benchmark ปิด synchronous_commit = off ชั่วคราวได้ถ้ารับความเสี่ยงได้
+
+3) UPDATE — ช้าที่สุด (~132 ms/ครั้ง)
+
+สาเหตุที่พบบ่อย:
+
+Write amplification: UPDATE = ลบเวอร์ชันเก่า + เขียนเวอร์ชันใหม่ → กระทบ ทุกดัชนี ที่ครอบคลุมคอลัมน์ที่เปลี่ยน
+ถ้าแก้ คอลัมน์ที่อยู่ในดัชนี → บังคับอัปเดต entry ใน index (แพง)
+หากหน้าเต็มจนใส่เวอร์ชันใหม่ไม่ได้ → เกิด page split หรือย้ายหน้า (ช้า)
+ถ้าค่า HOT update ใช้ไม่ได้ (เพราะมีคอลัมน์ indexed ถูกแก้) → ต้องไปแตะ index เสมอ
+WAL/ฟลัช (fsync) และการรอ autovacuum/visibility map
+
+
+4) DELETE (soft) — ช้า (~152 ms/ครั้ง)
+
+“soft delete” = อัปเดตคอลัมน์ deleted_at (จริง ๆ คือ UPDATE ชนิดหนึ่ง)
+ช้าด้วยเหตุผลใกล้เคียง UPDATE:
+การเซต deleted_at แตะคอลัมน์ใหม่ → กระทบดัชนีที่อาจครอบคลุมคอลัมน์นี้ (ถ้ามี)
+หากมี partial index/constraint ที่อ้าง deleted_at → มีค่าใช้จ่ายดูเงื่อนไขเพิ่ม
+ต้องรอให้ autovacuum ทำความสะอาดเวอร์ชันเก่า (dead tuples) ในภายหลัง
+
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
 SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง
-```
+<img width="659" height="148" alt="image" src="https://github.com/user-attachments/assets/9e6a05bb-57e1-49ba-9367-50b25a76f783" />
+
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
 
@@ -1139,11 +1388,13 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM run_benchmark_suite();
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง
-```
+<img width="643" height="166" alt="image" src="https://github.com/user-attachments/assets/92494666-92bf-4955-b9c8-9277a4a66585" />
+
 
 -- ดูผลการทดสอบ
+```
 SELECT 
     config_name,
     test_type,
@@ -1156,9 +1407,10 @@ FROM benchmark_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง
-```
+<img width="890" height="189" alt="image" src="https://github.com/user-attachments/assets/172a8d15-12bd-49c9-ad67-db2e0516966f" />
+
 
 ### Step 12: การจัดการ Configuration แบบ Advanced
 
@@ -1421,9 +1673,10 @@ $$ LANGUAGE plpgsql;
 
 -- ใช้งาน auto-tuning
 SELECT auto_tune_memory();
-```
+
 ### ผลการทดลอง
-```
+<img width="642" height="177" alt="image" src="https://github.com/user-attachments/assets/6dcb64f6-6392-477b-add4-6fb8cf9f39b4" />
+
 รูปผลการทดลอง
 ```
 ```sql
@@ -1438,9 +1691,9 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY hit_ratio;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง
-```
+<img width="762" height="275" alt="image" src="https://github.com/user-attachments/assets/1bde3c3c-2bf4-4f6e-a457-2da19f557348" />
 
 ### การคำนวณ Memory Requirements
 
@@ -1472,9 +1725,36 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 ## คำถามท้ายการทดลอง
 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
+shared_buffers → บล็อกข้อมูลของตาราง/ดัชนีที่แคช “ร่วมกัน” ทุกคอนเนกชัน
+แนวทาง: เริ่มที่ 20–25% ของ RAM เครื่อง (OLTP ปกติ 4–8 GB ก็พอสำหรับ RAM 16–32 GB) แล้วดู pg_statio_*/hit ratio เพื่อปรับเพิ่ม-ลด
+
+wal_buffers → บัฟเฟอร์ WAL ในหน่วยความจำ “ร่วมกัน”
+แนวทาง: ตั้ง -1 (auto) ให้ PostgreSQLคำนวณเอง (≈ 1/32 ของ shared_buffers โดยมีเพดาน) ยกเว้นงาน write-heavy ขนาดใหญ่ค่อยตั้งเอง
+
+(ภายในยังมี shared mem อื่น ๆ เช่น lock tables, proc arrays ฯลฯ แต่ผู้ดูแลปรับได้จริงหลัก ๆ คือ 2 ตัวบน)
+
+ไม่ใช่ shared: work_mem, maintenance_work_mem (เป็น “ต่อปฏิบัติการ/ต่อ worker”)
+
 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+work_mem: เพดาน RAM ต่อ 1 โหนด ของการทำงาน เช่น Sort, HashAggregate/HashJoin ต่อ worker/ต่อ parallel
+แนวทาง:
+
+OLTP เริ่ม 4–16 MB; Analytics/ETL อาจ 64–512 MB เฉพาะ session/job นั้น (SET work_mem='128MB';)
+
+อย่าคูณตรง ๆ ด้วย max_connections อย่างเดียว—ให้คิด จำนวนโหนดที่อาจ active พร้อมกัน (มัก 1–3 ต่อคิวรี × จำนวนคิวรีพร้อมกัน)
+
+maintenance_work_mem: เพดาน RAM ของ งานบำรุงรักษา เช่น VACUUM, CREATE INDEX, ALTER TABLE ADD FOREIGN KEY, CLUSTER
+แนวทาง:
+
+เซิร์ฟเวอร์ 16 GB: ตั้ง 512 MB–2 GB (ขึ้นกับงาน CREATE INDEX ใหญ่แค่ไหน)
+
+autovacuum_work_mem ถ้าเป็น -1 จะใช้ค่าจาก maintenance_work_mem
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
+
 5. Buffer hit ratio คืออะไร
+
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
