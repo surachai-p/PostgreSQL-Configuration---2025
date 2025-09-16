@@ -244,8 +244,13 @@ WHERE name = 'shared_buffers';
 ### ผลการทดลอง
 ```
 1.รูปผลการรันคำสั่ง
-2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
-3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+<img width="595" height="155" alt="image" src="https://github.com/user-attachments/assets/dffa44ba-af9e-4478-85a8-8300368f496a" />
+
+\n
+2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit) \n
+ตอบ 131072 \n
+3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร \n
+ตอบ ไม่จำเป็นต้องรีสตาร์ท PostgreSQL เพื่อให้ค่าการตั้งค่านี้มีผล \n
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
