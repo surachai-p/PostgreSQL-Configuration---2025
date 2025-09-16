@@ -343,6 +343,8 @@ SHOW maintenance_work_mem;
 ```
 รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
 ```
+<img width="599" height="464" alt="image" src="https://github.com/user-attachments/assets/452748a5-151f-4d0f-8db6-62132cbf3320" />
+
 
 #### 3.4 ปรับแต่ง WAL Buffers
 ```sql
