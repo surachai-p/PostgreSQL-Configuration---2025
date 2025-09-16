@@ -238,6 +238,7 @@ WHERE name IN (
 ```
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
 ```
+<img width="1385" height="513" alt="image" src="https://github.com/user-attachments/assets/73798483-95a2-4c37-9bc4-bd7cfec31bd5" />
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
