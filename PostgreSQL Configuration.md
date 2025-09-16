@@ -556,9 +556,12 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY heap_blks_read + heap_blks_hit DESC;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+<img width="782" height="256" alt="image" src="https://github.com/user-attachments/assets/db68b7d9-9ab1-4f12-93a5-3ee447aca2ca" />
+```
 2. อธิบายผลลัพธ์ที่ได้
+WHERE heap_blks_read + heap_blks_hit > 0 ตัดทุกตารางทิ้ง—แปลว่าใน DB นี้ ยังไม่มีตารางใดถูกอ่านจากดิสก์/แคช ตั้งแต่สตาร์ทเซิร์ฟเวอร์
 ```
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
@@ -570,9 +573,12 @@ FROM pg_stat_database
 WHERE datname = current_database();
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+<img width="695" height="325" alt="Screenshot 2025-09-16 195743" src="https://github.com/user-attachments/assets/d9425a81-288d-45d4-ae3e-ad8084595819" />
+```
 2. อธิบายผลลัพธ์ที่ได้
+ฐานข้อมูล performance_test มีการอ่านบล็อกจากดิสก์ 183 ครั้ง และจากแคช 2344 ครั้ง ทำให้มี cache hit ratio = 92.76% แสดงว่าประสิทธิภาพการอ่านส่วนใหญ่มาจาก RAM.
 ```
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
@@ -591,9 +597,12 @@ ORDER BY heap_blks_read DESC
 LIMIT 10;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+<img width="810" height="318" alt="Screenshot 2025-09-16 200014" src="https://github.com/user-attachments/assets/58b6a5b0-330c-4651-9324-778088891452" />
+```
 2. อธิบายผลลัพธ์ที่ได้
+ไม่มีตารางใดในฐานข้อมูลนี้ที่มีการ อ่านบล็อกจากดิสก์จริง (heap_blks_read > 0) ตั้งแต่เซิร์ฟเวอร์เริ่มทำงาน → ข้อมูลที่อ่านทั้งหมดถูกดึงจาก cache (shared buffers) แทน
 ```
 ### Step 7: การปรับแต่ง Autovacuum
 
@@ -606,9 +615,12 @@ WHERE name LIKE '%autovacuum%'
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+<img width="1140" height="720" alt="image" src="https://github.com/user-attachments/assets/e7f6bdd2-5196-4e2d-b056-88d0482f36af" />
+```
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
+   เป็นพารามิเตอร์ที่ควบคุมการทำงานของ autovacuum เพื่อป้องกัน table bloat และดูแลประสิทธิภาพฐานข้อมูล.
 ```
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
@@ -636,9 +648,9 @@ ALTER SYSTEM SET autovacuum_work_mem = '512MB';
 SELECT pg_reload_conf();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
-```
+
+<img width="781" height="727" alt="image" src="https://github.com/user-attachments/assets/03432626-6ab3-4bc6-a968-12b45e4c9704" />
+
 
 ### Step 8: Performance Testing และ Benchmarking
 
@@ -711,9 +723,13 @@ FROM performance_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+  <img width="922" height="437" alt="image" src="https://github.com/user-attachments/assets/4e595f8d-9689-4d0b-86fc-ac6ec784bd69" />
+```
 2. อธิบายผลลัพธ์ที่ได้
+สาเหตุคือในฟังก์ชันมี SELECT pg_stat_reset(); ซึ่ง PL/pgSQL ไม่อนุญาตให้ SELECT โดยไม่เก็บผลลัพธ์ ต้องใช้ PERFORM แทน
+เพราะฟังก์ชันล้มตั้งแต่บรรทัดนี้ ทำให้ไม่มีข้อมูลถูกบันทึกใน performance_results → จึงขึ้น 0 rows เมื่อสรุปผล.
 ```
 
 
@@ -748,9 +764,8 @@ FROM pg_settings WHERE name = 'maintenance_work_mem';
 SELECT * FROM memory_monitor;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="1069" height="765" alt="image" src="https://github.com/user-attachments/assets/413fffed-fdd6-47d3-86ec-0c5709acb99e" />
+
 
 ### Step 10: การจำลอง Load Testing
 
@@ -798,7 +813,8 @@ CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 ```
 ### ผลการทดลอง
 ```
-รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
+<img width="696" height="695" alt="image" src="https://github.com/user-attachments/assets/d2b41369-3ec7-49b4-9ec2-9533610d1fd6" />
+
 ```
 
 #### 10.2 การทดสอบ Query Performance
@@ -974,15 +990,18 @@ SELECT * FROM simulate_oltp_workload(25);
 
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
--- ทดสอบปานกลาง  
+<img width="888" height="277" alt="image" src="https://github.com/user-attachments/assets/c59e6fe2-98c9-4ded-beba-26eca2e34a49" />
+
+ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
-```
+<img width="1004" height="308" alt="image" src="https://github.com/user-attachments/assets/c417e7e5-3917-4ce8-bbab-d370e68378ad" />
+
 1. รูปผลการทดลอง
-2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
+ <img width="1235" height="777" alt="image" src="https://github.com/user-attachments/assets/ff319984-3ebc-475a-a9a0-68b66e92aff5" />
+
+2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร
+ผลการทดลองพบว่า INSERT เร็วที่สุด เพราะแค่เพิ่มข้อมูลใหม่, ส่วน UPDATE และ DELETE (soft delete) ใช้เวลาปานกลางเพราะต้องแก้ไขข้อมูลเดิมและอัปเดต index, ขณะที่ SELECT (JOIN + WHERE) ช้าที่สุดเพราะต้องอ่านและเชื่อมข้อมูลหลายตารางพร้อมเงื่อนไข.
 ```
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
@@ -1183,9 +1202,8 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM run_benchmark_suite();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="898" height="708" alt="image" src="https://github.com/user-attachments/assets/22477179-7aba-485f-9360-08ae740e505f" />
+
 
 -- ดูผลการทดสอบ
 SELECT 
@@ -1200,9 +1218,8 @@ FROM benchmark_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="1898" height="344" alt="image" src="https://github.com/user-attachments/assets/2116d191-c57d-450d-ac21-20517daec77b" />
+
 
 ### Step 12: การจัดการ Configuration แบบ Advanced
 
@@ -1467,9 +1484,8 @@ $$ LANGUAGE plpgsql;
 SELECT auto_tune_memory();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="836" height="222" alt="image" src="https://github.com/user-attachments/assets/588be1d2-271d-4012-8dfe-8b3bf15fe7cb" />
+
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
 SELECT 
@@ -1482,9 +1498,8 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY hit_ratio;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="1118" height="361" alt="image" src="https://github.com/user-attachments/assets/7f61aa08-f02d-4bde-ac2d-e1442c495b1f" />
+
 
 ### การคำนวณ Memory Requirements
 
@@ -1515,10 +1530,15 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 
 ## คำถามท้ายการทดลอง
-1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
-2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร ตอบ Shared memory ได้แก่ shared_buffers, wal_buffers, clog buffer, vacuum buffer → ตั้งตามสัดส่วน RAM (25–40%) และ workload
+2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร ตอบ Work memory ใช้ตอน sort/join ต่อ query, Maintenance work memory ใช้กับ VACUUM/INDEX → work_mem เล็กกว่า, maintenance_work_mem ใหญ่กว่า (4–8 เท่า)
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+ตอบ RAM 16GB, connections 200 → work_mem ≈ (16GB × 0.25) / 200 ≈ 20MB, maintenance_work_mem ≈ 160–256MB
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
+ตอบ postgresql.conf เป็นไฟล์หลัก, postgresql.auto.conf เก็บค่าที่ตั้งผ่าน ALTER SYSTEM และ override conf หลัก
 5. Buffer hit ratio คืออะไร
+ตอบ Buffer hit ratio คืออัตราส่วนการอ่านจาก cache (shared buffers) แทนการอ่านจาก disk → ควรเกิน 95%
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+RAM 16GB → shared_buffers 4GB, work_mem 32MB, maintenance_work_mem 1GB, wal_buffers 16MB, effective_cache_size 12GB (รวม ~5.05GB ปลอดภัย)
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+ตอบ PostgreSQL มี Seq Scan, Index Scan, Bitmap Scan → Seq อ่านทั้งตาราง, Index Scan ใช้ index ตรง ๆ, Bitmap เหมาะกับหลายเงื่อนไขและชุดข้อมูลใหญ่
