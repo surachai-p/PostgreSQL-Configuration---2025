@@ -1031,7 +1031,7 @@ $$ LANGUAGE plpgsql;
 -- รัน load test ทดสอบเบาๆ
 SELECT * FROM simulate_oltp_workload(25);
 
-```
+
 ### ผลการทดลอง
 
 <img width="628" height="185" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 15 22 22" src="https://github.com/user-attachments/assets/b6d2416c-6c37-4fae-8633-4c84d1b01e0d" />
