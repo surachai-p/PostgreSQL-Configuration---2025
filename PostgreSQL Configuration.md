@@ -570,7 +570,7 @@ WHERE datname = current_database();
 ```
 ### ผลการทดลอง
 1. รูปผลการทดลอง
-<img width="664" height="75" alt="image" src="https://github.com/user-attachments/assets/8e5d1789-95ac-4561-9db1-6310eeadae3e" />
+<img width="650" height="97" alt="image" src="https://github.com/user-attachments/assets/68aa5c81-91aa-4b83-9cf4-79383a78e08c" />
 
 2. อธิบายผลลัพธ์ที่ได้
 - blks_read = 4416 → มีการอ่านบล็อกข้อมูลจากดิสก์จริงเพียง 4,416 ครั้ง
