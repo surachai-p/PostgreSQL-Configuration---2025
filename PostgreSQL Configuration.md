@@ -236,6 +236,7 @@ SHOW data_directory;
 PostgreSQL แยก config file และ data directory ไว้ใน path เดียวกัน เพื่อความสะดวก
  และpathนี้เป็นมาตรฐานของ official Docker image และรองรับการ mount volume ได้ง่าย
 ```
+
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -249,6 +250,8 @@ WHERE name IN (
 ```
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
 ```
+<img width="1324" height="466" alt="image" src="https://github.com/user-attachments/assets/82e6bd7b-2a58-431b-9929-2dc9a246dd93" />
+
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
