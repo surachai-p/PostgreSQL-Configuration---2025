@@ -710,8 +710,13 @@ LIMIT 10;
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
-2. อธิบายผลลัพธ์ที่ได้
 ```
+<img width="1042" height="314" alt="image" src="https://github.com/user-attachments/assets/d912f025-660e-47d4-b001-ea836c5c583b" />
+```
+2. อธิบายผลลัพธ์ที่ได้
+ตารางผลลัพธ์แสดงหัวคอลัมน์เรียบร้อยแล้ว แต่ไม่มีข้อมูลแสดงออกมา คือไม่มีตารางที่ตรงกับเงื่อนไข query นี้ หรือ ยังไม่มีการเก็บสถิติ (statistics) เกี่ยวกับการอ่าน/เขียนตาราง
+```
+
 ### Step 7: การปรับแต่ง Autovacuum
 
 #### 7.1 ทำความเข้าใจ Autovacuum Parameters
@@ -725,7 +730,23 @@ ORDER BY name;
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
+```
+
+<img width="1442" height="503" alt="image" src="https://github.com/user-attachments/assets/2dad731c-5205-4299-a760-776ad5c7c3a2" />
+```
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
+ค่าที่ ควบคุมความถี่ ของ autovacuum คือ:
+  autovacuum_naptime
+  autovacuum_vacuum_threshold
+  autovacuum_vacuum_scale_factor
+  autovacuum_analyze_threshold
+  autovacuum_analyze_scale_factor
+ส่วนค่าที่ ควบคุมประสิทธิภาพและโหลดระบบ คือ:
+  autovacuum_max_workers
+  autovacuum_vacuum_cost_delay
+  autovacuum_vacuum_cost_limit
+  autovacuum_work_mem
+
 ```
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
@@ -756,6 +777,8 @@ SELECT pg_reload_conf();
 ```
 รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
 ```
+<img width="1350" height="442" alt="image" src="https://github.com/user-attachments/assets/c6fcd92b-7206-4a2d-8e18-350fa1510f58" />
+
 
 ### Step 8: Performance Testing และ Benchmarking
 
@@ -830,9 +853,18 @@ ORDER BY test_timestamp DESC;
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
-2. อธิบายผลลัพธ์ที่ได้
 ```
+<img width="1295" height="248" alt="image" src="https://github.com/user-attachments/assets/1beb3a0b-5e76-4297-8e78-e7d280d25540" />
 
+```
+2. อธิบายผลลัพธ์ที่ได้
+แสดงผลข้อมูลการทดสอบประสิทธิภาพที่เก็บในตาราง performance_results
+test_name: ชื่อของการทดสอบ
+config_set: การตั้งค่าหรือชุดการตั้งค่าที่ใช้ทดสอบในแต่ละครั้ง
+execution_time_ms: เวลาที่ใช้รันทดสอบในหน่วยมิลลิวินาที
+avg_time: ค่าเฉลี่ยเวลาที่ใช้ทดสอบของแต่ละ test_name คำนวณจากข้อมูลทดสอบทั้งหมด
+
+```
 
 ### Step 9: การ Monitoring และ Alerting
 
@@ -868,6 +900,9 @@ SELECT * FROM memory_monitor;
 ```
 รูปผลการทดลอง
 ```
+
+<img width="1331" height="222" alt="image" src="https://github.com/user-attachments/assets/1773ad18-625e-4ef5-9863-c124580cdebe" />
+
 
 ### Step 10: การจำลอง Load Testing
 
@@ -917,6 +952,10 @@ CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 ```
 รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
 ```
+
+<img width="1327" height="223" alt="image" src="https://github.com/user-attachments/assets/c3667690-774e-4f15-93cf-9729d263e4dc" />
+
+<img width="1338" height="220" alt="image" src="https://github.com/user-attachments/assets/9260a018-0cd3-4950-89d6-adeb3c1fe12c" />
 
 #### 10.2 การทดสอบ Query Performance
 ```sql
@@ -1092,22 +1131,37 @@ SELECT * FROM simulate_oltp_workload(25);
 ```
 ### ผลการทดลอง
 ```
+<img width="1386" height="248" alt="image" src="https://github.com/user-attachments/assets/7eaccdbc-17a6-4fb1-80f9-dd9c7f7dcf06" />
+
+
 รูปผลการทดลอง
 ```
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
 ```
+
+<img width="1350" height="272" alt="image" src="https://github.com/user-attachments/assets/71b418b8-e2b1-4e69-893a-2d4663e2711b" />
+
+```
 1. รูปผลการทดลอง
-2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
+2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร
+    SELECT (JOIN + WHERE): ใช้เวลาต่ำสุด เพราะอ่านข้อมูลเฉพาะที่ต้องการและมี LIMIT
+    INSERT: ช้ากว่า SELECT เพราะต้องเพิ่มข้อมูลใหม่และอัพเดต index
+    UPDATE: ช้ากว่า INSERT เล็กน้อย เพราะต้องอ่านข้อมูล แก้ไข และรักษา index/constraints
+    DELETE (Soft Delete): ใช้เวลาใกล้เคียง UPDATE เพราะเป็นการอัพเดตคอลัมน์ deleted_at แทนลบจริง
 ```
 
+```
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
 SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
 ```
+```
 รูปผลการทดลอง
 ```
+<img width="1015" height="278" alt="image" src="https://github.com/user-attachments/assets/c8ea9763-6da6-4a00-b3dc-1965e4575298" />
+
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
 
@@ -1304,6 +1358,9 @@ SELECT * FROM run_benchmark_suite();
 รูปผลการทดลอง
 ```
 
+<img width="1339" height="256" alt="image" src="https://github.com/user-attachments/assets/6873da2f-5e12-4849-be02-1380e248c4c1" />
+
+```
 -- ดูผลการทดสอบ
 SELECT 
     config_name,
@@ -1320,6 +1377,9 @@ ORDER BY test_timestamp DESC;
 ```
 รูปผลการทดลอง
 ```
+
+<img width="1379" height="236" alt="image" src="https://github.com/user-attachments/assets/6d2a0b08-b01e-456a-9aa3-8423d493a26e" />
+
 
 ### Step 12: การจัดการ Configuration แบบ Advanced
 
@@ -1585,6 +1645,9 @@ SELECT auto_tune_memory();
 ```
 ### ผลการทดลอง
 ```
+<img width="657" height="502" alt="image" src="https://github.com/user-attachments/assets/06184351-0b36-4abd-90b3-1d73dc281cff" />
+
+
 รูปผลการทดลอง
 ```
 ```sql
