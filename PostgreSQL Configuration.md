@@ -306,9 +306,9 @@ FROM pg_settings
 WHERE name = 'work_mem';
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า work_mem
-```
+
+<img width="371" height="240" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 15 46" src="https://github.com/user-attachments/assets/2d6d3aab-ba84-4b7b-b7cb-841d4cc727f3" />
+
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
 ```sql
@@ -323,9 +323,9 @@ SELECT pg_reload_conf();
 SHOW maintenance_work_mem;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
-```
+
+<img width="292" height="93" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 16 52" src="https://github.com/user-attachments/assets/57f5638f-b568-48be-b564-448308ede5a0" />
+
 
 #### 3.4 ปรับแต่ง WAL Buffers
 ```sql
@@ -348,9 +348,9 @@ docker exec -it postgres-config psql -U postgres
 SHOW wal_buffers;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า wal_buffers
-```
+
+ปกติก่อนเปลี่ยนก็  16 MB อยู่เเล้ว 
+<img width="284" height="93" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 18 49" src="https://github.com/user-attachments/assets/bed36573-a21f-4acd-a769-424e7d074ed9" />
 
 #### 3.5 ปรับแต่ง Effective Cache Size
 ```sql
@@ -365,9 +365,9 @@ SELECT pg_reload_conf();
 SHOW effective_cache_size;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า effective_cache_size
-```
+
+<img width="286" height="114" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 19 34" src="https://github.com/user-attachments/assets/ef97a8e4-1ad3-48e4-bbb3-731ad1c2b920" />
+
 
 ### Step 4: ตรวจสอบผล
 
@@ -394,9 +394,9 @@ WHERE name IN (
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
-รูปผลการลัพธ์การตั้งค่า
-```
+
+<img width="1091" height="405" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 20 18" src="https://github.com/user-attachments/assets/da56c4e4-6785-4e41-b7ed-919eedea1e62" />
+
 
 ### Step 5: การสร้างและทดสอบ Workload
 
@@ -438,11 +438,24 @@ ORDER BY data
 LIMIT 1000;
 ```
 ### ผลการทดลอง
-```
 1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
+EXPLAIN → ใช้ แสดงแผนการทำงาน (execution plan) ของคำสั่ง SQL
+ANALYZE → บอกให้ PostgreSQL รัน query จริง ๆ แล้ววัดเวลาและ row ที่อ่าน/ส่งออกจริง
+BUFFERS → บอกให้ PostgreSQL แสดงข้อมูลการใช้ buffer/page ของ disk และ memory
+ค้นในตาราง large_table ORDER BY data
+LIMIT 1000 ใน SQL คือ จำกัดจำนวนแถว (rows) ที่ query ส่งกลับ ไม่ให้เกิน 1000 แถว
 2. รูปผลการรัน
+
+<img width="1006" height="391" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 26 59" src="https://github.com/user-attachments/assets/abf7a508-0043-4e5e-8263-e6697cb9bf8d" />
+
 3. อธิบายผลลัพธ์ที่ได้
-```
+- Limit  PostgreSQL ส่ง 1000 แถวตาม LIMIT ใช้เวลา ~180 ms
+- Gather Merge ใช้ 2 workers (parallel) เพื่อ merge ผลลัพธ์จากหลาย worker อ่านข้อมูลจาก shared memory buffer 5133 page
+- Sort ใช้ top-N heapsort → efficient สำหรับ LIMIT memory ใช้ประมาณ 239 kB worker แต่ละคนใช้ memory ~170–179 kB
+- Parallel Seq Scan scan ตารางแบบ parallel sequential scan → worker 3 ตัว scan แถวละ ~166,667 Buffers: shared hit=5059 → อ่านจาก memory ไม่ต้องดึงจาก disk
+- Planning Time: 1.05 ms → เวลาวางแผน query
+- Execution Time: 180.107 ms → เวลารัน query จริง
+
 ```sql
 -- ทดสอบ Hash operation
 EXPLAIN (ANALYZE, BUFFERS)
@@ -454,11 +467,21 @@ LIMIT 100;
 ```
 
 ### ผลการทดลอง
-```
+
 1. รูปผลการรัน
-2. อธิบายผลลัพธ์ที่ได้ 
+
+<img width="1140" height="399" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 33 22" src="https://github.com/user-attachments/assets/ea961ea6-b6ab-4dc5-8490-6a35142b2cb4" />
+
+2. อธิบายผลลัพธ์ที่ได้
+- Limit  PostgreSQL ส่ง 100 แถวตาม LIMIT ใช้เวลา ~0.5 ms GroupAggregate → aggregate โดย group ตาม column number Filter: (count(*) > 1) → เลือกเฉพาะ group ที่มี count > 1 Rows Removed by Filter: 361 → group ที่ไม่ผ่าน filter ถูกตัดออก 361 แถว
+- Index Only Scan ใช้ idx_large_table_number → อ่านข้อมูลจาก index โดยตรง Heap Fetches: 0 → ไม่ต้องอ่าน data จาก table heap เพราะข้อมูลอยู่ใน index ครบแล้ว Buffers: shared hit=6 → อ่านจาก memory buffer
+- Planning Time: 0.621 ms → เวลาวางแผน query
+- Execution Time: 0.638 ms → เวลารัน query จริง
+
 3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
-```
+เป็น Index Only Scan Index Only Scan คือ การอ่านข้อมูล จาก index โดยตรง โดย ไม่ต้องอ่านตาราง (heap)
+เหตุผล จำนวน rows ไม่มาก / limit 100 → ไม่ต้อง scan ทั้ง table ลดการอ่าน disk I/O → ทำให้ query เร็วมาก
+
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
 -- ทดสอบ CREATE INDEX (จะใช้ maintenance_work_mem)
@@ -473,10 +496,19 @@ DELETE FROM large_table WHERE id % 10 = 0;
 VACUUM (ANALYZE, VERBOSE) large_table;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
+
+<img width="1058" height="589" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 14 40 59" src="https://github.com/user-attachments/assets/575590d1-12e8-42f7-bbf7-5a8091f200e0" />
+
 2. อธิบายผลลัพธ์ที่ได้
-```
+- Vacuuming table PostgreSQL เริ่มทำ VACUUM กับ large_table ใช้ 2 parallel vacuum workers เพื่อ process index ให้เร็วขึ้น
+- Pages และ tuples 5059 pages ของ table ถูก scan ทั้งหมด 50000 tuples (rows) ถูกลบ (dead tuples จาก UPDATE/DELETE) 450000 tuples ยังอยู่ และไม่มี dead tuples ที่รอ removal
+- Index cleaning Index ทั้งหมดถูกตรวจสอบ ไม่มี page ใหม่ที่ถูกลบ เพราะ VACUUM ทำความสะอาด dead tuples บน index โดยอัตโนมัติ
+- Buffer usage และ WAL buffer hits → จำนวน page ที่อ่านจาก memory buffer dirtied → page ที่มีการแก้ไขและต้องเขียนกลับ disk WAL usage → จำนวน log ที่ถูกสร้างเพื่อความปลอดภัยของข้อมูล
+- Analyze PostgreSQL เก็บสถิติ table ใช้ 30,000 rows เป็น sample planner ใช้สถิตินี้ในการประเมิน cost ของ query
+- VACUUM + ANALYZE เสร็จใน 298.789 ms
+
 ### Step 6: การติดตาม Memory Usage
 
 #### 6.1 สร้างฟังก์ชันติดตาม Memory
