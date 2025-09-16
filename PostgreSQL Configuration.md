@@ -211,11 +211,14 @@ SELECT version();
 SHOW config_file;
 SHOW hba_file;
 SHOW data_directory;
-
-### บันทึกผลการทดลอง
 ```
+### บันทึกผลการทดลอง
+<img width="1430" height="635" alt="image" src="https://github.com/user-attachments/assets/72b13c5f-7e58-4a97-9544-a1ce0d9e899a" />
+
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+`/var/lib/postgresql/data/postgresql.conf`
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+`/var/lib/postgresql/data`
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
