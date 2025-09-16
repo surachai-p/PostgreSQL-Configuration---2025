@@ -1599,6 +1599,8 @@ ORDER BY hit_ratio;
 ```
 รูปผลการทดลอง
 ```
+<img width="707" height="351" alt="image" src="https://github.com/user-attachments/assets/96cd6d59-4034-4595-99ca-d962b2b156e5" />
+
 
 ### การคำนวณ Memory Requirements
 
@@ -1630,9 +1632,31 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 ## คำถามท้ายการทดลอง
 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
+   shared_buffers, wal_buffers, max_connections หลักการ: shared_buffers ≈ 25–40% ของ RAM
 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+   work_mem  memory ต่อ session สำหรับ sort, join, aggregation
+   maintenance_work_mem  memory สำหรับ VACUUM, CREATE INDEX
+   หลักการ: work_mem × concurrent connections ≤ RAM ที่เหลือ, maintenance_work_mem ตั้งสูงได้แต่ไม่เกิน RAM
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+  shared_buffers ≈ 4GB
+  work_mem ≈ 50–60MB
+  maintenance_work_mem ≈ 512MB–1GB
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
+   postgresql.conf = ไฟล์หลักสำหรับตั้งค่าทุก parameter ของ PostgreSQL
+   postgresql.auto.conf = ไฟล์ที่ PostgreSQL ใช้เก็บค่า parameter ที่ตั้งด้วย ALTER SYSTEM
+   ถ้าตั้งค่าซ้ำกัน → postgresql.auto.conf จะ override ค่าจาก postgresql.conf
 5. Buffer hit ratio คืออะไร
+   อัตราการอ่านข้อมูลจาก shared buffer cache แทนที่จะอ่านจาก disk
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+   RAM = 16GB
+  shared_buffers = 25% → 4GB
+  work_mem = 50MB
+  maintenance_work_mem = 1GB
+  max_connections = 200
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+   PostgreSQL มี 4 แบบหลัก
+   Sequential Scan = อ่านทุกหน้า
+  Index Scan = อ่านเฉพาะที่ตรงเงื่อนไข
+  Index Only Scan = อ่าน index ไม่เข้าตาราง  เร็ว
+  Bitmap Scan = ใช้หลาย index + อ่าน table เป็นชุด  ลด I/O
+   
