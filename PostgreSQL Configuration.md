@@ -190,8 +190,22 @@ docker exec postgres-config df -h
 ### บันทึกผลการทดลอง
 ```
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+docker exec postgres-config free
+รันคำสั่ง free ภายใน container ชื่อ postgres-config
+free ใช้สำหรับแสดงสถานะหน่วยความจำ (RAM) เช่น Memory ทั้งหมด, ใช้ไปเท่าไร, เหลืออยู่เท่าไร, swap ใช้ไปแค่ไหน
+
+docker exec postgres-config df
+รันคำสั่ง df ภายใน container postgres-config
+df ใช้สำหรับแสดงข้อมูลการใช้พื้นที่ดิสก์ของไฟล์ซิสเต็ม เช่น ขนาดดิสก์, ใช้ไปเท่าไร, เหลือเท่าไร
+
 2. option -h ในคำสั่งมีผลอย่างไร
+ผลลัพธ์จะแสดงเป็นหน่วยที่เข้าใจง่าย เช่น MB, GB แทนที่จะเป็น byte
+free -h → แสดงหน่วยความจำเป็น MB/GB
+df -h → แสดงขนาดดิสก์เป็น MB/GB
+
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
+ถ้าเครื่องโฮสต์มี 8 core และ container ใช้ได้ทั้งหมด → จะได้ค่า 8
+ถ้า container ถูกจำกัดให้ใช้ 2 core → จะได้ค่า 2
 ```
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
@@ -208,9 +222,11 @@ SHOW hba_file;
 SHOW data_directory;
 
 ### บันทึกผลการทดลอง
+
 ```
-1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
-2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+<img width="1920" height="1080" alt="Screenshot (599)" src="https://github.com/user-attachments/assets/1e8e85ea-6efb-4e3f-9009-5052660ceb15" />
+1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด = /var/lib/postgresql/data/postgresql.conf
+2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด = /var/lib/postgresql/data
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -224,6 +240,7 @@ WHERE name IN (
 ```
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
 ```
+<img width="1920" height="1080" alt="Screenshot (598)" src="https://github.com/user-attachments/assets/28d4cfca-e998-47ac-bfab-ccd52bdeff29" />
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
@@ -237,8 +254,13 @@ WHERE name = 'shared_buffers';
 ### ผลการทดลอง
 ```
 1.รูปผลการรันคำสั่ง
+<img width="756" height="161" alt="image" src="https://github.com/user-attachments/assets/e22110ed-3ac7-4753-86dc-808870fc1cd9" />
+
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+   shared_buffers คือ หน่วยความจำหลัก ที่ PostgreSQL ใช้สำหรับเก็บ data block ที่อ่านมาจากดิสก์ เพื่อให้ query ใช้งานได้เร็วขึ้น
+   
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+   pending_restart เป็น column ใน view pg_settings ใช้บอกว่า parameter นั้น ๆ ต้องการการ restart PostgreSQL หรือไม่ เพื่อให้ค่าใหม่มีผล
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
