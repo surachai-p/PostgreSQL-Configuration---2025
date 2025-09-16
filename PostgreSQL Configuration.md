@@ -766,11 +766,18 @@ FROM performance_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
+
+<img width="694" height="286" alt="image" src="https://github.com/user-attachments/assets/23d1daac-5de0-4230-9615-d38ac45b6481" />
 ```
 1. รูปผลการทดลอง
 2. อธิบายผลลัพธ์ที่ได้
+ตอบ : 
+test_name → ชื่อการทดสอบ 
+config_set → ค่า config ที่ใช้ตอนรันทดสอบ 
+execution_time_ms → เวลาในการ execute test นั้น ๆ 
+AVG(...) OVER (PARTITION BY test_name) → ใช้ window function เพื่อหา average time ของแต่ละ test_name โดยไม่ต้อง GROUP BY
+ORDER BY test_timestamp DESC → เรียงผลลัพธ์ตามเวลาล่าสุด
 ```
-
 
 ### Step 9: การ Monitoring และ Alerting
 
@@ -803,9 +810,8 @@ FROM pg_settings WHERE name = 'maintenance_work_mem';
 SELECT * FROM memory_monitor;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="879" height="222" alt="image" src="https://github.com/user-attachments/assets/5f9a4fd0-bedd-43eb-be85-542d2d50a421" />
+
 
 ### Step 10: การจำลอง Load Testing
 
@@ -852,9 +858,10 @@ CREATE INDEX idx_orders_product_id ON load_test_orders(product_id);
 CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 ```
 ### ผลการทดลอง
-```
 รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
-```
+<img width="885" height="224" alt="image" src="https://github.com/user-attachments/assets/2dfccda3-85db-4116-82ab-64025c5a5c0e" />
+<img width="943" height="221" alt="image" src="https://github.com/user-attachments/assets/d6d94f3b-76bf-42a8-aa92-c9a12759c6da" />
+
 
 #### 10.2 การทดสอบ Query Performance
 ```sql
@@ -1030,22 +1037,42 @@ SELECT * FROM simulate_oltp_workload(25);
 ```
 ### ผลการทดลอง
 ```
-รูปผลการทดลอง
+<img width="851" height="288" alt="image" src="https://github.com/user-attachments/assets/5717b81a-3e53-46ec-b42e-1f6a4f106807" />
+
 ```
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
-2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
-```
+<img width="890" height="318" alt="image" src="https://github.com/user-attachments/assets/92dd649c-5bec-4f71-8c2f-c4081aa19670" />
+
+
+2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร
+   🔹 SELECT (JOIN + WHERE)
+avg_time = 0.050 ms → เร็วมาก แทบจะทันที
+ค่า min/max อยู่ระหว่าง 0.036 – 0.743 ms → แทบไม่มี outlier
+แสดงว่า query read มีประสิทธิภาพดีมาก (น่าจะ cache hit สูง, index ใช้งานได้ดี)
+  🔹 INSERT
+avg_time = 0.025 ms → เร็วที่สุดใน 4 operations
+INSERT โดยทั่วไปใน PostgreSQL ค่อนข้างเบา เพราะแค่เพิ่ม row เข้า heap และ WAL
+ค่า min/max อยู่ระหว่าง 0.012 – 0.355 ms → ยังถือว่าคงที่
+  🔹 UPDATE
+avg_time = 130.385 ms → ช้ากว่า SELECT/INSERT อย่างมาก
+UPDATE ใน PostgreSQL ไม่ได้แก้ไข row ตรง ๆ แต่ทำ MVCC → สร้าง row ใหม่ + mark row เก่าเป็น dead tuple
+ค่า min/max กว้าง (109.6 – 202.2 ms) → อาจมี table bloat หรือ index update หลายตัว
+  🔹 DELETE (soft)
+avg_time = 166.604 ms → ช้าที่สุด
+ค่า min/max อยู่ระหว่าง 120.7 – 251.5 ms → แกว่งมากกว่าตัวอื่น
+DELETE ใน PostgreSQL ไม่ลบ row จริง แต่ mark เป็น dead tuple (และเพิ่มค่า deleted_at สำหรับ soft delete) → ต้องการ vacuum/autovacuum ตามมา
+ช้ากว่า UPDATE เพราะอาจกระทบ index + trigger constraint
+
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
 SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+<img width="867" height="309" alt="image" src="https://github.com/user-attachments/assets/a4ee0603-ac2b-4bde-9288-07b3c4c534d0" />
+
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
 
