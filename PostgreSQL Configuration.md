@@ -1582,9 +1582,47 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 ## คำถามท้ายการทดลอง
 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
+- shared_buffers ปริมาณที่เหมาะสมมักอยู่ประมาณ 25–40% ของ RAM ต้องมากพอให้ cache data ที่ใช้งานบ่อย ๆ ลดการอ่านจาก disk Default 128MB
+- work_mem ตั้งเป็น หน่วยความจำต่อ operation หากตั้งสูงเกินไป แล้วมีหลาย query รันพร้อมกัน → อาจใช้ memory เกินระบบได้ ควรปรับให้เหมาะสมกับ workload Default 4MB
+- maintenance_work_mem มักตั้งสูงกว่า work_mem เพราะ operation เหล่านี้เกิดไม่บ่อย ช่วยให้ vacuum หรือสร้าง index ทำงานเร็วขึ้น Default 64MB
+- autovacuum_work_mem ตั้งให้เหมาะสมกับ workload และขนาด table ถ้าเป็น -1 → ใช้ค่าเดียวกับ maintenance_work_mem Default -1
+- shared_preload_libraries ต้องระบุ library ที่ต้อง preload ถ้าไม่ได้ preload → extension ที่ใช้ shared memory จะไม่ทำงาน Default empty
+- max_connections ต้องตั้งค่า shared_buffers และอื่น ๆ ให้เพียงพอกับจำนวน connections จำนวน connection มาก → memory ที่ใช้สำหรับ connection แต่ละตัวก็เพิ่มขึ้น Default 100
 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+- work_mem 
+  - คือ จํานวนหน่วยความจําที่พร้อมใช้งานในการทํางาน sort operation/ hash table ก่อนที่จะเขียนข้อมูลลง disk
+  - หลักการกำหนดค่า:
+      - คำนวณ ต่อ query operation ไม่ใช่ต่อ connection
+      - ปรับให้เพียงพอกับ query ปกติ แต่ไม่สูงเกินไป เพราะทุก query อาจสร้างหลาย operation → ใช้ memory รวมมากเกินไป → Out of memory
+- maintenance work memory
+  - คือ จํานวนหน่วยความจําที่ใช้งานในการทํางาน เช่น VACUUM Create index
+  - default 64 MB
+  - หลักการกำหนดค่า:
+      - ควรกำหนดให้มีค่ามากว่า work_men 
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+    work_mem ≈ 12 GB / (200 × 2) ≈ 30 MB
+    maintenance_work_mem  512MB
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
+  - postgresql.conf เป็นไฟล์ หลัก ของ PostgreSQL ที่เก็บค่าตั้งค่าทั้งหมดของเซิร์ฟเวอร์
+  - postgresql.auto.conf เป็นไฟล์ที่ PostgreSQL สร้างขึ้น โดยอัตโนมัติเก็บค่าที่ถูกตั้งโดยคำสั่ง SQL
+  - PostgreSQL โหลดค่า postgresql.conf ก่อนแล้วโหลดค่าใน postgresql.auto.conf ทับค่าที่เหมือนกัน postgresql.auto.conf > postgresql.conf ถ้ามีค่าซ้ำกัน
 5. Buffer hit ratio คืออะไร
+
+เป็น สัดส่วนของการอ่านข้อมูลจากหน่วยความจำ (buffer/cache) เทียบกับการอ่านจากดิสก์บอกได้ว่า PostgreSQL ใช้หน่วยความจำได้คุ้มค่าแค่ไหน
+คำนวณจากสูตรง่าย ๆ:
+
+<img width="607" height="77" alt="ภาพถ่ายหน้าจอ 2568-09-16 เวลา 15 53 09" src="https://github.com/user-attachments/assets/123142bb-a0a0-48ad-8688-7ef63e7c17d4" />
+
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+- shared_buffers  = 8192 MB * 25% = 2048 MB   = 2GB
+- work_mem = 6144 ÷ 100 ÷ 2 ≈ 30 MB
+- maintenance_work_mem = 8GB × 10% ≈ 800 MB
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+
+| Scan Type             | อธิบาย | ใช้เมื่อ | ข้อดี | ข้อเสีย | Memory Usage | Disk I/O | Query เล็ก | Query ครอบคลุม table | เหมาะกับ |
+|----------------------|--------|---------|-------|---------|--------------|----------|------------|---------------------|-----------|
+| Sequential Scan (Seq Scan) | อ่านทุกแถวจาก table | ไม่มี index, query ครอบคลุมเกือบทุกแถว | ง่าย, เร็วเมื่อ table เล็ก | ช้าเมื่อ table ใหญ่ | ต่ำ | สูงถ้า table ใหญ่ | ช้า | เร็ว | Table เล็ก, Query ครอบคลุมหลายแถว |
+| Index Scan           | ใช้ index ค้นหาแถวที่ต้องการ | มี index ที่ตรงกับเงื่อนไข query | เร็วเมื่อเจอบางแถวเท่านั้น | ช้าเมื่อเจอข้อมูลเกือบทุกแถว | ต่ำ | ต่ำ | เร็ว | ช้า | Table ใหญ่, Query เจอไม่กี่แถว |
+| Index Only Scan      | อ่าน index อย่างเดียว โดยไม่ต้องอ่าน table | ข้อมูลทั้งหมดอยู่ใน index | เร็วมากเพราะไม่ต้องอ่าน table | ต้อง index ครอบคลุมทุก column ที่ต้องการ | ต่ำ | ต่ำมาก | เร็วมาก | ช้า | Table ใหญ่, Index ครอบคลุม column |
+| Bitmap Index/Heap Scan | สร้าง bitmap ของตำแหน่งแถวจาก index แล้วค่อยอ่าน table | query มีหลายค่า, เจอหลายแถว | ลดการอ่านซ้ำจาก disk | ต้องสร้าง bitmap, ใช้ memory มาก | ปานกลาง | ต่ำ | เร็ว | ปานกลาง | Table ใหญ่, Query เจอหลายแถว |
+
