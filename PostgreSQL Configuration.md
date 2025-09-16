@@ -683,6 +683,22 @@ ORDER BY name;
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
 ```
 
+<img width="1314" height="493" alt="image" src="https://github.com/user-attachments/assets/f658f278-9a2e-44ee-b9f8-2776a07b2b4f" />
+
+```
+1.autovacuum = on เปิดใช้งาน autovacuum 
+2.autovacuum_analyze_threshold = 50 ถ้ามีการเปลี่ยนแปลงเกิน 50 แถวขึ้นไป  autovacuum จะพิจารณา analyze ตาราง
+3.autovacuum_analyze_scale_factor = 0.1 (10%) ถ้ามีการเปลี่ยนแปลง ≥ 10% ของจำนวนแถวทั้งหมดในตาราง  autovacuum จะทำการ analyze
+4.autovacuum_vacuum_threshold = 50 ถ้ามี tuple ตาย ≥ 50 autovacuum จะพิจารณา vacuum ตาราง
+5autovacuum_vacuum_scale_factor = 0.2 (20%) ถ้า dead tuples ≥ 20% ของตาราง  autovacuum จะ vacuum
+6.autovacuum_freeze_max_age = 200000000 เมื่อ transaction ID มีอายุใกล้ถึงค่านี้ จะ trigger vacuum อัตโนมัติเพื่อป้องกัน transaction ID wraparound
+7.autovacuum_multixact_freeze_max_age = 400000000 ใช้กับ multixact ID (กรณี share row locks หลายๆ ตัว)
+8.autovacuum_naptime = 60s เวลาที่ worker จะพักก่อนตรวจสอบรอบใหม่ 
+9.autovacuum_vacuum_cost_delay = 2 ms Delay ต่อแต่ละ vacuum cost unit ลดภาระ I/O ของ vacuum ให้ไม่กิน resource มากเกินไป
+10.autovacuum_max_workers = 3 จำนวน worker ของ autovacuum ที่ทำงานพร้อมกันสูงสุด
+11.log_autovacuum_min_duration = 600000 ms (10 นาที) จะ log เฉพาะ autovacuum ที่ใช้เวลามากกว่า 10 นาที
+```
+
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
 ```sql
 -- ปรับจำนวน autovacuum workers
