@@ -501,7 +501,8 @@ VACUUM (ANALYZE, VERBOSE) large_table;
 ```
 1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
 ```
-![alt text](img/image.png)
+![alt text](img/13image.png)
+
 2. อธิบายผลลัพธ์ที่ได้
 - vacuuming "public.large_table": PostgreSQL เริ่มกระบวนการ vacuum บนตารางเป้าหมาย
 - removed 10000 row versions: มี 10,000 แถวที่ถูกลบจากคำสั่ง DELETE และถูกนำออกจาก heap
@@ -554,6 +555,7 @@ FROM get_memory_usage();
 ```
 รูปผลการทดลอง
 ```
+![alt text](img/14image.png)
 
 #### 6.2 การติดตาม Buffer Hit Ratio
 ```sql
@@ -574,8 +576,15 @@ ORDER BY heap_blks_read + heap_blks_hit DESC;
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
-2. อธิบายผลลัพธ์ที่ได้
 ```
+![alt text](img/15image.png)
+
+2. อธิบายผลลัพธ์ที่ได้
+- ตารางที่วิเคราะห์: large_table ใน schema public
+- heap_blks_read = 5064: PostgreSQL อ่าน block จาก disk เพียง 5,064 ครั้ง
+- heap_blks_hit = 1,287,209: PostgreSQL ดึงข้อมูลจาก memory (shared buffer) มากกว่า 1.2 ล้านครั้ง
+- hit_ratio_percent = 99.61%: แสดงว่า PostgreSQL ใช้ memory cache ได้อย่างมีประสิทธิภาพสูงมาก
+
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
 SELECT datname,
@@ -588,8 +597,13 @@ WHERE datname = current_database();
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
-2. อธิบายผลลัพธ์ที่ได้
 ```
+![alt text](img/16image.png)
+
+2. อธิบายผลลัพธ์ที่ได้
+- blks_read	15,914	จำนวน block ที่ PostgreSQL ต้องอ่านจาก disk
+- blks_hit	9,349,375	จำนวน block ที่ PostgreSQL ดึงจาก memory (shared buffer) โดยไม่ต้องอ่านจาก disk
+- hit_ratio_percent	99.83%	อัตราส่วนการใช้ memory cache เทียบกับการอ่านทั้งหมด
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
 ```sql
@@ -609,8 +623,18 @@ LIMIT 10;
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
-2. อธิบายผลลัพธ์ที่ได้
 ```
+![alt text](img/17image.png)
+
+2. อธิบายผลลัพธ์ที่ได้
+- tablename ชื่อตารางที่ถูกวิเคราะห์
+- heap_blks_read จำนวน block ที่ถูกอ่านจากดิสก์ (I/O จริง)
+- heap_blks_hit จำนวน block ที่ถูกอ่านจาก shared buffer (หน่วยความจำ)
+- total_access ผลรวมของการเข้าถึงทั้งจากดิสก์และหน่วยความจำ
+- hit_ratio_percent อัตราส่วนการเข้าถึงจากหน่วยความจำ (%)
+- table_size ขนาดของตารางทั้งหมด (รวม index และอื่น ๆ)
+
+
 ### Step 7: การปรับแต่ง Autovacuum
 
 #### 7.1 ทำความเข้าใจ Autovacuum Parameters
@@ -624,8 +648,20 @@ ORDER BY name;
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
-2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
 ```
+![alt text](img/18image.png)
+
+2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
+- autovacuum : เปิด/ปิดระบบ autovacuum on ควรเปิดไว้เสมอเพื่อป้องกัน table bloat และ TXID wraparound
+- autovacuum_max_workers : จำนวน worker ที่ทำงานพร้อมกัน 3 เพิ่มได้หากมีหลายฐานข้อมูลหรือตารางใหญ่
+- autovacuum_naptime : เวลารอระหว่างรอบการตรวจสอบ 1min  ลดลงได้ถ้าต้องการให้ autovacuum ทำงานถี่ขึ้น
+- autovacuum_vacuum_threshold : จำนวน tupleที่ถูกลบแก้ไขขั้นต่ำก่อนvacuum 50 ปรับตามขนาดตารางและความถี่ในการเปลี่ยนข้อมูล
+- autovacuum_vacuum_scale_factor : สัดส่วนของ tuple ที่เปลี่ยนเทียบกับจำนวนทั้งหมด 0.2 ใช้ร่วมกับ threshold เพื่อคำนวณ trigger
+- autovacuum_vacuum_insert_threshold : จำนวน insert ที่ trigger vacuum 1000 ปรับลดได้ถ้าตารางมี insert หนัก
+- autovacuum_analyze_threshold : จำนวน tuple ที่เปลี่ยนก่อน ANALYZE 50 สำคัญต่อ query planner
+- autovacuum_analyze_scale_factor : สัดส่วนของ tuple ที่เปลี่ยนก่อน ANALYZE0 .1 ปรับให้เหมาะกับ workload
+- autovacuum_vacuum_cost_limit : จำกัดค่า cost ต่อรอบ vacuum 200 เพิ่มได้ถ้าระบบมี resource เพียงพอ
+- autovacuum_vacuum_cost_delay : หน่วงเวลาเมื่อถึง cost limit 20ms ลดลงเพื่อให้ vacuum ทำงานเร็วขึ้น
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
 ```sql
@@ -655,6 +691,7 @@ SELECT pg_reload_conf();
 ```
 รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
 ```
+![alt text](img/19image.png)
 
 ### Step 8: Performance Testing และ Benchmarking
 
@@ -729,8 +766,23 @@ ORDER BY test_timestamp DESC;
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง
-2. อธิบายผลลัพธ์ที่ได้
 ```
+![alt text](img/20image.png)
+
+2. อธิบายผลลัพธ์ที่ได้
+large_sort
+- ใช้เวลารันเพียง 23 ms หลังจากตั้งค่า optimized
+- แสดงว่าการปรับ config (เช่น work_mem, maintenance_work_mem) ทำให้ PostgreSQL สามารถทำ in-memory sort ได้ โดยไม่ต้องไปใช้ external sort บน disk
+- ผลคือการ sort ข้อมูลขนาดใหญ่เร็วขึ้นมาก
+
+aggregation
+- ใช้เวลา 473 ms ถึงแม้จะเป็นการตั้งค่าแบบ optimized แล้ว
+- แปลว่าการ aggregation (เช่น GROUP BY, COUNT, SUM) ยังมีความซับซ้อนมากกว่า sort ธรรมดา และอาจยังขึ้นอยู่กับขนาดข้อมูล, จำนวนกลุ่มที่ต้องคำนวณ, และการใช้ index
+- บ่งบอกว่าการ tune memory อย่างเดียวช่วยเรื่อง sort ได้ดี แต่ aggregation อาจต้องพิจารณาเพิ่ม เช่น:
+- การสร้าง index ที่ช่วยกับการ group
+- การปรับ parallel query (max_parallel_workers_per_gather)
+- การ optimize schema (normalization/denormalization)
+
 
 
 ### Step 9: การ Monitoring และ Alerting
@@ -767,6 +819,7 @@ SELECT * FROM memory_monitor;
 ```
 รูปผลการทดลอง
 ```
+![alt text](img/21image.png)
 
 ### Step 10: การจำลอง Load Testing
 
@@ -816,6 +869,7 @@ CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 ```
 รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
 ```
+![alt text](img/22image.png)
 
 #### 10.2 การทดสอบ Query Performance
 ```sql
@@ -984,29 +1038,56 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 ```
-
+```
 -- รัน load test ทดสอบเบาๆ
 SELECT * FROM simulate_oltp_workload(25);
 
-```
 ### ผลการทดลอง
+performance_test=# SELECT * FROM simulate_oltp_workload(25);
+    operation_type     | avg_time_ms | min_time_ms | max_time_ms | total_operations
+-----------------------+-------------+-------------+-------------+------------------
+ SELECT (JOIN + WHERE) |       0.425 |       0.027 |       9.466 |               25
+ INSERT                |       0.207 |       0.011 |       3.604 |               25
+ UPDATE                |     126.377 |     117.019 |     286.975 |               25
+ DELETE (soft)         |     158.472 |     153.553 |     193.525 |               25
+ ```
 ```
 รูปผลการทดลอง
+```
+![alt text](img/23image.png)
+
 ```
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
 ```
-1. รูปผลการทดลอง
-2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
 ```
-
--- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
+1. รูปผลการทดลอง
+```
+![alt text](img/24image.png)
+2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
+SELECT เร็วขึ้นมากที่สุด
+- เพราะ work_mem และ shared_buffers ช่วยให้การ sort/aggregate ทำใน memory ได้
+- ถ้ามี index ยิ่งเร็วขึ้น
+INSERT เร็วขึ้นเล็กน้อย
+- ได้ผลจากการปรับ wal_buffers และ checkpoint_timeout
+- แต่ยังติดคอขวดที่การเขียนลง disk และ WAL
+UPDATE เร็วขึ้นบ้าง (ขึ้นกับ index)
+- ถ้า WHERE มี index จะหาข้อมูลแก้ไขได้ไว
+- ยังมี overhead จาก MVCC (ต้องเก็บ old row)
+DELETE เร็วขึ้นบ้าง แต่ไม่มาก
+- ใช้ index ช่วยค้นหา row ที่ลบได้ไวขึ้น
+- ยังต้องมี vacuum จัดการ dead tuple
+```
+```
+-- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :
 SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
 ```
+
 รูปผลการทดลอง
 ```
+![alt text](img/25image.png)
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
 
