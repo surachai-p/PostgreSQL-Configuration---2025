@@ -188,11 +188,15 @@ docker exec postgres-config nproc
 docker exec postgres-config df -h
 ```
 ### บันทึกผลการทดลอง
-```
-1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
-2. option -h ในคำสั่งมีผลอย่างไร
-3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
-```
+1. docker exec postgres-config free → รันคำสั่ง free ภายใน container ชื่อ postgres-config เพื่อดูการใช้งาน หน่วยความจำ (RAM)
+docker exec postgres-config df → รันคำสั่ง df ภายใน container เพื่อตรวจสอบการใช้งาน พื้นที่ดิสก์ (Disk space)
+2. -h = human-readable
+ทำให้ผลลัพธ์แสดงหน่วยที่อ่านง่าย เช่น KB, MB, GB
+ถ้าไม่ใส่ -h จะเห็นเป็นตัวเลขหน่วย Byte ซึ่งอ่านยากกว่า
+3. nproc = number of processing units
+จะแสดง จำนวน CPU core ที่ container มองเห็นและใช้งานได้
+เช่น ถ้าผลลัพธ์ = 2 แปลว่า container นี้ใช้ CPU ได้ 2 core
+
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
 docker exec -it postgres-config psql -U postgres
@@ -210,7 +214,10 @@ SHOW data_directory;
 ### บันทึกผลการทดลอง
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+ไฟล์ configuration (postgresql.conf, pg_hba.conf) อยู่ในโฟลเดอร์ /var/lib/postgresql/data/
+
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+ไฟล์ข้อมูล (data directory) อยู่ที่ /var/lib/postgresql/data
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -219,11 +226,9 @@ WHERE name IN (
     'shared_buffers', 'work_mem', 'maintenance_work_mem',
     'wal_buffers', 'effective_cache_size', 'max_connections'
 );
-```
+
 ### บันทึกผลการทดลอง
-```
-บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
-```
+
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
