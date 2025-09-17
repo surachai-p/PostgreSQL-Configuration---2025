@@ -370,6 +370,7 @@ SHOW effective_cache_size;
 ```
 รูปผลการเปลี่ยนแปลงค่า effective_cache_size
 ```
+![alt text](img/9image.png)
 
 ### Step 4: ตรวจสอบผล
 
@@ -399,6 +400,7 @@ ORDER BY name;
 ```
 รูปผลการลัพธ์การตั้งค่า
 ```
+![alt text](img/10image.png)
 
 ### Step 5: การสร้างและทดสอบ Workload
 
@@ -440,11 +442,18 @@ ORDER BY data
 LIMIT 1000;
 ```
 ### ผลการทดลอง
-```
+
 1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
-2. รูปผลการรัน
-3. อธิบายผลลัพธ์ที่ได้
+ให้รายละเอียดทั้ง query plan, เวลารันจริง, และ memory/disk I/O
 ```
+2. รูปผลการรัน
+```
+![alt text](img/11image.png)
+3. อธิบายผลลัพธ์ที่ได้
+- การ sort ขึ้นอยู่กับค่า work_mem → ถ้า memory ไม่พอจะไปใช้ disk (ช้า)
+- Index ไม่ถูกใช้สำหรับ ORDER BY data เพราะไม่มี index บน data
+- Buffers บอกเราว่ามีการอ่านข้อมูลจาก memory/disk มากน้อยแค่ไหน
+
 ```sql
 -- ทดสอบ Hash operation
 EXPLAIN (ANALYZE, BUFFERS)
@@ -456,11 +465,25 @@ LIMIT 100;
 ```
 
 ### ผลการทดลอง
+
 ```
 1. รูปผลการรัน
-2. อธิบายผลลัพธ์ที่ได้ 
-3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
 ```
+![alt text](img/12image.png)
+2. อธิบายผลลัพธ์ที่ได้ 
+- คำสั่ง EXPLAIN (ANALYZE, BUFFERS) แสดงขั้นตอนการทำงานจริงของ PostgreSQL พร้อมข้อมูลเกี่ยวกับเวลาและการใช้ memory
+- Query ใช้ GroupAggregate เพื่อรวมข้อมูลตาม number และคำนวณ COUNT(*)
+- เงื่อนไข HAVING COUNT(*) > 1 จะกรองเฉพาะกลุ่มที่มีมากกว่า 1 record
+- LIMIT 100 ทำให้ PostgreSQL หยุดเมื่อได้ผลลัพธ์ครบ 100 แถวที่ตรงเงื่อนไข
+- Buffers: shared hit=... แสดงว่า PostgreSQL ใช้ข้อมูลจาก memory (shared buffer) ได้ดี ไม่ต้องอ่านจาก disk เพิ่ม
+- Execution Time คือเวลาที่ใช้ในการรัน query จริงทั้งหมด
+3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+Sequential Scan (Seq Scan)เหตุผล
+- ไม่มี index บนคอลัมน์ number ที่ใช้ใน GROUP BY
+- PostgreSQL ต้องอ่านทุกแถวเพื่อคำนวณ COUNT(*) ก่อนกรองด้วย HAVING
+- การใช้ aggregate function (COUNT(*)) บังคับให้ต้องดูข้อมูลทั้งหมดก่อนจะแยกกลุ่ม
+- หากมี index และข้อมูลมีการกระจายตัวสูง อาจช่วยให้ใช้ Index Scan หรือ HashAggregate ได้
+
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
 -- ทดสอบ CREATE INDEX (จะใช้ maintenance_work_mem)
@@ -477,8 +500,17 @@ VACUUM (ANALYZE, VERBOSE) large_table;
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
-2. อธิบายผลลัพธ์ที่ได้
 ```
+![alt text](img/image.png)
+2. อธิบายผลลัพธ์ที่ได้
+- vacuuming "public.large_table": PostgreSQL เริ่มกระบวนการ vacuum บนตารางเป้าหมาย
+- removed 10000 row versions: มี 10,000 แถวที่ถูกลบจากคำสั่ง DELETE และถูกนำออกจาก heap
+- found 90000 removable, 10000 nonremovable: แสดงจำนวน tuple ที่สามารถลบได้และที่ยังคงใช้งานอยู่
+- pages with free space: มี 450 page ที่มีพื้นที่ว่าง ซึ่ง PostgreSQL สามารถนำกลับมาใช้ได้
+- index scan skipped: PostgreSQL ข้ามการสแกน index เพราะใช้ CREATE INDEX CONCURRENTLY ซึ่งยังไม่เสร็จสมบูรณ์
+- analyzing: PostgreSQL เริ่มเก็บสถิติใหม่หลัง vacuum เพื่อช่วย planner ตัดสินใจเลือก execution plan ที่เหมาะสม
+- statistics updated: ข้อมูลสถิติของตารางถูกอัปเดตเรียบร้อย
+
 ### Step 6: การติดตาม Memory Usage
 
 #### 6.1 สร้างฟังก์ชันติดตาม Memory
