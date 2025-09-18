@@ -1061,10 +1061,12 @@ performance_test=# SELECT * FROM simulate_oltp_workload(25);
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
 ```
+
 ```
 1. รูปผลการทดลอง
 ```
 ![alt text](img/24image.png)
+
 2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
 SELECT เร็วขึ้นมากที่สุด
 - เพราะ work_mem และ shared_buffers ช่วยให้การ sort/aggregate ทำใน memory ได้
@@ -1078,13 +1080,14 @@ UPDATE เร็วขึ้นบ้าง (ขึ้นกับ index)
 DELETE เร็วขึ้นบ้าง แต่ไม่มาก
 - ใช้ index ช่วยค้นหา row ที่ลบได้ไวขึ้น
 - ยังต้องมี vacuum จัดการ dead tuple
-```
+
 ```
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :
 SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
 ```
 
+```
 รูปผลการทดลอง
 ```
 ![alt text](img/25image.png)
@@ -1283,6 +1286,7 @@ SELECT * FROM run_benchmark_suite();
 ```
 รูปผลการทดลอง
 ```
+![alt text](img/26image.png)
 
 -- ดูผลการทดสอบ
 SELECT 
@@ -1297,9 +1301,18 @@ FROM benchmark_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
+  config_name   | test_type  | shared_buffers | work_mem | exec_time_ms | hit_ratio_percent |       test_timestamp       
+----------------+------------+----------------+----------+--------------+-------------------+----------------------------
+ current_config | sort_heavy | 512MB          | 20MB     |       129.02 |            100.00 | 2025-09-18 08:05:40.876818
+ current_config | agg_heavy  | 512MB          | 20MB     |       386.95 |            100.00 | 2025-09-18 08:05:40.876818
+ current_config | join_heavy | 512MB          | 20MB     |       285.18 |            100.00 | 2025-09-18 08:05:40.876818
+ current_config | index_scan | 512MB          | 20MB     |         9.76 |            100.00 | 2025-09-18 08:05:40.876818
+ 
+```
 ```
 รูปผลการทดลอง
 ```
+![alt text](img/27image.png)
 
 ### Step 12: การจัดการ Configuration แบบ Advanced
 
