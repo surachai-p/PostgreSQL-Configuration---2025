@@ -190,8 +190,11 @@ docker exec postgres-config df -h
 ### บันทึกผลการทดลอง
 ```
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+	คำสั่ง docker exec postgres-config free ใช้สำหรับตรวจสอบการใช้หน่วยความจำภายใน container โดยจะแสดงข้อมูลเกี่ยวกับหน่วยความจำทั้งหมดที่มีอยู่ หน่วยความจำที่ใช้งานแล้ว หน่วยความจำที่ยังว่าง และหน่วยความจำที่ใช้สำหรับ cache และ buffer คำสั่ง docker exec postgres-config df ใช้สำหรับตรวจสอบการใช้พื้นที่จัดเก็บข้อมูลภายใน container โดยจะแสดงขนาดของแต่ละ filesystem พื้นที่ที่ใช้ไป พื้นที่ว่าง และตำแหน่งที่ mount เช่น var lib postgresql data
 2. option -h ในคำสั่งมีผลอย่างไร
+    option -h เป็นตัวเลือกที่ใช้เพื่อแสดงผลลัพธ์ในรูปแบบที่อ่านง่าย โดยจะแสดงหน่วยเป็นเมกะไบต์หรือกิกะไบต์แทนที่จะเป็นไบต์หรือกิโลไบต์ เช่น free -h จะแสดงหน่วยความจำเป็น 2.0G แทน 2097152 และ df -h จะแสดงพื้นที่ดิสก์เป็น 1.5G หรือ 500M แทนตัวเลขขนาดใหญ่
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
+    คำสั่ง docker exec postgres-config nproc ใช้สำหรับแสดงจำนวน logical CPU cores ที่ container สามารถเข้าถึงได้ ผลลัพธ์จะเป็นตัวเลข เช่น 2 หาก container ถูกกำหนดให้ใช้ 2 CPU ด้วย option cpus เท่ากับ 2 ตอนสร้าง container
 ```
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
@@ -208,9 +211,13 @@ SHOW hba_file;
 SHOW data_directory;
 
 ### บันทึกผลการทดลอง
+![alt text](image.png)
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+ค่าพารามิเตอร์ข้อมูลไฟล์ configuration อยู่ที่ตำแหน่งที่แสดงจากคำสั่ง SHOW config_file ซึ่งจะระบุตำแหน่งของไฟล์ postgresql.conf ที่ใช้ในการกำหนดค่าการทำงานของระบบฐานข้อมูล PostgreSQL
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+ค่าแหล่งข้อมูลไฟล์ data อยู่ที่ตำแหน่งที่แสดงจากคำสั่ง SHOW data_directory ซึ่งจะระบุตำแหน่งของโฟลเดอร์ที่ใช้เก็บข้อมูลทั้งหมดของฐานข้อมูล PostgreSQL เช่น ตาราง ดัชนี และไฟล์ระบบต่างๆ
+
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -223,6 +230,7 @@ WHERE name IN (
 ### บันทึกผลการทดลอง
 ```
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
+![alt text](image-1.png)
 ```
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
@@ -235,10 +243,14 @@ FROM pg_settings
 WHERE name = 'shared_buffers';
 
 ### ผลการทดลอง
-```
-1.รูปผลการรันคำสั่ง
+
+1. รูปผลการรันคำสั่ง
+![alt text](image-2.png)
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+มีการกำหนดไว้เท่ากับ 16384 หน่วย โดยแต่ละหน่วยมีขนาด 8 กิโลไบต์ ดังนั้นค่ารวมคือ 16384 คูณด้วย 8 เท่ากับ 131072 กิโลไบต์ หรือเท่ากับ 128 เมกะไบต์
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+ค่า pending_restart ในผลการทดลองมีค่าเป็น f ซึ่งหมายถึง false แสดงว่าไม่จำเป็นต้อง restart ระบบฐานข้อมูลเพื่อให้ค่าพารามิเตอร์นี้มีผล
+
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
@@ -257,7 +269,10 @@ docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresq
 ### ผลการทดลอง
 ```
 รูปผลการเปลี่ยนแปลงค่า pending_restart
+![alt text](image-3.png)
 รูปหลังจาก restart postgres
+![alt text](image-4.png)
+
 
 ```
 
@@ -280,8 +295,8 @@ FROM pg_settings
 WHERE name = 'work_mem';
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า work_mem
+
+![alt text](image-5.png)
 ```
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
@@ -297,8 +312,8 @@ SELECT pg_reload_conf();
 SHOW maintenance_work_mem;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
+
+![alt text](image-6.png)
 ```
 
 #### 3.4 ปรับแต่ง WAL Buffers
@@ -322,8 +337,8 @@ docker exec -it postgres-config psql -U postgres
 SHOW wal_buffers;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า wal_buffers
+
+![alt text](image-7.png)
 ```
 
 #### 3.5 ปรับแต่ง Effective Cache Size
@@ -339,8 +354,8 @@ SELECT pg_reload_conf();
 SHOW effective_cache_size;
 ```
 ### ผลการทดลอง
-```
-รูปผลการเปลี่ยนแปลงค่า effective_cache_size
+
+![alt text](image-8.png)
 ```
 
 ### Step 4: ตรวจสอบผล
@@ -368,8 +383,8 @@ WHERE name IN (
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
-รูปผลการลัพธ์การตั้งค่า
+
+![alt text](image-9.png)
 ```
 
 ### Step 5: การสร้างและทดสอบ Workload
@@ -412,10 +427,15 @@ ORDER BY data
 LIMIT 1000;
 ```
 ### ผลการทดลอง
-```
+
 1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
+- EXPLAIN: แสดงแผนการทำงานของ query โดยไม่รันจริง
+- ANALYZE: รัน query จริงและแสดงเวลาจริงที่ใช้ในแต่ละขั้นตอน
+- BUFFERS: แสดงข้อมูลเกี่ยวกับการใช้งาน buffer เช่น จำนวน block ที่ถูกอ่าน เขียน หรือพบใน cache
 2. รูปผลการรัน
+![alt text](image-10.png)
 3. อธิบายผลลัพธ์ที่ได้
+คำสั่ง SQL ใช้เวลา 243 มิลลิวินาที ดึงข้อมูล 1000 แถวจาก cache โดยใช้การประมวลผลแบบขนาน ไม่มีการอ่านจาก disk หรือเขียนข้อมูล ใช้หน่วยความจำประมาณ 1.8MB ต่อ worker ประสิทธิภาพดีและเหมาะกับการอ่านข้อมูลจำนวนมาก
 ```
 ```sql
 -- ทดสอบ Hash operation
@@ -428,10 +448,15 @@ LIMIT 100;
 ```
 
 ### ผลการทดลอง
-```
+
 1. รูปผลการรัน
+![alt text](image-12.png)
 2. อธิบายผลลัพธ์ที่ได้ 
+คำสั่ง SQL ใช้เวลาในการวางแผน 0.186 มิลลิวินาที และประมวลผลจริง 2.084 มิลลิวินาที โดยใช้การสแกนแบบ Sequential Scan บนตาราง large_table เพื่อจัดกลุ่มข้อมูลตามหมายเลขและกรองเฉพาะกลุ่มที่มีจำนวนมากกว่า 1 จากนั้นจัดเรียงผลลัพธ์และจำกัดไว้ที่ 100 แถว การสแกนแบบนี้เกิดจากการที่ PostgreSQL ประเมินแล้วว่าเหมาะสมกับโครงสร้างข้อมูลและเงื่อนไขที่ใช้ โดยไม่ต้องใช้ index ใช้ buffer เพียง 6 blocks และไม่มีการอ่านข้อมูลจาก heap แสดงถึงประสิทธิภาพที่ดีในการใช้ cache และการประมวลผลแบบอ่านข้อมูลเท่านั้น
 3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+การสแกนในคำสั่งนี้เป็นแบบ Sequential Scan เพราะ PostgreSQL ประเมินแล้วว่าเหมาะสมกับโครงสร้างข้อมูลและเงื่อนไขที่ใช้ โดยไม่มีการใช้ index ในการกรองหรือจัดกลุ่มข้อมูล การใช้ GROUP BY และ HAVING COUNT(*) > 1 ต้องประมวลผลข้อมูลทั้งหมดในตารางก่อนจึงจะสามารถกรองได้ จึงเลือกสแกนแบบเรียงลำดับจากต้นจนจบ ซึ่งเหมาะกับกรณีที่ไม่มี index ที่ช่วยในเงื่อนไขเหล่านี้ และข้อมูลอยู่ใน cache ทำให้ประมวลผลได้เร็วแม้ไม่ใช้ index
+
+
 ```
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
@@ -449,7 +474,9 @@ VACUUM (ANALYZE, VERBOSE) large_table;
 ### ผลการทดลอง
 ```
 1. รูปผลการทดลอง จากคำสั่ง VACUUM (ANALYZE, VERBOSE) large_table;
+![alt text](image-13.png)
 2. อธิบายผลลัพธ์ที่ได้
+คำสั่ง VACUUM (ANALYZE, VERBOSE) ที่รันบนตาราง large_table ทำหน้าที่ลบข้อมูลที่ไม่ใช้งานแล้วจำนวน 762 แถวจากทั้งหมด 5969 หน้า โดยใช้ parallel workers 2 ตัวช่วยประมวลผล ไม่มีการสแกน index และไม่มีแถวที่ยังไม่สามารถลบได้ การใช้งาน buffer แสดงว่าระบบใช้ข้อมูลจาก memory ได้ดี ลดการเข้าถึง disk ใช้เวลารวมประมาณ 980 มิลลิวินาที แสดงว่าตารางมีโครงสร้างที่สะอาดและพร้อมใช้งานต่ออย่างมีประสิทธิภาพ
 ```
 ### Step 6: การติดตาม Memory Usage
 
@@ -491,8 +518,8 @@ SELECT
 FROM get_memory_usage();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
+
+![alt text](image-14.png)
 ```
 
 #### 6.2 การติดตาม Buffer Hit Ratio
@@ -512,9 +539,11 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY heap_blks_read + heap_blks_hit DESC;
 ```
 ### ผลการทดลอง
-```
-1. รูปผลการทดลอง
+
+1. ![alt text](image-15.png)
 2. อธิบายผลลัพธ์ที่ได้
+ผลลัพธ์จากการวิเคราะห์ด้วย pg_statio_user_tables แสดงว่าตาราง large_table มีประสิทธิภาพในการเข้าถึงข้อมูลสูงมาก โดยมีการอ่านข้อมูลจาก memory cache ทั้งหมด 625,910 ครั้ง โดยไม่มีการอ่านจาก disk เลย (heap_blks_read = 0) ส่งผลให้ค่า hit ratio อยู่ที่ 100% เต็ม ซึ่งหมายความว่าทุกการเข้าถึงข้อมูลในตารางนี้สามารถให้บริการได้ทันทีจากหน่วยความจำ ช่วยลดเวลาในการประมวลผลและเพิ่มความเร็วในการทำงานของระบบฐานข้อมูลอย่างชัดเจน
+
 ```
 #### 6.3 ดู Buffer Hit Ratio ทั้งระบบ
 ```sql
@@ -526,9 +555,10 @@ FROM pg_stat_database
 WHERE datname = current_database();
 ```
 ### ผลการทดลอง
-```
-1. รูปผลการทดลอง
+
+1. ![alt text](image-16.png)
 2. อธิบายผลลัพธ์ที่ได้
+ฐานข้อมูลชื่อ performance_test มีการเข้าถึงข้อมูลจาก memory cache จำนวน 4,059,579 ครั้ง และอ่านจาก disk เพียง 3,481 ครั้ง ทำให้มีค่า hit ratio อยู่ที่ 99.91% แสดงว่าระบบสามารถให้บริการข้อมูลจากหน่วยความจำได้เกือบทั้งหมด ส่งผลให้การทำงานของฐานข้อมูลมีประสิทธิภาพสูงและตอบสนองได้รวดเร็ว
 ```
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
@@ -547,9 +577,10 @@ ORDER BY heap_blks_read DESC
 LIMIT 10;
 ```
 ### ผลการทดลอง
-```
-1. รูปผลการทดลอง
+
+1. ![alt text](image-17.png)
 2. อธิบายผลลัพธ์ที่ได้
+ผลลัพธ์จากคำสั่ง SQL นี้บอกว่า ตอนนี้ไม่มีตารางไหนในฐานข้อมูลที่มีการอ่านข้อมูลจาก disk เลย ทุกอย่างถูกดึงจาก memory ล้วนๆ ซึ่งดีมาก เพราะการอ่านจาก memory เร็วกว่าจาก disk เยอะ ช่วยให้ระบบทำงานไวขึ้นและลดภาระการเข้าถึงข้อมูลจาก storage ได้เยอะ
 ```
 ### Step 7: การปรับแต่ง Autovacuum
 
@@ -562,9 +593,10 @@ WHERE name LIKE '%autovacuum%'
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
-1. รูปผลการทดลอง
+
+1. ![alt text](image-18.png)
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
+ผลลัพธ์นี้แสดงค่าการตั้งค่าของระบบ autovacuum ใน PostgreSQL ซึ่งเป็นฟีเจอร์ที่ช่วยจัดการข้อมูลในตารางโดยอัตโนมัติ เช่น ลบข้อมูลที่ไม่ใช้งานแล้วและอัปเดตสถิติให้ระบบทำงานได้ดีขึ้น โดยระบบถูกเปิดใช้งานอยู่ และมีการตั้งค่าเงื่อนไขต่าง ๆ เช่น จำนวนแถวขั้นต่ำก่อนจะเริ่มทำงาน, จำนวน worker ที่ทำงานพร้อมกัน, ระยะเวลาพักระหว่างรอบการทำงาน, หน่วยความจำที่ใช้ต่อ worker และค่าความถี่ในการทำ vacuum หรือ analyze ทั้งหมดนี้ช่วยให้ระบบดูแลตัวเองได้ต่อเนื่องโดยไม่ต้องสั่ง manual vacuum บ่อย ๆ
 ```
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
@@ -592,8 +624,8 @@ ALTER SYSTEM SET autovacuum_work_mem = '512MB';
 SELECT pg_reload_conf();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
+
+![alt text](image-19.png)
 ```
 
 ### Step 8: Performance Testing และ Benchmarking
@@ -667,9 +699,10 @@ FROM performance_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
-1. รูปผลการทดลอง
+
+1. ![alt text](image-20.png)
 2. อธิบายผลลัพธ์ที่ได้
+คำสั่ง SQL ที่คุณรันนั้นพยายามดึงข้อมูลจากตารางชื่อ performance_results โดยเลือกคอลัมน์ test_name, config_set, execution_time_ms และคำนวณค่าเฉลี่ย execution_time_ms สำหรับแต่ละ test_name ด้วยฟังก์ชัน window function จากนั้นเรียงลำดับตาม test_timestamp จากล่าสุดไปเก่าสุด แต่ผลลัพธ์ที่ได้คือไม่มีแถวข้อมูลใด ๆ ถูกแสดงออกมา ซึ่งหมายความว่าตาราง performance_results ยังไม่มีข้อมูลถูกบันทึกไว้เลย หรือไม่มีข้อมูลที่ตรงกับเงื่อนไขของคำสั่ง SELECT ที่คุณใช้
 ```
 
 
@@ -704,8 +737,8 @@ FROM pg_settings WHERE name = 'maintenance_work_mem';
 SELECT * FROM memory_monitor;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
+
+![alt text](image-21.png)
 ```
 
 ### Step 10: การจำลอง Load Testing
@@ -753,8 +786,8 @@ CREATE INDEX idx_orders_product_id ON load_test_orders(product_id);
 CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
+
+![alt text](image-22.png)
 ```
 
 #### 10.2 การทดสอบ Query Performance
@@ -927,25 +960,31 @@ $$ LANGUAGE plpgsql;
 
 -- รัน load test ทดสอบเบาๆ
 SELECT * FROM simulate_oltp_workload(25);
+![alt text](image-23.png)
 
-```
+
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง
-```
+
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+![alt text](image-24.png)
 2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
+SELECT (JOIN + WHERE): ใช้เวลาเฉลี่ยต่ำที่สุดเพราะ LIMIT 10 ทำให้ scan ข้อมูลแค่บางส่วน แต่ถ้า table ใหญ่ขึ้นหรือไม่มี index อาจช้าลง
+INSERT: ใช้เวลามากกว่า SELECT เพราะต้องเขียนข้อมูลลง disk และ update transaction log
+UPDATE: ใช้เวลามากกว่า INSERT เล็กน้อย เพราะต้อง locate row และเขียนค่าใหม่
+DELETE (soft delete): ใช้เวลาน้อยกว่า UPDATE เล็กน้อย แต่ถ้าผลลัพธ์มีเงื่อนไข WHERE จะต้อง scan row ก่อน
 ```
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
 SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
 ```
-รูปผลการทดลอง
+![alt text](image-25.png)
 ```
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
@@ -1139,8 +1178,8 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM run_benchmark_suite();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
+
+![alt text](image-26.png)
 ```
 
 -- ดูผลการทดสอบ
@@ -1156,8 +1195,8 @@ FROM benchmark_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
+
+![alt text](image-27.png)
 ```
 
 ### Step 12: การจัดการ Configuration แบบ Advanced
@@ -1424,7 +1463,7 @@ SELECT auto_tune_memory();
 ```
 ### ผลการทดลอง
 ```
-รูปผลการทดลอง
+![alt text](image-28.png)
 ```
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
@@ -1438,8 +1477,8 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY hit_ratio;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
+
+![alt text](image-29.png)
 ```
 
 ### การคำนวณ Memory Requirements
@@ -1472,9 +1511,24 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 ## คำถามท้ายการทดลอง
 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
+หน่วยความจำต่างๆ ที่ใช้ใน shared memory คือ shared_buffers, wal_buffers และอื่นๆ ใช้เก็บข้อมูลที่ PostgreSQL ใช้งานร่วมกัน เช่น cache ของ table, index, และ WAL log เพื่อให้เข้าถึงเร็วขึ้น
+
+
 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+work memory คือหน่วยความจำที่ใช้ตอนรัน query เช่น sort, join ส่วน maintenance work memory ใช้ตอนทำงานพิเศษ เช่น vacuum, create index ใช้แยกจาก work_mem เพื่อไม่ให้กระทบกับ query ปกติ 
+
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+ถ้ามี RAM 16GB และ connection = 200 ควรตั้ง shared_buffers ประมาณ 4GB, maintenance_work_mem ประมาณ 1GB แล้วเหลือประมาณ 9.5GB สำหรับ work_mem ก็เอา 9.5GB ÷ 200 จะได้ประมาณ 48MB ต่อ connection
+
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
+postgresql.conf เป็นไฟล์หลักที่ใช้ตั้งค่าระบบ PostgreSQL อยู่ในโฟลเดอร์ data ส่วน postgresql.auto.conf เป็นไฟล์ที่ระบบสร้างขึ้นเองเมื่อใช้คำสั่ง ALTER SYSTEM ใช้เก็บค่าที่เปลี่ยนผ่านคำสั่งนั้น
+
 5. Buffer hit ratio คืออะไร
+Buffer hit ratio คืออัตราการเข้าถึงข้อมูลจาก cache โดยไม่ต้องอ่านจาก disk คำนวณจาก (blks_hit / (blks_hit + blks_read)) ยิ่งสูงยิ่งดี แสดงว่าใช้ cache ได้คุ้ม
+
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+ผลการทดลองการปรับ work memory จะเห็นว่า ถ้า work_mem น้อย query ที่ต้อง sort หรือ join จะช้าลง เพราะต้องใช้ temporary file แต่ถ้าเพิ่ม work_mem มากเกินไปก็เปลืองแรม ต้องปรับให้พอดี ดูจากกราฟเวลา query กับปริมาณ temp file ที่ใช้
+
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+ผลการทดลองที่เหมาะสมที่สุดคือการตั้งค่าที่ balance ระหว่าง performance กับการใช้แรม เช่น shared_buffers ประมาณ 30% ของ RAM, work_mem ปรับตาม workload, ใช้ connection pooling และ monitor ค่า buffer hit ratio กับ temp file usage เพื่อปรับต่อเนื่อง
+ถ้าอยากให้ช่วยจัดเรียงใหม่หรือแปลงเป็นแบบตอบในเอกสารก็จัดให้ได้เลยนะครับ
