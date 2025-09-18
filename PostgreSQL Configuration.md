@@ -1307,7 +1307,7 @@ ORDER BY test_timestamp DESC;
  current_config | agg_heavy  | 512MB          | 20MB     |       386.95 |            100.00 | 2025-09-18 08:05:40.876818
  current_config | join_heavy | 512MB          | 20MB     |       285.18 |            100.00 | 2025-09-18 08:05:40.876818
  current_config | index_scan | 512MB          | 20MB     |         9.76 |            100.00 | 2025-09-18 08:05:40.876818
- 
+
 ```
 ```
 รูปผลการทดลอง
@@ -1572,14 +1572,20 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 ```
-
+```
 -- ใช้งาน auto-tuning
 SELECT auto_tune_memory();
 ```
 ### ผลการทดลอง
+performance_test=# SELECT auto_tune_memory();
+ERROR:  pg_stat_statements must be loaded via "shared_preload_libraries"
+CONTEXT:  SQL statement "SELECT AVG(mean_exec_time)                         FROM pg_stat_statements
+    WHERE calls > 10"
+PL/pgSQL function auto_tune_memory() line 19 at SQL statement
 ```
 รูปผลการทดลอง
 ```
+![alt text](img/28image.png)
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
 SELECT 
@@ -1595,6 +1601,7 @@ ORDER BY hit_ratio;
 ```
 รูปผลการทดลอง
 ```
+![alt text](img/29image.png)
 
 ### การคำนวณ Memory Requirements
 
@@ -1626,9 +1633,43 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 ## คำถามท้ายการทดลอง
 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
+- shared_buffers: พื้นที่เก็บข้อมูลที่ถูกอ่านจากดิสก์
+- wal_buffers: ใช้เก็บข้อมูล WAL ก่อนเขียนลงดิสก์
+- temp_buffers: สำหรับ temporary tables ในแต่ละ session
+หลักการตั้งค่า
+- shared_buffers: ควรตั้งประมาณ 25–40% ของ RAM ทั้งหมด
+- wal_buffers: ปกติใช้ค่า default ก็เพียงพอ แต่ถ้า workload หนักอาจเพิ่มได้
+- temp_buffers: ปรับตามจำนวน temporary tables ที่ใช้งาน
+
 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+- work_mem: หน่วยความจำสำหรับ operations เช่น sort, hash join, และ materialize
+- maintenance_work_mem: ใช้สำหรับ maintenance tasks เช่น VACUUM, CREATE INDEX, ANALYZE
+หลักการตั้งค่า
+- work_mem: ควรตั้งตามจำนวน concurrent operations ต่อ connection (ไม่ใช่ต่อ session)
+- maintenance_work_mem: ตั้งสูงขึ้นได้ เพราะใช้เฉพาะ maintenance jobs
+
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+- shared_buffers ≈ 4GB
+- work_mem ≈ 50MB ต่อ connection
+- maintenance_work_mem ≈ 512MB–1GB
+
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
+- postgresql.conf ไฟล์หลักสำหรับ config แก้ไขโดยตรง
+- postgresql.auto.conf ไฟล์ที่ถูกสร้างโดย ALTER SYSTEM	PostgreSQL เขียนเอง ไม่ควรแก้ด้วยมือ
+
 5. Buffer hit ratio คืออะไร
+- สัดส่วนของการอ่านข้อมูลจาก memory (shared_buffers) เทียบกับการอ่านจากดิสก์
+
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+- pg_stat_statements: วิเคราะห์ query performance
+- EXPLAIN (ANALYZE, BUFFERS): ตรวจสอบ query plan และ buffer usage
+- pgBadger: สร้างรายงานจาก PostgreSQL logs
+- pgbench: สำหรับ OLTP workload simulation
+
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+เปรียบเทียบ Default vs Tuned Configuration
+ขั้นตอนการทดสอบ
+- ใช้ pgbench รัน workload บน default config
+- ปรับค่าต่าง ๆ เช่น shared_buffers, work_mem, effective_cache_size
+- รัน pgbench อีกครั้ง
+- เปรียบเทียบ metrics เช่น TPS, latency, buffer hit ratio
