@@ -587,10 +587,12 @@ FROM pg_stat_database
 WHERE datname = current_database();
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+![alt text](image-17.png)
 2. อธิบายผลลัพธ์ที่ได้
-```
+ผลลัพธ์นี้หมายความว่า ฐานข้อมูล performance_test เกือบทั้งหมดถูกอ่านจากหน่วยความจำ มีการอ่านจากดิสก์จริงแค่ 4 ครั้งเท่านั้น ทำให้อัตราการ hit ของ buffer เท่ากับ 100% แสดงว่าระบบทำงานได้เร็วและมีประสิทธิภาพ
+
 
 #### 6.4 ดู Table ที่มี Disk I/O มาก
 ```sql
@@ -608,10 +610,11 @@ ORDER BY heap_blks_read DESC
 LIMIT 10;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+![alt text](image-18.png)
 2. อธิบายผลลัพธ์ที่ได้
-```
+ผลลัพธ์นี้แสดงว่า ไม่มีตารางใดในฐานข้อมูลที่มีการอ่านข้อมูลจากดิสก์โดยตรง (heap_blks_read > 0) เลย ทำให้ query คืนค่าออกมาเป็น (0 rows)
 ### Step 7: การปรับแต่ง Autovacuum
 
 #### 7.1 ทำความเข้าใจ Autovacuum Parameters
@@ -623,10 +626,11 @@ WHERE name LIKE '%autovacuum%'
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+![alt text](image-19.png)
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
-```
+Autovacuum ทำงานอัตโนมัติเพื่อจัดการ dead tuples และอัปเดตสถิติ การ trigger จะขึ้นกับ scale_factor (เช่น 20% ของ row ถูกแก้ไข → vacuum, 10% → analyze) และ threshold (จำนวนขั้นต่ำ) โดยค่าเหล่านี้ช่วยให้ระบบรักษาสมดุลระหว่างประสิทธิภาพและการใช้ resource
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
 ```sql
@@ -653,9 +657,9 @@ ALTER SYSTEM SET autovacuum_work_mem = '512MB';
 SELECT pg_reload_conf();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลองการปรับแต่ง Autovacuum (Capture รวมทั้งหมด 1 รูป)
-```
+
+![alt text](image-20.png)
+
 
 ### Step 8: Performance Testing และ Benchmarking
 
@@ -728,10 +732,12 @@ FROM performance_results
 ORDER BY test_timestamp DESC;
 ```
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
+![alt text](image-21.png)
 2. อธิบายผลลัพธ์ที่ได้
-```
+จากการรันฟังก์ชัน run_performance_test และสั่งดูผลด้วย SELECT ... FROM performance_results ปรากฏว่า ไม่มีข้อมูลถูกบันทึกลงในตาราง ((0 rows))
+สาเหตุเป็นเพราะในฟังก์ชันมีการใช้ PERFORM สำหรับรัน query ทดสอบ ซึ่งไม่ส่งผลลัพธ์กลับมา และแม้ว่าจะมีการ INSERT หลังจากนั้น แต่ระบบไม่ได้บันทึกลงตารางจริง จึงทำให้ไม่พบผลลัพธ์เวลาสั่ง SELECT
 
 
 ### Step 9: การ Monitoring และ Alerting
@@ -765,9 +771,9 @@ FROM pg_settings WHERE name = 'maintenance_work_mem';
 SELECT * FROM memory_monitor;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+![alt text](image-22.png)
+
 
 ### Step 10: การจำลอง Load Testing
 
@@ -814,9 +820,10 @@ CREATE INDEX idx_orders_product_id ON load_test_orders(product_id);
 CREATE INDEX idx_orders_date ON load_test_orders(order_date);
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง การสร้าง FUNCTION และ INDEX
-```
+![alt text](image-23.png)
+
 
 #### 10.2 การทดสอบ Query Performance
 ```sql
@@ -989,25 +996,30 @@ $$ LANGUAGE plpgsql;
 -- รัน load test ทดสอบเบาๆ
 SELECT * FROM simulate_oltp_workload(25);
 
-```
-### ผลการทดลอง
-```
+
+![alt text](image-24.png)
+
 รูปผลการทดลอง
-```
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
-### ผลการทดลอง
-```
-1. รูปผลการทดลอง
+![alt text](image-25.png)
+
 2. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร 
-```
+SELECT (JOIN + WHERE)
+การเลือกข้อมูลที่มีเงื่อนไขและการ JOIN ตารางทำงานได้เร็วมาก เพราะ PostgreSQL ใช้ดัชนีและหน่วยความจำ (buffer) ในการดึงข้อมูล ทำให้ไม่ต้องอ่านจากดิสก์บ่อย ๆ ประสิทธิภาพสูง เหมาะกับงานที่ต้องอ่านข้อมูลจำนวนมากหรือต้องการผลลัพธ์ซ้ำ ๆ
+INSERT
+การเพิ่มข้อมูลใหม่ลงในตารางทำงานได้ดีและใช้เวลาไม่มาก เนื่องจาก PostgreSQL มีระบบ WAL (Write Ahead Log) ที่ช่วยจัดการการเขียนให้น่าเชื่อถือและปลอดภัย แม้จะต้องอัปเดตทั้งตารางและดัชนี แต่ยังคงมีประสิทธิภาพสูง
+UPDATE
+การแก้ไขข้อมูลจะช้ากว่า INSERT เล็กน้อย เพราะ PostgreSQL ไม่เขียนทับข้อมูลเก่า แต่สร้างแถวใหม่ขึ้นมาแทน แล้วทำเครื่องหมายแถวเก่าว่าเป็น dead tuple ซึ่งเมื่อสะสมมากขึ้นจะทำให้ต้องใช้ VACUUM เพื่อคืนพื้นที่และรักษาประสิทธิภาพ
+DELETE (soft delete)
+ในการทดลองนี้ใช้วิธี soft delete โดยเพิ่มค่า deleted_at ซึ่งประสิทธิภาพใกล้เคียงกับ UPDATE เพราะเป็นเพียงการอัปเดตค่าในแถว ไม่ได้ลบจริงจากตาราง ถ้าเป็นการลบจริง (hard delete) จะใช้เวลามากกว่า เพราะต้องปรับปรุงดัชนีและคืนพื้นที่ใช้งาน
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
 SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+![alt text](image-26.png)
+
 
 ### Step 11: การเปรียบเทียบประสิทธิภาพ
 
@@ -1200,9 +1212,9 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM run_benchmark_suite();
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+![alt text](image-27.png)
+
 
 -- ดูผลการทดสอบ
 SELECT 
@@ -1215,11 +1227,11 @@ SELECT
     test_timestamp
 FROM benchmark_results
 ORDER BY test_timestamp DESC;
-```
+``
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+![alt text](image-28.png)
+
 
 ### Step 12: การจัดการ Configuration แบบ Advanced
 
@@ -1482,11 +1494,11 @@ $$ LANGUAGE plpgsql;
 
 -- ใช้งาน auto-tuning
 SELECT auto_tune_memory();
-```
+``
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
-```
+
+![alt text](image-29.png)
+
 ```sql
 -- ดูการเปลี่ยนแปลง buffer hit ratio
 SELECT 
@@ -1499,8 +1511,8 @@ WHERE heap_blks_read + heap_blks_hit > 0
 ORDER BY hit_ratio;
 ```
 ### ผลการทดลอง
-```
-รูปผลการทดลอง
+
+![alt text](image-30.png)
 ```
 
 ### การคำนวณ Memory Requirements
@@ -1532,10 +1544,80 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 
 
 ## คำถามท้ายการทดลอง
+```
 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
+Shared memory ที่สำคัญใน PostgreSQL ได้แก่ shared_buffers ซึ่งเป็นพื้นที่แคชข้อมูลที่ทุก connection ใช้ร่วมกัน wal_buffers สำหรับเก็บ Write-Ahead Log และ effective_cache_size ที่เป็นการประมาณการขนาด OS cache หลักการตั้งค่าคือ shared_buffers ควรเป็น 25-40% ของ RAM สำหรับเครื่อง dedicated server wal_buffers ควรเป็น 3% ของ shared_buffers หรือ 16MB และ effective_cache_size ควรเป็น 50-75% ของ RAM
+```
+```
 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
+Work memory เป็นหน่วยความจำที่ใช้สำหรับแต่ละ operation ในการประมวลผล query เช่น sorting หรือ hash joins โดยหนึ่ง query อาจมีหลาย operation ที่ต้องใช้ work memory พร้อมกัน ส่วน maintenance work memory เป็นหน่วยความจำที่ใช้สำหรับงาน maintenance ต่างๆ เช่น CREATE INDEX, VACUUM, ALTER TABLE หลักการกำหนดค่าคือ work_mem ควรคำนวณจาก RAM คูณ 0.25 แล้วหารด้วยจำนวน max_connections ส่วน maintenance_work_mem ควรเป็น 5-10% ของ RAM
+```
+```
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
+System RAM = 16GB
+Target Usage = 16GB × 0.8 = 12.8GB
+
+การตั้งค่า:
+shared_buffers = 4GB
+maintenance_work_mem = 1GB  
+wal_buffers = 64MB
+sessions_per_connection = 0.5
+
+คำนวณ work_mem:
+Available = 12.8GB - 4GB - 1GB - 0.064GB = 7.736GB
+work_mem = 7.736GB ÷ (200 × 0.5) = 77MB
+
+Estimated Usage = 4GB + (77MB × 200 × 0.5) + 1GB + 64MB
+                = 4GB + 7.7GB + 1GB + 64MB  
+                = 12.764GB (80% ของ system RAM) ← ปลอดภัย
+
+work_mem = 77MB
+maintenance_work_mem = 1GB
+
+
+```
+
+```
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
+ไฟล์ postgresql.conf เป็นไฟล์การตั้งค่าหลักที่เราแก้ไขด้วยมือและจะถูกอ่านตอน server เริ่มทำงาน ส่วน postgresql.auto.conf เป็นไฟล์ที่สร้างขึ้นโดยคำสั่ง ALTER SYSTEM และจะถูกอ่านหลังจาก postgresql.conf ความสัมพันธ์ที่สำคัญคือค่าใน postgresql.auto.conf จะมีความสำคัญสูงกว่าและจะ override ค่าใน postgresql.conf ทำให้การตั้งค่าผ่าน ALTER SYSTEM จะมีผลเหนือการแก้ไขไฟล์ด้วยมือ
+```
+```
 5. Buffer hit ratio คืออะไร
+Buffer hit ratio คืออัตราส่วนของข้อมูลที่สามารถอ่านได้จาก buffer ในหน่วยความจำโดยไม่ต้องไปอ่านจาก disk ซึ่งเป็นตัวชี้วัดประสิทธิภาพที่สำคัญของระบบฐานข้อมูล ค่าที่ดีควรมากกว่า 95% หมายความว่าระบบสามารถตอบสนองคำขอข้อมูลได้จาก memory มากกว่า 95% โดยไม่ต้องไปอ่านจาก disk ที่ช้ากว่า
+```
+```
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
+System RAM = 16GB
+Target Usage = 16GB × 0.75 = 12GB
+
+การตั้งค่า:
+shared_buffers = 4GB (25% ของ RAM)
+effective_cache_size = 12GB (75% ของ RAM)  
+maintenance_work_mem = 1GB
+wal_buffers = 64MB
+max_connections = 100
+sessions_per_connection = 0.5
+
+คำนวณ work_mem:
+Available = 12GB - 4GB - 1GB - 0.064GB = 6.936GB
+work_mem = 6.936GB ÷ (100 × 0.5) = 139MB
+
+Estimated Usage = 4GB + (139MB × 100 × 0.5) + 1GB + 64MB
+                = 4GB + 6.95GB + 1GB + 64MB
+                = 12.014GB (75% ของ system RAM) ← ปลอดภัย
+
+การตั้งค่าสำหรับ MacTANAWAT091:
+shared_buffers = 4GB
+work_mem = 139MB
+maintenance_work_mem = 1GB
+wal_buffers = 64MB
+effective_cache_size = 12GB
+max_connections = 100
+
+เหลือ 4GB สำหรับ macOS และแอปพลิเคชันอื่นๆ
+
+```
+```
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+PostgreSQL มีการสแกนหลายแบบได้แก่ Sequential Scan ที่อ่านทุก row ในตารางเหมาะสำหรับตารางเล็กหรือต้องการข้อมูลมากกว่า 10% ของตาราง Index Scan ที่ใช้ index หา row แล้วไปอ่านจาก table เหมาะสำหรับข้อมูลน้อยๆ และมี index ที่เหมาะสม Index Only Scan ที่อ่านข้อมูลจาก index เท่านั้นไม่ต้องไปที่ table เร็วที่สุดเมื่อข้อมูลที่ต้องการอยู่ใน index ครบถ้วน และ Bitmap Scan ที่สร้าง bitmap จาก index แล้วไปอ่าน table เหมาะสำหรับข้อมูลปานกลางหรือใช้หลาย index ร่วมกัน การเลือกใช้การสแกนขึ้นอยุ่กับขนาดข้อมูลที่ต้องการ การมี index และลักษณะของ query
+```
