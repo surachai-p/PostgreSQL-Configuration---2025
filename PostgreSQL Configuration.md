@@ -1542,17 +1542,15 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
                 = 4.176GB (52% ของ system RAM) ← ปลอดภัย
 ```
 
-
+```markdown
 ## คำถามท้ายการทดลอง
-```
+
 1. หน่วยความจำใดบ้างที่เป็น shared memory และมีหลักในการตั้งค่าอย่างไร
 Shared memory ที่สำคัญใน PostgreSQL ได้แก่ shared_buffers ซึ่งเป็นพื้นที่แคชข้อมูลที่ทุก connection ใช้ร่วมกัน wal_buffers สำหรับเก็บ Write-Ahead Log และ effective_cache_size ที่เป็นการประมาณการขนาด OS cache หลักการตั้งค่าคือ shared_buffers ควรเป็น 25-40% ของ RAM สำหรับเครื่อง dedicated server wal_buffers ควรเป็น 3% ของ shared_buffers หรือ 16MB และ effective_cache_size ควรเป็น 50-75% ของ RAM
-```
-```
+
 2. Work memory และ maintenance work memory คืออะไร มีหลักการในการกำหนดค่าอย่างไร
 Work memory เป็นหน่วยความจำที่ใช้สำหรับแต่ละ operation ในการประมวลผล query เช่น sorting หรือ hash joins โดยหนึ่ง query อาจมีหลาย operation ที่ต้องใช้ work memory พร้อมกัน ส่วน maintenance work memory เป็นหน่วยความจำที่ใช้สำหรับงาน maintenance ต่างๆ เช่น CREATE INDEX, VACUUM, ALTER TABLE หลักการกำหนดค่าคือ work_mem ควรคำนวณจาก RAM คูณ 0.25 แล้วหารด้วยจำนวน max_connections ส่วน maintenance_work_mem ควรเป็น 5-10% ของ RAM
-```
-```
+
 3. หากมี RAM 16GB และต้องการกำหนด connection = 200 ควรกำหนดค่า work memory และ maintenance work memory อย่างไร
 System RAM = 16GB
 Target Usage = 16GB × 0.8 = 12.8GB
@@ -1575,17 +1573,13 @@ work_mem = 77MB
 maintenance_work_mem = 1GB
 
 
-```
 
-```
 4. ไฟล์ postgresql.conf และ postgresql.auto.conf  มีความสัมพันธ์กันอย่างไร
 ไฟล์ postgresql.conf เป็นไฟล์การตั้งค่าหลักที่เราแก้ไขด้วยมือและจะถูกอ่านตอน server เริ่มทำงาน ส่วน postgresql.auto.conf เป็นไฟล์ที่สร้างขึ้นโดยคำสั่ง ALTER SYSTEM และจะถูกอ่านหลังจาก postgresql.conf ความสัมพันธ์ที่สำคัญคือค่าใน postgresql.auto.conf จะมีความสำคัญสูงกว่าและจะ override ค่าใน postgresql.conf ทำให้การตั้งค่าผ่าน ALTER SYSTEM จะมีผลเหนือการแก้ไขไฟล์ด้วยมือ
-```
-```
+
 5. Buffer hit ratio คืออะไร
 Buffer hit ratio คืออัตราส่วนของข้อมูลที่สามารถอ่านได้จาก buffer ในหน่วยความจำโดยไม่ต้องไปอ่านจาก disk ซึ่งเป็นตัวชี้วัดประสิทธิภาพที่สำคัญของระบบฐานข้อมูล ค่าที่ดีควรมากกว่า 95% หมายความว่าระบบสามารถตอบสนองคำขอข้อมูลได้จาก memory มากกว่า 95% โดยไม่ต้องไปอ่านจาก disk ที่ช้ากว่า
-```
-```
+
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
 System RAM = 16GB
 Target Usage = 16GB × 0.75 = 12GB
@@ -1616,8 +1610,7 @@ max_connections = 100
 
 เหลือ 4GB สำหรับ macOS และแอปพลิเคชันอื่นๆ
 
-```
-```
+
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
 PostgreSQL มีการสแกนหลายแบบได้แก่ Sequential Scan ที่อ่านทุก row ในตารางเหมาะสำหรับตารางเล็กหรือต้องการข้อมูลมากกว่า 10% ของตาราง Index Scan ที่ใช้ index หา row แล้วไปอ่านจาก table เหมาะสำหรับข้อมูลน้อยๆ และมี index ที่เหมาะสม Index Only Scan ที่อ่านข้อมูลจาก index เท่านั้นไม่ต้องไปที่ table เร็วที่สุดเมื่อข้อมูลที่ต้องการอยู่ใน index ครบถ้วน และ Bitmap Scan ที่สร้าง bitmap จาก index แล้วไปอ่าน table เหมาะสำหรับข้อมูลปานกลางหรือใช้หลาย index ร่วมกัน การเลือกใช้การสแกนขึ้นอยุ่กับขนาดข้อมูลที่ต้องการ การมี index และลักษณะของ query
-```
+
