@@ -225,9 +225,9 @@ WHERE name IN (
 );
 ```
 ### บันทึกผลการทดลอง
-```
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
-```
+<img width="898" height="217" alt="image" src="https://github.com/user-attachments/assets/a067f145-dd42-47c5-b20f-a8d5fd769a5a" />
+
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
