@@ -232,14 +232,15 @@ WHERE name IN (
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
 #### 2.1 ปรับแต่ง Shared Buffers (ต้อง restart)
-```sql
+sql
 -- ตรวจสอบค่าปัจจุบัน
 SELECT name, setting, unit, source, pending_restart
 FROM pg_settings 
 WHERE name = 'shared_buffers';
 
 ### ผลการทดลอง
-```
+<img width="912" height="313" alt="image" src="https://github.com/user-attachments/assets/3f00c0ce-5354-4d14-8812-953abe2d37d8" />
+
 1.รูปผลการรันคำสั่ง
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
