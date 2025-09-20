@@ -197,6 +197,7 @@ docker exec postgres-config df -h
 <img width="762" height="319" alt="image" src="https://github.com/user-attachments/assets/bd4b445b-ef4a-4ce0-ae15-be947952d078" />
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 bash
+```
 docker exec -it postgres-config psql -U postgres
 ```sql
 -- ตรวจสอบเวอร์ชัน
@@ -208,11 +209,13 @@ SHOW hba_file;
 SHOW data_directory;
 
 ### บันทึกผลการทดลอง
-
-
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
+<img width="411" height="178" alt="image" src="https://github.com/user-attachments/assets/2e10118c-cef7-4cba-9aa9-f42f78d91689" />
+
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
+   <img width="271" height="101" alt="image" src="https://github.com/user-attachments/assets/d7bc5363-d196-43e7-9a5e-582e6b5883ad" />
+
 ```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
@@ -223,8 +226,9 @@ WHERE name IN (
 );
 ```
 ### บันทึกผลการทดลอง
-```
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า
+<img width="1095" height="319" alt="image" src="https://github.com/user-attachments/assets/5a49f2a5-d0b0-431c-89e0-1530456a834b" />
+
 ```
 
 
@@ -240,8 +244,11 @@ WHERE name = 'shared_buffers';
 ### ผลการทดลอง
 ```
 1.รูปผลการรันคำสั่ง
+<img width="722" height="152" alt="image" src="https://github.com/user-attachments/assets/1c022782-352b-4416-be30-9dbf55aaa87b" />
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
+ตอบ 16384 × 8KB = 131072KB = 128MB
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
+ตอบ ไม่จำเป็นต้อง restart PostgreSQL เพื่อให้ค่าการตั้งค่านี้มีผล เพราะค่าในระบบปัจจุบันตรงกับค่าที่ตั้งไว้ในไฟล์ config แล้ว
 ```
 -- คำนวณและตั้งค่าใหม่
 -- สำหรับระบบ 2GB: 512MB (25%)
@@ -258,9 +265,12 @@ WHERE name = 'shared_buffers';
 docker exec -it -u postgres postgres-config pg_ctl restart -D /var/lib/postgresql/data -m fast
 
 ### ผลการทดลอง
-```
+
 รูปผลการเปลี่ยนแปลงค่า pending_restart
+<img width="497" height="195" alt="image" src="https://github.com/user-attachments/assets/5bdd32e1-404b-426d-a44c-0fe8cac42a1a" />
+
 รูปหลังจาก restart postgres
+<img width="498" height="60" alt="image" src="https://github.com/user-attachments/assets/d52abfb9-09b9-4916-a675-cc77b8c8b7a8" />
 
 ```
 
@@ -283,8 +293,10 @@ FROM pg_settings
 WHERE name = 'work_mem';
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการเปลี่ยนแปลงค่า work_mem
+<img width="489" height="439" alt="image" src="https://github.com/user-attachments/assets/55c6cdbd-c381-4267-a69f-097871d9fc96" />
+
 ```
 
 #### 3.3 ปรับแต่ง Maintenance Work Memory
@@ -300,8 +312,10 @@ SELECT pg_reload_conf();
 SHOW maintenance_work_mem;
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการเปลี่ยนแปลงค่า maintenance_work_mem
+<img width="575" height="410" alt="image" src="https://github.com/user-attachments/assets/db5d67a1-ce85-4b8d-967e-9f5721cfde19" />
+
 ```
 
 #### 3.4 ปรับแต่ง WAL Buffers
@@ -325,8 +339,9 @@ docker exec -it postgres-config psql -U postgres
 SHOW wal_buffers;
 ```
 ### ผลการทดลอง
-```
 รูปผลการเปลี่ยนแปลงค่า wal_buffers
+<img width="279" height="112" alt="image" src="https://github.com/user-attachments/assets/21848795-e068-495d-b522-bc4dcc1666e5" />
+
 ```
 
 #### 3.5 ปรับแต่ง Effective Cache Size
@@ -342,8 +357,9 @@ SELECT pg_reload_conf();
 SHOW effective_cache_size;
 ```
 ### ผลการทดลอง
-```
 รูปผลการเปลี่ยนแปลงค่า effective_cache_size
+<img width="345" height="117" alt="image" src="https://github.com/user-attachments/assets/34c75a49-9796-4839-9615-c04b25118f80" />
+
 ```
 
 ### Step 4: ตรวจสอบผล
@@ -371,8 +387,9 @@ WHERE name IN (
 ORDER BY name;
 ```
 ### ผลการทดลอง
-```
 รูปผลการลัพธ์การตั้งค่า
+<img width="1240" height="457" alt="image" src="https://github.com/user-attachments/assets/805e8579-2340-4f5c-8a11-c6dfe736a1bf" />
+
 ```
 
 ### Step 5: การสร้างและทดสอบ Workload
@@ -431,10 +448,21 @@ LIMIT 100;
 ```
 
 ### ผลการทดลอง
-```
 1. รูปผลการรัน
-2. อธิบายผลลัพธ์ที่ได้ 
-3. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+   <img width="1162" height="461" alt="image" src="https://github.com/user-attachments/assets/6b0a312c-0984-43bd-8253-b40f2c79e2ff" />
+2. อธิบายผลลัพธ์ที่ได้
+ตอบ Limit	rows=1000	คืนแค่ 1000 แถวแรก
+Gather Merge	Workers Planned: 2 / Launched: 2	ใช้ parallel query รวมผลจาก 2 worker
+Sort Method	Top-N Heapsort, Memory ~229kB (Worker ~181kB)	เรียงลำดับข้อมูล โดยเก็บเฉพาะที่จำเป็นสำหรับ LIMIT
+Parallel Seq Scan	rows≈166,667 ต่อ worker	อ่านข้อมูลจาก large_table แบบ sequential scan แบ่งกันทำ
+Buffers: shared hit	~10,000	ใช้ข้อมูลจาก shared buffer (cache) ไม่ต้องอ่านจาก disk จริงเยอะ
+Planning Time	0.493 ms	เวลาที่ใช้สร้าง query plan
+Execution Time	127.654 ms	เวลาที่ใช้ดึงและประมวลผลข้อมูลจริง
+Total Time	129.736 ms	เวลารวมทั้งหมดของ query
+3.  คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร
+ตอบ EXPLAIN: แสดง แผนการทำงาน (Query Plan) ของ SQL query
+ANALYZE: ให้ PostgreSQL รัน query จริง แล้วแสดงเวลา, จำนวนแถว, และประสิทธิภาพ
+BUFFERS: แสดงข้อมูลการใช้ memory (shared buffers) ในแต่ละขั้นตอน
 ```
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
