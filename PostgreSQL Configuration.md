@@ -188,11 +188,13 @@ docker exec postgres-config nproc
 docker exec postgres-config df -h
 ```
 ### บันทึกผลการทดลอง
-```
 1. อธิบายหน้าที่คำสั่ง docker exec postgres-config free, docker exec postgres-config df
+ตอบ docker exec postgres-config free = ดูว่า RAM ใช้ไปเท่าไร หรือ เหลือเท่าไร
+    docker exec postgres-config df = ดูว่า ดิสก์ใช้ไปเท่าไร หรือ เหลือเท่าไร
 2. option -h ในคำสั่งมีผลอย่างไร
+ตอบ ตัวเลือก option -h = ทำให้แสดงผลแบบ อ่านง่าย เช่น MB, GB แทนตัวเลข byte ยาวๆ
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
-```
+<img width="762" height="319" alt="image" src="https://github.com/user-attachments/assets/bd4b445b-ef4a-4ce0-ae15-be947952d078" />
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 ```bash
 docker exec -it postgres-config psql -U postgres
