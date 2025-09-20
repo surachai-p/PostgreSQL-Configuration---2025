@@ -196,7 +196,7 @@ docker exec postgres-config df -h
 3. docker exec postgres-config nproc  แสดงค่าผลลัพธ์อย่างไร
 <img width="762" height="319" alt="image" src="https://github.com/user-attachments/assets/bd4b445b-ef4a-4ce0-ae15-be947952d078" />
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
-```bash
+bash
 docker exec -it postgres-config psql -U postgres
 ```
 
