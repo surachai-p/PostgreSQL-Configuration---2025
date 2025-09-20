@@ -432,10 +432,22 @@ ORDER BY data
 LIMIT 1000;
 ```
 ### ผลการทดลอง
-```
-1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร 
-2. รูปผลการรัน
-3. อธิบายผลลัพธ์ที่ได้
+
+1. คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร
+ตอบ EXPLAIN: แสดง แผนการทำงาน (Query Plan) ของ SQL query
+ANALYZE: ให้ PostgreSQL รัน query จริง แล้วแสดงเวลา, จำนวนแถว, และประสิทธิภาพ
+BUFFERS: แสดงข้อมูลการใช้ memory (shared buffers) ในแต่ละขั้นตอน
+2.รูปผลการรัน
+  <img width="1162" height="461" alt="image" src="https://github.com/user-attachments/assets/6b0a312c-0984-43bd-8253-b40f2c79e2ff" />
+3.อธิบายผลลัพธ์ที่ได้
+ตอบ Limit	rows=1000	คืนแค่ 1000 แถวแรก
+Gather Merge	Workers Planned: 2 / Launched: 2	ใช้ parallel query รวมผลจาก 2 worker
+Sort Method	Top-N Heapsort, Memory ~229kB (Worker ~181kB)	เรียงลำดับข้อมูล โดยเก็บเฉพาะที่จำเป็นสำหรับ LIMIT
+Parallel Seq Scan	rows≈166,667 ต่อ worker	อ่านข้อมูลจาก large_table แบบ sequential scan แบ่งกันทำ
+Buffers: shared hit	~10,000	ใช้ข้อมูลจาก shared buffer (cache) ไม่ต้องอ่านจาก disk จริงเยอะ
+Planning Time	0.493 ms	เวลาที่ใช้สร้าง query plan
+Execution Time	127.654 ms	เวลาที่ใช้ดึงและประมวลผลข้อมูลจริง
+Total Time	129.736 ms	เวลารวมทั้งหมดของ query
 ```
 ```sql
 -- ทดสอบ Hash operation
@@ -449,20 +461,22 @@ LIMIT 100;
 
 ### ผลการทดลอง
 1. รูปผลการรัน
-   <img width="1162" height="461" alt="image" src="https://github.com/user-attachments/assets/6b0a312c-0984-43bd-8253-b40f2c79e2ff" />
-2. อธิบายผลลัพธ์ที่ได้
-ตอบ Limit	rows=1000	คืนแค่ 1000 แถวแรก
-Gather Merge	Workers Planned: 2 / Launched: 2	ใช้ parallel query รวมผลจาก 2 worker
-Sort Method	Top-N Heapsort, Memory ~229kB (Worker ~181kB)	เรียงลำดับข้อมูล โดยเก็บเฉพาะที่จำเป็นสำหรับ LIMIT
-Parallel Seq Scan	rows≈166,667 ต่อ worker	อ่านข้อมูลจาก large_table แบบ sequential scan แบ่งกันทำ
-Buffers: shared hit	~10,000	ใช้ข้อมูลจาก shared buffer (cache) ไม่ต้องอ่านจาก disk จริงเยอะ
-Planning Time	0.493 ms	เวลาที่ใช้สร้าง query plan
-Execution Time	127.654 ms	เวลาที่ใช้ดึงและประมวลผลข้อมูลจริง
-Total Time	129.736 ms	เวลารวมทั้งหมดของ query
-3.  คำสั่ง EXPLAIN(ANALYZE,BUFFERS) คืออะไร
-ตอบ EXPLAIN: แสดง แผนการทำงาน (Query Plan) ของ SQL query
-ANALYZE: ให้ PostgreSQL รัน query จริง แล้วแสดงเวลา, จำนวนแถว, และประสิทธิภาพ
-BUFFERS: แสดงข้อมูลการใช้ memory (shared buffers) ในแต่ละขั้นตอน
+<img width="1313" height="383" alt="image" src="https://github.com/user-attachments/assets/1eacb523-1199-4b46-a71c-6424f06fbe74" />
+3. อธิบายผลลัพธ์ที่ได้
+   ตอบ Limit	rows=100	Query คืนมาแค่ 100 แถวแรก
+GroupAggregate	Group Key: number, Filter: (count(*) > 1)	ทำการ Group ข้อมูลตามคอลัมน์ number และกรองเฉพาะกลุ่มที่มีจำนวนมากกว่า 1
+Rows Removed by Filter	333	จำนวนกลุ่มที่ถูกตัดออกเพราะไม่ผ่านเงื่อนไข count(*) > 1
+Index Only Scan	Index: idx_large_table_number	ใช้ index บนคอลัมน์ number เพื่อดึงข้อมูลแทนที่จะอ่านทั้งตาราง
+Heap Fetches	0	ไม่ต้องไปอ่านข้อมูลจากตารางจริง (เพราะ index ครอบคลุมข้อมูลครบ → index-only scan)
+Buffers: shared hit	5–10	ข้อมูลถูกอ่านจาก shared buffer (cache) แทบทั้งหมด
+Planning Time	4.929 ms	เวลาใช้สร้าง query plan
+Execution Time	1.780 ms	เวลาใช้รัน query จริง
+Total Time	17.244 ms	เวลารวมทั้งหมดของ query
+5. การสแกนเป็นแบบใด เกิดจากเหตุผลใด
+   ตอบ Index Only Scan
+เหตุผลที่เกิดขึ้น มี index บนคอลัมน์ number
+ข้อมูลที่ต้องใช้มีอยู่ใน index ครบ = ไม่ต้องอ่านตารางจริง
+การ query ใช้ GROUP BY number และ COUNT(*) > 1 = index ช่วยให้การดึงและนับรวดเร็วมาก
 ```
 #### 5.3 การทดสอบ Maintenance Work Memory
 ```sql
