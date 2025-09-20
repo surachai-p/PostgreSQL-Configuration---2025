@@ -1004,7 +1004,7 @@ SELECT * FROM simulate_oltp_workload(25);
 
 ```
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง
 <img width="905" height="245" alt="image" src="https://github.com/user-attachments/assets/ed5dec48-40b2-4ec5-9be2-4e4f3229e90d" />
 
@@ -1021,12 +1021,12 @@ SELECT (JOIN + WHERE)	0.046	0.025	1.570	100
 INSERT	0.102	0.009	0.792	100
 UPDATE	116.941	84.582	2556.234	100
 DELETE (soft)	109.118	102.862	161.558	100
-```
+
 
 -- ทดสอบหนักขึ้น เครื่องใครไม่ไหวผ่านก่อน หรือเปลี่ยนค่า 500 เป็น 200 :)
 SELECT * FROM simulate_oltp_workload(500);
 ### ผลการทดลอง
-```
+
 รูปผลการทดลอง
 <img width="786" height="190" alt="image" src="https://github.com/user-attachments/assets/50294150-0e26-4bc9-9341-d23369cfa9dc" />
 
