@@ -223,7 +223,7 @@ WHERE name IN (
     'shared_buffers', 'work_mem', 'maintenance_work_mem',
     'wal_buffers', 'effective_cache_size', 'max_connections'
 );
-```
+
 ### บันทึกผลการทดลอง
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า
 <img width="1095" height="319" alt="image" src="https://github.com/user-attachments/assets/5a49f2a5-d0b0-431c-89e0-1530456a834b" />
