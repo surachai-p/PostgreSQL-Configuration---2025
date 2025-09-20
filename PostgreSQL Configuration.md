@@ -198,8 +198,6 @@ docker exec postgres-config df -h
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 bash
 docker exec -it postgres-config psql -U postgres
-<img width="1079" height="494" alt="image" src="https://github.com/user-attachments/assets/d3336d4c-87c8-4795-9dd8-47ff06f05f1e" />
-
 ```sql
 -- ตรวจสอบเวอร์ชัน
 SELECT version();
@@ -226,7 +224,6 @@ WHERE name IN (
 ```
 ### บันทึกผลการทดลอง
 บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
-<img width="898" height="217" alt="image" src="https://github.com/user-attachments/assets/a067f145-dd42-47c5-b20f-a8d5fd769a5a" />
 
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
@@ -239,7 +236,6 @@ FROM pg_settings
 WHERE name = 'shared_buffers';
 
 ### ผลการทดลอง
-<img width="912" height="313" alt="image" src="https://github.com/user-attachments/assets/3f00c0ce-5354-4d14-8812-953abe2d37d8" />
 
 1.รูปผลการรันคำสั่ง
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
