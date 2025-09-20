@@ -223,20 +223,22 @@ WHERE name IN (
 );
 ```
 ### บันทึกผลการทดลอง
-บันทึกรูปผลของ configuration ทั้ง 6 ค่า 
+```
+บันทึกรูปผลของ configuration ทั้ง 6 ค่า
+```
 
 
 ### Step 2: การปรับแต่งพารามิเตอร์แบบค่อยเป็นค่อยไป
 
 #### 2.1 ปรับแต่ง Shared Buffers (ต้อง restart)
-sql
+```sql
 -- ตรวจสอบค่าปัจจุบัน
 SELECT name, setting, unit, source, pending_restart
 FROM pg_settings 
 WHERE name = 'shared_buffers';
 
 ### ผลการทดลอง
-
+```
 1.รูปผลการรันคำสั่ง
 2. ค่า  shared_buffers มีการกำหนดค่าไว้เท่าไหร่ (ใช้ setting X unit)
 3. ค่า  pending_restart ในผลการทดลองมีค่าเป็นอย่างไร และมีความหมายอย่างไร
