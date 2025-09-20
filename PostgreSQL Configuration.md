@@ -1004,11 +1004,10 @@ SELECT * FROM simulate_oltp_workload(25);
 
 ```
 ### ผลการทดลอง
-
+```
 รูปผลการทดลอง
 <img width="905" height="245" alt="image" src="https://github.com/user-attachments/assets/ed5dec48-40b2-4ec5-9be2-4e4f3229e90d" />
 
-```
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
