@@ -198,7 +198,7 @@ docker exec postgres-config df -h
 #### 1.2 เชื่อมต่อและตรวจสอบสถานะปัจจุบัน
 bash
 docker exec -it postgres-config psql -U postgres
-```
+<img width="1079" height="494" alt="image" src="https://github.com/user-attachments/assets/d3336d4c-87c8-4795-9dd8-47ff06f05f1e" />
 
 ```sql
 -- ตรวจสอบเวอร์ชัน
@@ -210,6 +210,8 @@ SHOW hba_file;
 SHOW data_directory;
 
 ### บันทึกผลการทดลอง
+
+
 ```
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
