@@ -1012,7 +1012,7 @@ SELECT * FROM simulate_oltp_workload(25);
 -- ทดสอบปานกลาง  
 SELECT * FROM simulate_oltp_workload(100);
 ### ผลการทดลอง
-```
+
 1. รูปผลการทดลอง
  <img width="808" height="280" alt="image" src="https://github.com/user-attachments/assets/1067ba0f-30ff-43b4-bd50-34947e04763d" />
 3. อธิบายผลการทดลอง การ SELECT , INSERT, UPDATE, DELETE เป็นอย่างไร
