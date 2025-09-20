@@ -209,14 +209,13 @@ SHOW hba_file;
 SHOW data_directory;
 
 ### บันทึกผลการทดลอง
-```
+
 1. ตำแหน่งที่อยู่ของไฟล์ configuration อยู่ที่ตำแหน่งใด
 <img width="411" height="178" alt="image" src="https://github.com/user-attachments/assets/2e10118c-cef7-4cba-9aa9-f42f78d91689" />
 
 2. ตำแหน่งที่อยู่ของไฟล์ data อยู่ที่ตำแหน่งใด
    <img width="271" height="101" alt="image" src="https://github.com/user-attachments/assets/d7bc5363-d196-43e7-9a5e-582e6b5883ad" />
 
-```
 -- ตรวจสอบการตั้งค่าปัจจุบัน
 SELECT name, setting, unit, category, short_desc 
 FROM pg_settings 
