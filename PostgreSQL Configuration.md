@@ -376,7 +376,8 @@ SHOW wal_buffers;
 
 <img width="878" height="392" alt="image" src="https://github.com/user-attachments/assets/617ca1e9-b2d9-4a1b-9402-301ca467e693" />
 
-<img width="760" height="187" alt="image" src="https://github.com/user-attachments/assets/4d23d28c-2ca1-4692-9e6e-1ebe8ccdfe10" />
+<img width="865" height="145" alt="image" src="https://github.com/user-attachments/assets/5076e062-3f36-4f4a-b0e2-97eacef93e1f" />
+
 
 
 #### 3.5 ปรับแต่ง Effective Cache Size
@@ -712,9 +713,12 @@ LIMIT 10;
 1. รูปผลการทดลอง
 ```
 <img width="1042" height="314" alt="image" src="https://github.com/user-attachments/assets/d912f025-660e-47d4-b001-ea836c5c583b" />
+
+
 ```
 2. อธิบายผลลัพธ์ที่ได้
 ตารางผลลัพธ์แสดงหัวคอลัมน์เรียบร้อยแล้ว แต่ไม่มีข้อมูลแสดงออกมา คือไม่มีตารางที่ตรงกับเงื่อนไข query นี้ หรือ ยังไม่มีการเก็บสถิติ (statistics) เกี่ยวกับการอ่าน/เขียนตาราง
+
 ```
 
 ### Step 7: การปรับแต่ง Autovacuum
@@ -733,7 +737,8 @@ ORDER BY name;
 ```
 
 <img width="1442" height="503" alt="image" src="https://github.com/user-attachments/assets/2dad731c-5205-4299-a760-776ad5c7c3a2" />
-```
+
+
 ```
 2. อธิบายค่าต่าง ๆ ที่มีความสำคัญ
 ค่าที่ ควบคุมความถี่ ของ autovacuum คือ:
@@ -748,7 +753,7 @@ ORDER BY name;
   autovacuum_vacuum_cost_limit
   autovacuum_work_mem
 ```
-```
+
 
 #### 7.2 การปรับแต่ง Autovacuum สำหรับประสิทธิภาพ
 ```sql
@@ -1359,7 +1364,8 @@ SELECT * FROM run_benchmark_suite();
 รูปผลการทดลอง
 ```
 
-<img width="1339" height="256" alt="image" src="https://github.com/user-attachments/assets/6873da2f-5e12-4849-be02-1380e248c4c1" />
+<img width="888" height="205" alt="image" src="https://github.com/user-attachments/assets/6eea5308-ece7-4d96-9438-8cb08f6c5a7c" />
+
 
 ```
 -- ดูผลการทดสอบ
@@ -1646,7 +1652,8 @@ SELECT auto_tune_memory();
 ```
 ### ผลการทดลอง
 ```
-<img width="657" height="502" alt="image" src="https://github.com/user-attachments/assets/06184351-0b36-4abd-90b3-1d73dc281cff" />
+
+<img width="1297" height="166" alt="image" src="https://github.com/user-attachments/assets/b64a3a90-a53b-4624-8e21-5a3c831450d0" />
 
 
 รูปผลการทดลอง
@@ -1666,7 +1673,8 @@ ORDER BY hit_ratio;
 ```
 รูปผลการทดลอง
 ```
-<img width="878" height="338" alt="image" src="https://github.com/user-attachments/assets/9c04b010-d92d-4ff1-8c5c-a30453365b19" />
+<img width="1251" height="380" alt="image" src="https://github.com/user-attachments/assets/49d56bb1-6ec4-48dd-852f-64551832b89e" />
+
 
 ### การคำนวณ Memory Requirements
 
@@ -1704,3 +1712,42 @@ Estimated Usage = 2GB + (32MB × 100 × 0.5) + 512MB + 64MB
 5. Buffer hit ratio คืออะไร
 6. แสดงผลการคำนวณ การกำหนดค่าหน่วยความจำต่าง ๆ โดยอ้างอิงเครื่องของตนเอง
 7. การสแกนของฐานข้อมูล PostgreSQL มีกี่แบบอะไรบ้าง เปรียบเทียบการสแกนแต่ละแบบ
+
+```
+คำตอบ
+1. hared Buffers แคชข้อมูลตารางและดัชนี ตั้งค่า 25% ของ RAM
+  WAL Buffer เก็บ WAL ก่อนเขียนลงดิสก์ 16–64MB
+  CLog Buffer  เก็บสถานะธุรกรรม, ปรับอัตโนมัติ
+  Vacuum Buffer  ใช้ในงาน VACUUM
+
+2. Work Memory (work_mem) หน่วยความจำที่ใช้สำหรับงานชั่วคราวแต่ละรายการ (per-operation) เช่น sort, hash, join
+  สูตรประมาณ: (RAM × 0.25) / max_connections  ควรตั้งค่าให้ต่ำเข้าไว้และค่อยๆ ปรับขึ้นตามความจำเป็น
+  Maintenance Work Memory (maintenance_work_mem) memory สำหรับ VACUUM, CREATE INDEX
+  ควรตั้งค่าให้สูงพอสมควร เพื่อให้งานบำรุงรักษาทำได้เร็วขึ้น ปกติมากกว่า work_mem 4–8 เท่า หรือ 5–10% ของ RAM
+
+3.  work_mem = (16GB – 4GB) ÷ 200 ≈ 60MB
+    maintenance_work_mem = 60MB × 8 ≈ 480MB
+
+4. postgresql.conf เป็นไฟล์หลักสำหรับกำหนดค่า PostgreSQLของเซิร์ฟเวอร์
+   postgresql.auto.conf เป็นไฟล์ที่ PostgreSQL สร้างขึ้นอัตโนมัติ เก็บการตั้งค่าจาก ALTER SYSTEM
+   PostgreSQL จะเขียนค่าไปที่ postgresql.auto.conf และ override ค่าใน postgresql.conf
+
+5. Buffer Hit Ratio คืออัตราส่วนที่บอกว่าข้อมูลที่ถูกเรียกใช้ สามารถหาได้จาก shared_buffers ค่ายิ่งสูงยิ่งดี
+   (heap_blks_hit / (heap_blks_hit + heap_blks_read)) × 100
+
+6. shared_buffers = 512MB
+   work_mem = 20MB 
+   maintenance_work_mem = 256MB
+
+7. หลักๆจะ มี 3 แบบ
+  Sequential Scan
+      อ่านทั้งตาราง เหมาะกับตารางเล็กหรือดึงข้อมูลเยอะ ใช้เมื่อไม่มี index หรือ index ไม่เหมาะสม
+      ข้อเสีย: จะช้าเมื่อตารางใหญ่
+   Index Scan
+      ใช้ index หาแถวทีละตัว เหมาะกับการเลือกแถวน้อย ๆ แต่มี random I/O
+      ข้อเสีย: ต้องเสียเวลาในการสร้างและบำรุงรักษา
+   Index Only Scan
+      อ่านจาก index อย่างเดียว เร็วมาก แต่ใช้ได้เฉพาะกรณีที่ column อยู่ใน index ครบ
+      ข้อเสีย: ใช้ได้เฉพาะบาง query
+```
+
